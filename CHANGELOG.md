@@ -24,6 +24,7 @@ Initial private version.
 - Classic WHOIS fallback for selected cases where RDAP is unavailable.
 - DNS lookup for NS, A, AAAA, CNAME, MX, TXT, CAA, and DS records.
 - DNS resolver fallback across Cloudflare and Google DNS-over-HTTPS.
+- TLS certificate and HTTP/HTTPS redirect checks.
 - Registrar, DNS provider, Cloudflare/CDN, hosting, CMS, and email inference.
 - WordPress detection from HTML and headers.
 - Analytics and marketing tag detection for common platforms.

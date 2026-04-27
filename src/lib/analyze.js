@@ -466,6 +466,21 @@ function buildRisks({ rdap, dns, http, cloudflare, hosting, email }) {
     risks.push("Website did not respond over HTTP or HTTPS during the scan.");
   }
 
+  if (http.ssl?.available === false) {
+    risks.push(`TLS certificate was not readable over port 443${http.ssl.error ? `: ${http.ssl.error}` : "."}`);
+  } else if (http.ssl?.valid === false) {
+    risks.push(`TLS certificate was not trusted${http.ssl.authorizationError ? `: ${http.ssl.authorizationError}` : "."}`);
+  }
+
+  if (typeof http.ssl?.daysRemaining === "number" && http.ssl.daysRemaining < 30) {
+    risks.push(`TLS certificate expires in ${http.ssl.daysRemaining} day(s). Confirm renewal ownership before launch or migration work.`);
+  }
+
+  const httpCheck = (http.redirects || []).find((check) => check.startUrl?.startsWith("http://"));
+  if (httpCheck?.reachable && httpCheck.finalUrl?.startsWith("http://")) {
+    risks.push("HTTP does not appear to redirect to HTTPS. Confirm SSL redirect behavior before launch.");
+  }
+
   if ((cloudflare.status === "Yes" || cloudflare.status === "Likely") && hosting.provider === "Hidden behind Cloudflare") {
     risks.push("Origin hosting is hidden behind Cloudflare and must be confirmed with account access.");
   }

@@ -1,20 +1,42 @@
+import tls from "node:tls";
+
 export async function getHttpProfile(hostname) {
   const targets = [`https://${hostname}`, `http://${hostname}`];
   const attempts = [];
+  const redirectChecks = [];
+  const ssl = await getTlsProfile(hostname);
+  let primary = null;
 
   for (const target of targets) {
     try {
       const result = await fetchSite(target);
-      return {
-        checkedUrl: target,
-        reachable: true,
-        ...result,
-        wordpress: detectWordPress(result),
-        attempts,
-      };
+      redirectChecks.push(result.redirect);
+      if (!primary || target.startsWith("https://")) {
+        primary = { target, result };
+      }
     } catch (error) {
       attempts.push({ url: target, error: error.message });
+      redirectChecks.push({
+        startUrl: target,
+        reachable: false,
+        finalUrl: null,
+        status: null,
+        hops: [],
+        error: error.message,
+      });
     }
+  }
+
+  if (primary) {
+    return {
+      checkedUrl: primary.target,
+      reachable: true,
+      ...primary.result,
+      wordpress: detectWordPress(primary.result),
+      attempts,
+      redirects: redirectChecks,
+      ssl,
+    };
   }
 
   return {
@@ -30,6 +52,8 @@ export async function getHttpProfile(hostname) {
       signals: [],
     },
     attempts,
+    redirects: redirectChecks,
+    ssl,
   };
 }
 
@@ -38,13 +62,8 @@ async function fetchSite(url) {
   const timeout = setTimeout(() => controller.abort(), 10_000);
 
   try {
-    const response = await fetch(url, {
-      redirect: "follow",
-      signal: controller.signal,
-      headers: {
-        "user-agent": "FITFO/0.1 (+domain onboarding scanner)",
-      },
-    });
+    const result = await followRedirects(url, controller.signal);
+    const response = result.response;
 
     const contentType = response.headers.get("content-type") || "";
     const html = contentType.includes("text/html") ? await response.text() : "";
@@ -56,10 +75,114 @@ async function fetchSite(url) {
       title: extractTitle(html),
       metaGenerator: extractMetaGenerator(html),
       htmlSample: html.slice(0, 20_000),
+      redirect: {
+        startUrl: url,
+        reachable: true,
+        finalUrl: response.url,
+        status: response.status,
+        hops: result.hops,
+      },
     };
   } finally {
     clearTimeout(timeout);
   }
+}
+
+async function followRedirects(startUrl, signal, maxRedirects = 8) {
+  let currentUrl = startUrl;
+  const hops = [];
+
+  for (let index = 0; index <= maxRedirects; index += 1) {
+    const response = await fetch(currentUrl, {
+      redirect: "manual",
+      signal,
+      headers: {
+        "user-agent": "FITFO/0.1 (+domain onboarding scanner)",
+      },
+    });
+
+    const location = response.headers.get("location");
+    const isRedirect = response.status >= 300 && response.status < 400 && location;
+
+    if (!isRedirect) {
+      return { response, hops };
+    }
+
+    const nextUrl = new URL(location, currentUrl).toString();
+    hops.push({
+      url: currentUrl,
+      status: response.status,
+      location: nextUrl,
+    });
+    currentUrl = nextUrl;
+  }
+
+  throw new Error(`Too many redirects from ${startUrl}`);
+}
+
+async function getTlsProfile(hostname) {
+  return new Promise((resolve) => {
+    const socket = tls.connect({
+      host: hostname,
+      port: 443,
+      servername: hostname,
+      rejectUnauthorized: false,
+      timeout: 8_000,
+    });
+
+    let settled = false;
+    const finish = (profile) => {
+      if (settled) return;
+      settled = true;
+      socket.destroy();
+      resolve(profile);
+    };
+
+    socket.on("secureConnect", () => {
+      const certificate = socket.getPeerCertificate();
+      if (!certificate || Object.keys(certificate).length === 0) {
+        finish({
+          available: false,
+          valid: socket.authorized,
+          error: "No peer certificate returned.",
+        });
+        return;
+      }
+
+      const validTo = new Date(certificate.valid_to);
+      const daysRemaining = Number.isNaN(validTo.getTime())
+        ? null
+        : Math.ceil((validTo.getTime() - Date.now()) / 86_400_000);
+
+      finish({
+        available: true,
+        valid: socket.authorized,
+        authorizationError: socket.authorizationError || null,
+        subject: certificate.subject || {},
+        issuer: certificate.issuer || {},
+        validFrom: certificate.valid_from || null,
+        validTo: certificate.valid_to || null,
+        daysRemaining,
+        subjectAltName: certificate.subjectaltname || null,
+      });
+    });
+
+    socket.on("timeout", () => {
+      finish({
+        available: false,
+        valid: false,
+        error: "TLS connection timed out.",
+      });
+    });
+
+    socket.on("error", (error) => {
+      finish({
+        available: false,
+        valid: false,
+        error: error.message,
+      });
+    });
+  });
 }
 
 function detectWordPress(result) {

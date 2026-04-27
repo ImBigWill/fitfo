@@ -19,6 +19,7 @@ It can:
 - run a local `doctor` environment check
 - run fast dependency-free tests with `npm test`
 - infer registrar, DNS, hosting, Cloudflare/CDN, CMS, email, analytics, and common subdomain clues
+- inspect TLS certificate metadata and HTTP/HTTPS redirect behavior
 - generate a practical access checklist
 - generate a starter previous-developer request
 
@@ -65,8 +66,6 @@ These may become separate commands or modules:
 
 ## Next Sensible Commit Candidates
 
-- Add SSL certificate checks.
-- Add redirect checks.
 - Add `docs/RELEASE.md`.
 - Add GitHub Actions syntax check.
 - Refine Obsidian templates after a few real scans.

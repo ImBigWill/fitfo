@@ -71,6 +71,8 @@ export function renderTextReport(scan, options = {}) {
       http.status ? kv(theme, "HTTP", String(http.status)) : null,
       http.title ? kv(theme, "Title", http.title) : null,
       http.metaGenerator ? kv(theme, "Generator", http.metaGenerator) : null,
+      formatSsl(theme, http.ssl),
+      formatRedirects(theme, http.redirects),
       formatObject(theme, "Headers", http.headers),
     ]),
     "",
@@ -207,7 +209,12 @@ export function renderMarkdownReport(scan, options = {}) {
       ["HTTP", http.status ? String(http.status) : "Unknown"],
       ["Title", http.title || "Unknown"],
       ["Generator", http.metaGenerator || "Unknown"],
+      ["TLS", markdownSslSummary(http.ssl)],
     ]),
+    "",
+    "### Redirects",
+    "",
+    markdownRedirects(http.redirects),
     "",
     "### Headers",
     "",
@@ -296,6 +303,36 @@ function formatObject(theme, label, values) {
   return [kv(theme, label, ""), ...entries.map(([key, value]) => `  ${theme.bullet("›")} ${key}: ${value}`)].join("\n");
 }
 
+function formatSsl(theme, ssl) {
+  if (!ssl) return kv(theme, "TLS", theme.dim("Not checked"));
+  if (!ssl.available) return kv(theme, "TLS", theme.warn(ssl.error || "Certificate not readable"));
+
+  const parts = [
+    ssl.valid ? theme.ok("trusted") : theme.warn("not trusted"),
+    ssl.issuer?.O || ssl.issuer?.CN ? `issuer: ${ssl.issuer.O || ssl.issuer.CN}` : null,
+    ssl.validTo ? `expires: ${ssl.validTo}` : null,
+    typeof ssl.daysRemaining === "number" ? `${ssl.daysRemaining} day(s)` : null,
+  ].filter(Boolean);
+
+  return kv(theme, "TLS", parts.join(" | "));
+}
+
+function formatRedirects(theme, redirects) {
+  if (!redirects || redirects.length === 0) return kv(theme, "Redirects", theme.dim("Not checked"));
+
+  return [kv(theme, "Redirects", ""), ...redirects.flatMap((check) => {
+    if (!check.reachable) {
+      return [`  ${theme.bullet("›")} ${check.startUrl} ${theme.dim(`failed: ${check.error || "unreachable"}`)}`];
+    }
+
+    const summary = [`  ${theme.bullet("›")} ${check.startUrl} -> ${check.finalUrl || "unknown"} (${check.status || "unknown"})`];
+    for (const hop of check.hops || []) {
+      summary.push(`    ${theme.dim(`${hop.status} ${hop.url} -> ${hop.location}`)}`);
+    }
+    return summary;
+  })].join("\n");
+}
+
 function formatSubdomains(theme, subdomains) {
   if (!subdomains.length) {
     return [kv(theme, "Resolved", theme.dim("None found in common checks"))];
@@ -340,6 +377,33 @@ function markdownObjectList(values) {
   const entries = Object.entries(values || {});
   if (!entries.length) return "- None captured";
   return entries.map(([key, value]) => `- **${key}:** ${value}`).join("\n");
+}
+
+function markdownSslSummary(ssl) {
+  if (!ssl) return "Not checked";
+  if (!ssl.available) return ssl.error ? `Not readable: ${ssl.error}` : "Not readable";
+
+  const trust = ssl.valid ? "trusted" : `not trusted${ssl.authorizationError ? `: ${ssl.authorizationError}` : ""}`;
+  const issuer = ssl.issuer?.O || ssl.issuer?.CN ? `issuer ${ssl.issuer.O || ssl.issuer.CN}` : "unknown issuer";
+  const expires = ssl.validTo ? `expires ${ssl.validTo}` : "unknown expiration";
+  const days = typeof ssl.daysRemaining === "number" ? `${ssl.daysRemaining} day(s)` : "unknown days";
+  return `${trust}; ${issuer}; ${expires}; ${days}`;
+}
+
+function markdownRedirects(redirects) {
+  if (!redirects || redirects.length === 0) return "- Not checked";
+
+  return redirects.flatMap((check) => {
+    if (!check.reachable) {
+      return [`- **${check.startUrl}:** failed${check.error ? `: ${check.error}` : ""}`];
+    }
+
+    const lines = [`- **${check.startUrl}:** ${check.finalUrl || "unknown"} (${check.status || "unknown"})`];
+    for (const hop of check.hops || []) {
+      lines.push(`  - ${hop.status} ${hop.url} -> ${hop.location}`);
+    }
+    return lines;
+  }).join("\n");
 }
 
 function clientQuestions(scan) {

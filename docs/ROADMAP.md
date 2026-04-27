@@ -31,8 +31,7 @@ fitfo brief clientdomain.com
 ## Near-Term
 
 - Improve install and release documentation.
-- Add SSL certificate checks.
-- Add redirect checks for `http`, `https`, `www`, and apex behavior.
+- Improve redirect checks for `www` and apex canonical behavior.
 - Improve hosting fingerprints.
 - Improve DNS provider fingerprints.
 - Improve analytics and marketing tag detection.
@@ -44,8 +43,7 @@ fitfo brief clientdomain.com
 - Domain expiration warning.
 - Plain-English domain status interpretation.
 - Registrar/DNS mismatch explanation.
-- SSL issuer and expiration.
-- Homepage redirect chain.
+- Cross-host redirect map for apex, `www`, HTTP, and HTTPS.
 - `robots.txt` and `sitemap.xml` presence.
 - Known WordPress plugin/theme/page builder clues.
 - Better form and lead-routing detection.

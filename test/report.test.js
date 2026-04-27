@@ -46,6 +46,28 @@ test("renders an Obsidian-ready Markdown report with frontmatter, checklists, an
       headers: {
         server: "nginx",
       },
+      ssl: {
+        available: true,
+        valid: true,
+        issuer: { O: "Example CA" },
+        validTo: "May 30 12:00:00 2026 GMT",
+        daysRemaining: 33,
+      },
+      redirects: [
+        {
+          startUrl: "http://www.client.example",
+          reachable: true,
+          finalUrl: "https://www.client.example/",
+          status: 200,
+          hops: [
+            {
+              url: "http://www.client.example",
+              status: 301,
+              location: "https://www.client.example/",
+            },
+          ],
+        },
+      ],
     },
     analysis: {
       registrar: "GoDaddy",
@@ -100,5 +122,7 @@ test("renders an Obsidian-ready Markdown report with frontmatter, checklists, an
   assert.match(markdown, /- \[ \] \*\*Track down GoDaddy\*\*/);
   assert.match(markdown, /## Questions For The Client Call/);
   assert.match(markdown, /Who owns the GoDaddy account/);
+  assert.match(markdown, /### Redirects/);
+  assert.match(markdown, /issuer Example CA/);
   assert.match(markdown, /## Previous Developer Request/);
 });

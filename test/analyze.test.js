@@ -77,3 +77,50 @@ test("treats Cloudflare nameservers as DNS ownership and hides origin hosting", 
   assert.ok(analysis.accessNeeded.some((item) => item.item === "Cloudflare access"));
   assert.ok(analysis.actionPlan.some((item) => item.label === "Track down Cloudflare"));
 });
+
+test("flags TLS and HTTP redirect risks from mocked website checks", () => {
+  const analysis = analyzeProfile({
+    domain: {
+      apex: "client.example",
+      hostname: "client.example",
+    },
+    rdap: {
+      registrar: { name: "GoDaddy" },
+      nameservers: ["ns01.domaincontrol.com"],
+    },
+    dns: {
+      nameservers: ["ns01.domaincontrol.com"],
+      cnames: [],
+      mx: [],
+      txt: [],
+      caa: [],
+    },
+    http: {
+      reachable: true,
+      finalUrl: "https://client.example/",
+      headers: {},
+      htmlSample: "",
+      wordpress: {
+        likely: false,
+        signals: [],
+      },
+      ssl: {
+        available: true,
+        valid: true,
+        daysRemaining: 12,
+      },
+      redirects: [
+        {
+          startUrl: "http://client.example",
+          reachable: true,
+          finalUrl: "http://client.example/",
+          status: 200,
+          hops: [],
+        },
+      ],
+    },
+  });
+
+  assert.ok(analysis.risks.some((risk) => risk.includes("TLS certificate expires in 12 day")));
+  assert.ok(analysis.risks.some((risk) => risk.includes("HTTP does not appear to redirect to HTTPS")));
+});

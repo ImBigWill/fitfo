@@ -152,6 +152,8 @@ fitfo example.com --obsidian --out ~/Obsidian/Clients/example.com.md
 - A / AAAA / CNAME records
 - MX records and email provider hints
 - SPF, DMARC, DNSSEC, and CAA
+- TLS certificate trust, issuer, and expiration
+- HTTP/HTTPS redirect behavior
 - Cloudflare or Cloudflare-like CDN signals
 - hosting fingerprints from DNS, headers, and page data
 - WordPress and common CMS/page-builder signals
@@ -168,6 +170,7 @@ Key sections:
 - **Track This Down**: the practical access errands for the client or previous developer.
 - **DNS Records**: nameservers, IPs, email records, and safety records.
 - **Common Subdomains**: likely hidden properties to verify before DNS or hosting changes.
+- **Website Fingerprint**: reachability, final URL, redirects, TLS certificate, title, generator, and selected headers.
 - **Access Needed**: registrar, DNS, hosting, WordPress, email, analytics, and previous developer access.
 - **Previous Developer Request**: a starter message clients can send to whoever currently controls the setup.
 

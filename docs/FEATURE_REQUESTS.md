@@ -6,9 +6,9 @@ Items here are not commitments. They need shaping before implementation.
 
 ## Access Onboarding
 
-- Add SSL certificate check.
-- Add redirect chain check.
 - Add `www` vs apex canonical behavior.
+- Improve TLS checks with SAN coverage and issuer-specific notes.
+- Improve redirect chain checks across apex and `www`.
 - Add domain expiration warning thresholds.
 - Translate domain status codes into plain English.
 - Improve registrar detection for unusual TLDs.
