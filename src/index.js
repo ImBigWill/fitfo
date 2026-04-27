@@ -3,6 +3,7 @@ import { getDnsProfile } from "./lib/dns.js";
 import { getHttpProfile } from "./lib/http.js";
 import { getRdapProfile } from "./lib/rdap.js";
 import { analyzeProfile } from "./lib/analyze.js";
+import { APP_VERSION } from "./meta.js";
 
 export async function scanDomain(input) {
   const startedAt = new Date().toISOString();
@@ -18,7 +19,7 @@ export async function scanDomain(input) {
 
   return {
     tool: "FITFO",
-    scanVersion: "0.1.0",
+    scanVersion: APP_VERSION,
     startedAt,
     finishedAt: new Date().toISOString(),
     domain,

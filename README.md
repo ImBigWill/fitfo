@@ -1,5 +1,10 @@
 # FITFO
 
+[![License: GPL-2.0-or-later](https://img.shields.io/badge/license-GPL--2.0--or--later-FF00AA.svg)](LICENSE)
+![Node >=20](https://img.shields.io/badge/node-%3E%3D20-00DCFF.svg)
+![Dependencies: none](https://img.shields.io/badge/dependencies-none-111111.svg)
+![Status: private first](https://img.shields.io/badge/status-private%20first-FF00AA.svg)
+
 **Figure It The Fuck Out for clients.**
 
 Client-safe meaning: **Find Infrastructure, Tech & Footprint Overview**.
@@ -23,6 +28,17 @@ The repository can still start private. The GPL matters when the project is dist
 Do not commit scan output, client reports, secrets, API keys, credentials, or `.env` files.
 
 Generated reports are ignored by default through `fitfo-reports/` and `reports/`.
+
+## Project Docs
+
+- [Project state](docs/PROJECT_STATE.md)
+- [Roadmap](docs/ROADMAP.md)
+- [Feature requests](docs/FEATURE_REQUESTS.md)
+- [Contributing](CONTRIBUTING.md)
+- [Security](SECURITY.md)
+- [Changelog](CHANGELOG.md)
+
+Social badge can be added later once the preferred handle is confirmed.
 
 ## CLI Style Direction
 
@@ -57,6 +73,12 @@ Interactive mode:
 fitfo
 ```
 
+Environment check:
+
+```bash
+fitfo doctor
+```
+
 ## Usage
 
 Styled terminal report:
@@ -75,6 +97,12 @@ JSON output:
 
 ```bash
 fitfo example.com --json
+```
+
+Version:
+
+```bash
+fitfo --version
 ```
 
 Save a timestamped report:
@@ -147,15 +175,9 @@ Practical fallback coverage includes common and client-facing TLDs such as:
 
 ## Roadmap
 
-Near-term:
+See [docs/ROADMAP.md](docs/ROADMAP.md) and [docs/FEATURE_REQUESTS.md](docs/FEATURE_REQUESTS.md).
 
-- improve hosting provider fingerprints
-- add SSL certificate checks
-- add redirect checks for `http`, `https`, `www`, and apex behavior
-- improve analytics/tag detection
-- add cleaner report save formats
-
-Later:
+The important future split is:
 
 ```bash
 fitfo brief clientdomain.com

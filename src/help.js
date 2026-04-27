@@ -3,9 +3,10 @@ import { kv, panel, renderAppHeader, renderSurface } from "./ui.js";
 
 export function renderHelp(options = {}) {
   const theme = createTheme(options.color !== false);
+  const version = options.version || "0.1.0";
 
   return renderSurface(theme, [
-    renderAppHeader(theme, { mode: "onboarding intelligence", motto: "Kickstarting onboarding." }),
+    renderAppHeader(theme, { mode: "onboarding intelligence", motto: "Kickstarting onboarding.", version }),
     "",
     panel(theme, "Run FITFO", [
       `${theme.label("Figure It The Fuck Out")}`,
@@ -19,6 +20,8 @@ export function renderHelp(options = {}) {
     panel(theme, "Commands", [
       kv(theme, "scan", `${theme.value("fitfo lght.co")} ${theme.dim("- styled Domain Brief")}`),
       kv(theme, "prompt", `${theme.value("fitfo")} ${theme.dim("- ask for the domain")}`),
+      kv(theme, "doctor", `${theme.value("fitfo doctor")} ${theme.dim("- check local setup")}`),
+      kv(theme, "version", `${theme.value("fitfo --version")} ${theme.dim("- print CLI version")}`),
       kv(theme, "save", `${theme.value("fitfo lght.co --save")} ${theme.dim("- timestamped report")}`),
       kv(theme, "out", `${theme.value("fitfo lght.co -o report.txt")} ${theme.dim("- specific file")}`),
       kv(theme, "json", `${theme.value("fitfo lght.co --json")} ${theme.dim("- machine-readable data")}`),
@@ -35,9 +38,10 @@ export function renderHelp(options = {}) {
 
 export function renderPromptIntro(options = {}) {
   const theme = createTheme(options.color !== false);
+  const version = options.version || "0.1.0";
 
   return renderSurface(theme, [
-    renderAppHeader(theme, { mode: "interactive intake", motto: "Kickstarting onboarding." }),
+    renderAppHeader(theme, { mode: "interactive intake", motto: "Kickstarting onboarding.", version }),
     "",
     panel(theme, "Kickstart Intake", [
       `${theme.label("Paste a client domain.")}`,

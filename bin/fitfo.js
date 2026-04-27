@@ -4,8 +4,10 @@ import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import readline from "node:readline/promises";
 import { stdin as input, stdout as output } from "node:process";
+import { renderDoctor } from "../src/doctor.js";
 import { scanDomain } from "../src/index.js";
 import { renderHelp, renderPromptIntro } from "../src/help.js";
+import { APP_VERSION } from "../src/meta.js";
 import { renderTextReport } from "../src/report.js";
 import { createTheme } from "../src/theme.js";
 
@@ -16,12 +18,22 @@ const noColor = options.noColor || process.env.NO_COLOR;
 let domainArg = options.domain;
 
 if (options.help) {
-  console.log(renderHelp({ color: !noColor }));
+  console.log(renderHelp({ color: !noColor, version: APP_VERSION }));
+  process.exit(0);
+}
+
+if (options.version) {
+  console.log(APP_VERSION);
+  process.exit(0);
+}
+
+if (options.command === "doctor") {
+  console.log(renderDoctor({ color: !noColor }));
   process.exit(0);
 }
 
 if (!domainArg) {
-  domainArg = await promptForDomain({ color: !noColor });
+  domainArg = await promptForDomain({ color: !noColor, version: APP_VERSION });
 }
 
 try {
@@ -49,7 +61,7 @@ async function promptForDomain(options = {}) {
   const theme = createTheme(options.color !== false);
   const rl = readline.createInterface({ input, output });
 
-  console.log(renderPromptIntro({ color: options.color !== false }));
+  console.log(renderPromptIntro({ color: options.color !== false, version: options.version }));
   console.log("");
 
   try {
@@ -73,12 +85,14 @@ async function promptForDomain(options = {}) {
 
 function parseArgs(argv) {
   const options = {
+    command: "scan",
     domain: null,
     help: false,
     json: false,
     noColor: false,
     out: null,
     save: false,
+    version: false,
   };
 
   for (let index = 0; index < argv.length; index += 1) {
@@ -86,6 +100,8 @@ function parseArgs(argv) {
 
     if (arg === "--help" || arg === "-h") {
       options.help = true;
+    } else if (arg === "--version" || arg === "-v") {
+      options.version = true;
     } else if (arg === "--json") {
       options.json = true;
     } else if (arg === "--no-color") {
@@ -99,6 +115,12 @@ function parseArgs(argv) {
       }
       options.out = value;
       index += 1;
+    } else if ((arg === "scan" || arg === "doctor" || arg === "version") && !options.domain) {
+      if (arg === "version") {
+        options.version = true;
+      } else {
+        options.command = arg;
+      }
     } else if (!arg.startsWith("-") && !options.domain) {
       options.domain = arg;
     }
