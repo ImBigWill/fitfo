@@ -87,6 +87,12 @@ Styled terminal report:
 fitfo example.com
 ```
 
+First-call prep brief:
+
+```bash
+fitfo brief example.com
+```
+
 Plain output:
 
 ```bash
@@ -139,6 +145,12 @@ Save an Obsidian-ready note to a vault folder:
 
 ```bash
 fitfo example.com --obsidian --out ~/Obsidian/Clients/example.com.md
+```
+
+Save a first-call brief:
+
+```bash
+fitfo brief example.com --obsidian --out ~/Obsidian/Clients/example.com-brief.md
 ```
 
 ## What FITFO Checks
@@ -212,7 +224,7 @@ The important future split is:
 fitfo brief clientdomain.com
 ```
 
-`fitfo brief` should become the first-call prep mode: website observations, positioning hypotheses, keyword ideas, copy notes, local SEO checks, and questions for the client to confirm or correct.
+`fitfo brief` is the first-call prep mode. Today it scaffolds public-signal observations, research queues, opportunity areas, and questions for the client to confirm or correct. Deeper crawling, keyword ideas, copy notes, and local SEO checks can build on this command.
 
 ## Development
 

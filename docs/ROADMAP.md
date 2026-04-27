@@ -22,7 +22,7 @@ The default command should stay fast and operational:
 fitfo clientdomain.com
 ```
 
-The deeper research mode should become a separate command:
+The deeper research mode starts as a separate command:
 
 ```bash
 fitfo brief clientdomain.com
@@ -52,7 +52,7 @@ fitfo brief clientdomain.com
 
 ## Brief Mode Ideas
 
-`fitfo brief` should prepare for the first client call.
+`fitfo brief` should prepare for the first client call. The current version scaffolds the brief from scan signals; future versions should deepen the research.
 
 Possible sections:
 

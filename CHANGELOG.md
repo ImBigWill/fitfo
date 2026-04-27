@@ -15,6 +15,7 @@ Initial private version.
 ### Added
 
 - `fitfo <domain>` scanner command.
+- `fitfo brief <domain>` first-call prep scaffold.
 - Interactive `fitfo` prompt.
 - Styled terminal report with hot pink, black, and electric blue direction.
 - `--json`, `--no-color`, `--save`, and `--out` options.

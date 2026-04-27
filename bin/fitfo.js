@@ -4,6 +4,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import readline from "node:readline/promises";
 import { stdin as input, stdout as output } from "node:process";
+import { buildBrief, renderBriefMarkdown, renderBriefText } from "../src/brief.js";
 import { renderDoctor } from "../src/doctor.js";
 import { scanDomain } from "../src/index.js";
 import { renderHelp, renderPromptIntro } from "../src/help.js";
@@ -41,6 +42,7 @@ try {
     color: !noColor,
     format: options.format,
     obsidian: options.obsidian,
+    report: options.command,
   });
 
   console.log(terminalOutput);
@@ -51,6 +53,7 @@ try {
       color: false,
       format: options.format,
       obsidian: options.obsidian,
+      report: options.command,
     });
     await writeReport(outputPath, fileOutput);
     console.log(`\nSaved FITFO report to ${outputPath}`);
@@ -135,7 +138,7 @@ function parseArgs(argv) {
       }
       options.out = value;
       index += 1;
-    } else if ((arg === "scan" || arg === "doctor" || arg === "version") && !options.domain) {
+    } else if ((arg === "scan" || arg === "brief" || arg === "doctor" || arg === "version") && !options.domain) {
       if (arg === "version") {
         options.version = true;
       } else {
@@ -151,11 +154,21 @@ function parseArgs(argv) {
 
 function renderOutput(scan, options) {
   if (options.format === "json") {
+    if (options.report === "brief") {
+      return `${JSON.stringify({ scan, brief: buildBrief(scan) }, null, 2)}\n`;
+    }
     return `${JSON.stringify(scan, null, 2)}\n`;
   }
 
   if (options.format === "markdown" || options.format === "obsidian") {
+    if (options.report === "brief") {
+      return renderBriefMarkdown(scan, { obsidian: options.obsidian });
+    }
     return renderMarkdownReport(scan, { obsidian: options.obsidian });
+  }
+
+  if (options.report === "brief") {
+    return `${renderBriefText(scan, { color: options.color })}\n`;
   }
 
   return `${renderTextReport(scan, { color: options.color })}\n`;

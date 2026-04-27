@@ -20,6 +20,7 @@ export function renderHelp(options = {}) {
     "",
     panel(theme, "Commands", [
       kv(theme, "scan", `${theme.value("fitfo lght.co")} ${theme.dim("- styled Domain Brief")}`),
+      kv(theme, "brief", `${theme.value("fitfo brief lght.co")} ${theme.dim("- first-call prep")}`),
       kv(theme, "prompt", `${theme.value("fitfo")} ${theme.dim("- ask for the domain")}`),
       kv(theme, "doctor", `${theme.value("fitfo doctor")} ${theme.dim("- check local setup")}`),
       kv(theme, "version", `${theme.value("fitfo --version")} ${theme.dim("- print CLI version")}`),
@@ -34,6 +35,7 @@ export function renderHelp(options = {}) {
       `${theme.bullet("›")} Registrar and RDAP`,
       `${theme.bullet("›")} Nameservers, DNS, MX, SPF, DMARC, DNSSEC`,
       `${theme.bullet("›")} Cloudflare, hosting, CMS, and email hints`,
+      `${theme.bullet("›")} First-call brief scaffold for research and client questions`,
       `${theme.bullet("›")} Client access checklist and previous-developer request`,
     ]),
   ].join("\n"));

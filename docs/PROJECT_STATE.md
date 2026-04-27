@@ -9,6 +9,7 @@ FITFO is a private, GPL-2.0-or-later CLI tool.
 It can:
 
 - scan a domain from the terminal
+- generate a `fitfo brief` first-call prep scaffold from scan signals
 - render a styled onboarding report
 - render plain output for copying/saving
 - output JSON
