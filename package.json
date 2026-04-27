@@ -32,7 +32,7 @@
   },
   "scripts": {
     "scan": "node ./bin/fitfo.js",
-    "check": "node --check ./bin/fitfo.js && node --check ./src/index.js && node --check ./src/brief.js && node --check ./src/doctor.js && node --check ./src/meta.js && node --check ./src/lib/analyze.js && node --check ./src/lib/dns.js && node --check ./src/lib/domain.js && node --check ./src/lib/http.js && node --check ./src/lib/rdap.js && node --check ./src/report.js && node --check ./src/report/scan.js && node --check ./src/help.js && node --check ./src/theme.js && node --check ./src/ui.js && node --check ./test/domain.test.js && node --check ./test/analyze.test.js && node --check ./test/brief.test.js && node --check ./test/report.test.js",
+    "check": "node --check ./bin/fitfo.js && node --check ./src/index.js && node --check ./src/brief.js && node --check ./src/cli/options.js && node --check ./src/cli/output.js && node --check ./src/cli/reports.js && node --check ./src/doctor.js && node --check ./src/meta.js && node --check ./src/lib/analyze.js && node --check ./src/lib/dns.js && node --check ./src/lib/domain.js && node --check ./src/lib/http.js && node --check ./src/lib/rdap.js && node --check ./src/report.js && node --check ./src/report/scan.js && node --check ./src/help.js && node --check ./src/theme.js && node --check ./src/ui.js && node --check ./test/domain.test.js && node --check ./test/analyze.test.js && node --check ./test/brief.test.js && node --check ./test/cli-reports.test.js && node --check ./test/options.test.js && node --check ./test/report.test.js",
     "test": "node --test"
   },
   "engines": {
