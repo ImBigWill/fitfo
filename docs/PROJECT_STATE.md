@@ -20,6 +20,7 @@ It can:
 - run a local `doctor` environment check
 - run fast dependency-free tests with `npm test`
 - run GitHub Actions checks on `master` and pull requests
+- document release readiness in [Release notes](RELEASE.md)
 - infer registrar, DNS, hosting, Cloudflare/CDN, CMS, email, analytics, and common subdomain clues
 - inspect TLS certificate metadata and HTTP/HTTPS redirect behavior
 - generate a practical access checklist
@@ -70,6 +71,5 @@ These may become separate commands or modules:
 
 ## Next Sensible Commit Candidates
 
-- Add `docs/RELEASE.md`.
 - Refine Obsidian templates after a few real scans.
 - Add network fixture tests for real-world scanner edge cases without depending on live DNS during normal test runs.

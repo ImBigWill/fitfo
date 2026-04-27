@@ -2,7 +2,31 @@
   "name": "fitfo",
   "version": "0.1.0",
   "description": "Figure It The Fuck Out for client domain onboarding.",
+  "keywords": [
+    "cli",
+    "domain",
+    "dns",
+    "rdap",
+    "whois",
+    "onboarding",
+    "wordpress"
+  ],
+  "homepage": "https://github.com/ImBigWill/fitfo#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ImBigWill/fitfo.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ImBigWill/fitfo/issues"
+  },
   "type": "module",
+  "files": [
+    "bin",
+    "src",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
   "bin": {
     "fitfo": "./bin/fitfo.js"
   },

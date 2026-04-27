@@ -35,6 +35,7 @@ Generated reports are ignored by default through `fitfo-reports/` and `reports/`
 - [Project state](docs/PROJECT_STATE.md)
 - [Report flow](docs/REPORT_FLOW.md)
 - [Roadmap](docs/ROADMAP.md)
+- [Release notes](docs/RELEASE.md)
 - [Feature requests](docs/FEATURE_REQUESTS.md)
 - [Contributing](CONTRIBUTING.md)
 - [Security](SECURITY.md)
