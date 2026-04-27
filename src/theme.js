@@ -4,11 +4,13 @@ const DIM = "\x1b[2m";
 const ITALIC = "\x1b[3m";
 const BLACK_BG = "\x1b[48;2;0;0;0m";
 const PINK_BG = "\x1b[48;2;255;0;170m";
+const BLUE_BG = "\x1b[48;2;0;220;255m";
+const BLACK = "\x1b[38;2;0;0;0m";
 const HOT_PINK = "\x1b[38;2;255;0;170m";
 const ELECTRIC_BLUE = "\x1b[38;2;0;220;255m";
 const WHITE = "\x1b[38;2;245;245;245m";
-const GRAY = "\x1b[38;2;150;150;160m";
-const DARK_GRAY = "\x1b[38;2;78;76;96m";
+const GRAY = "\x1b[38;2;166;166;176m";
+const DARK_GRAY = "\x1b[38;2;74;76;82m";
 const GREEN = "\x1b[38;2;67;220;120m";
 const YELLOW = "\x1b[38;2;255;210;90m";
 const RED = "\x1b[38;2;255;85;85m";
@@ -21,7 +23,8 @@ export function createTheme(enabled = true) {
     enabled,
     surface: surfacePaint,
     banner: (value) => paint(`${BLACK_BG}${HOT_PINK}${BOLD}`, value),
-    inverted: (value) => paint(`${PINK_BG}${BLACK_BG.replace("48", "38")}${BOLD}`, value),
+    inverted: (value) => paint(`${PINK_BG}${BLACK}${BOLD}`, value),
+    blueInverted: (value) => paint(`${BLUE_BG}${BLACK}${BOLD}`, value),
     title: (value) => paint(`${HOT_PINK}${BOLD}`, value),
     tagline: (value) => paint(`${HOT_PINK}${BOLD}${ITALIC}`, value),
     italic: (value) => paint(ITALIC, value),
@@ -38,7 +41,10 @@ export function createTheme(enabled = true) {
     value: (value) => paint(WHITE, value),
     bullet: (value) => paint(HOT_PINK, value),
     chip: (value) => paint(`${BLACK_BG}${HOT_PINK}${BOLD}`, ` ${value} `),
+    hotChip: (value) => paint(`${PINK_BG}${BLACK}${BOLD}`, ` ${value} `),
+    blueChip: (value) => paint(`${BLUE_BG}${BLACK}${BOLD}`, ` ${value} `),
     border: (value) => paint(ELECTRIC_BLUE, value),
+    accentBorder: (value) => paint(HOT_PINK, value),
     prompt: (value) => paint(`${HOT_PINK}${BOLD}`, value),
   };
 }
