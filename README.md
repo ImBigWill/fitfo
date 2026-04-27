@@ -4,6 +4,7 @@
 ![Node >=20](https://img.shields.io/badge/node-%3E%3D20-00DCFF.svg)
 ![Dependencies: none](https://img.shields.io/badge/dependencies-none-111111.svg)
 ![Status: private first](https://img.shields.io/badge/status-private%20first-FF00AA.svg)
+![Checks: npm test](https://img.shields.io/badge/checks-npm%20test-00DCFF.svg)
 
 **Figure It The Fuck Out for clients.**
 

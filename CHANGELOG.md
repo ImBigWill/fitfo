@@ -33,6 +33,7 @@ Initial private version.
 - Access checklist and previous developer request output.
 - Obsidian-ready Markdown reports with YAML frontmatter, tags, checklists, and first-call questions.
 - Node built-in tests for domain normalization, analysis inference, and Markdown report rendering.
+- GitHub Actions workflow for syntax checks and tests on `master` and pull requests.
 - Public-ready project docs for roadmap, feature requests, contributing, security, and project state.
 
 ### Known Limitations
