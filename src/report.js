@@ -102,6 +102,145 @@ export function renderTextReport(scan, options = {}) {
   return renderSurface(theme, lines.filter((line) => line !== null && line !== undefined).join("\n"));
 }
 
+export function renderMarkdownReport(scan, options = {}) {
+  const { domain, rdap, dns, http, analysis } = scan;
+  const connectedServices = analysis.connectedServices || [];
+  const markdownMode = options.obsidian ? "obsidian" : "markdown";
+
+  const lines = [
+    "---",
+    `title: "${yamlString(`FITFO - ${domain.apex}`)}"`,
+    `domain: "${yamlString(domain.apex)}"`,
+    `scanned_at: "${yamlString(scan.finishedAt)}"`,
+    `fitfo_version: "${yamlString(scan.scanVersion)}"`,
+    `report_type: "${markdownMode}"`,
+    `registrar: "${yamlString(analysis.registrar)}"`,
+    `dns_provider: "${yamlString(analysis.dnsProvider)}"`,
+    `hosting_provider: "${yamlString(analysis.hosting.provider)}"`,
+    `cms: "${yamlString(analysis.cms.platform)}"`,
+    `email_provider: "${yamlString(analysis.email.provider)}"`,
+    `cloudflare: "${yamlString(analysis.cloudflare.status)}"`,
+    "tags:",
+    "  - fitfo",
+    "  - client-onboarding",
+    "  - domain-intake",
+    "---",
+    "",
+    `# FITFO - ${domain.apex}`,
+    "",
+    "**Kickstarting onboarding.**",
+    "",
+    "## Snapshot",
+    "",
+    markdownTable([
+      ["Target", targetLabel(domain)],
+      ["Scanned", scan.finishedAt],
+      ["Lookup", "WHOIS-style RDAP + DNS + website fingerprints"],
+      ["Registrar", analysis.registrar],
+      ["DNS Provider", analysis.dnsProvider],
+      ["Cloudflare", `${analysis.cloudflare.status} (${analysis.cloudflare.confidence})`],
+      ["Hosting", `${analysis.hosting.provider} (${analysis.hosting.confidence})`],
+      ["CMS", `${analysis.cms.platform} (${analysis.cms.confidence})`],
+      ["Email", analysis.email.provider],
+      ["Connected Services", connectedServices.length ? connectedServices.join(", ") : "None detected"],
+    ]),
+    "",
+    "## Plain English",
+    "",
+    `- Registrar is **${analysis.registrar}**.`,
+    `- Hosting is **${analysis.hosting.provider}**. ${analysis.hosting.note}`,
+    markdownEmailLine(analysis),
+    "- Previous developer contact is **not discoverable from public records**. Ask the client who last managed the site, DNS, hosting, or WordPress account.",
+    "",
+    "## Track This Down",
+    "",
+    ...analysis.actionPlan.flatMap((action) => [
+      `- [ ] **${action.label}**`,
+      `  ${action.detail}`,
+    ]),
+    "",
+    "## Access Needed",
+    "",
+    ...analysis.accessNeeded.flatMap((access) => [
+      `- [ ] **${access.item}**`,
+      `  ${access.reason}`,
+    ]),
+    "",
+    "## Questions For The Client Call",
+    "",
+    ...clientQuestions(scan).map((question) => `- ${question}`),
+    "",
+    "## Registrar / Domain Records",
+    "",
+    markdownTable([
+      ["Registrar", rdap.registrar?.name || "Unknown"],
+      ["Registered", rdap.dates.registration || "Unknown"],
+      ["Expires", rdap.dates.expiration || "Unknown"],
+      ["Status", rdap.statuses?.length ? rdap.statuses.join(", ") : "Unknown"],
+    ]),
+    "",
+    "## DNS Records",
+    "",
+    markdownListSection("Nameservers", dns.nameservers),
+    markdownListSection("A records", dns.addresses),
+    markdownListSection("AAAA records", dns.ipv6Addresses),
+    markdownListSection("CNAME records", dns.cnames),
+    markdownListSection("MX records", (dns.mx || []).map((record) => `${record.priority} ${record.exchange}`)),
+    `- **SPF:** ${dns.spf || "Not detected"}`,
+    `- **DMARC:** ${dns.dmarc || "Not detected"}`,
+    `- **DNSSEC:** ${dns.dnssec ? "DS record detected" : "No DS record detected"}`,
+    markdownListSection("Services", connectedServices),
+    "",
+    "## Common Subdomains",
+    "",
+    ...(dns.subdomains?.length ? dns.subdomains.flatMap((subdomain) => [
+      `- **${subdomain.name}**`,
+      subdomain.cnames.length ? `  - CNAME: ${subdomain.cnames.join(", ")}` : null,
+      subdomain.addresses.length ? `  - A: ${subdomain.addresses.join(", ")}` : null,
+    ]).filter(Boolean) : ["- None found in common checks"]),
+    "",
+    "## Website Fingerprint",
+    "",
+    markdownTable([
+      ["Reachable", http.reachable ? "Yes" : "No"],
+      ["Final URL", http.finalUrl || "Unknown"],
+      ["HTTP", http.status ? String(http.status) : "Unknown"],
+      ["Title", http.title || "Unknown"],
+      ["Generator", http.metaGenerator || "Unknown"],
+    ]),
+    "",
+    "### Headers",
+    "",
+    markdownObjectList(http.headers),
+    "",
+    "## Signals",
+    "",
+    markdownListSection("Cloudflare", analysis.cloudflare.signals),
+    markdownListSection("CMS", analysis.cms.signals),
+    `- **Hosting:** ${analysis.hosting.note || "No hosting note"}`,
+    `- **Previous developer:** ${analysis.previousDeveloper.note}`,
+    "",
+    "## Analytics / Marketing Access",
+    "",
+    markdownListSection("Detected", analysis.marketing?.found || []),
+    "",
+    ...((analysis.marketing?.requiredAccess || []).map((item) => `- [ ] ${item}`)),
+    "",
+    "## Risks / Manual Checks",
+    "",
+    ...(analysis.risks.length ? analysis.risks.map((risk) => `- ${risk}`) : ["- No major risks detected by this first-pass scan."]),
+    "",
+    "## Previous Developer Request",
+    "",
+    "```text",
+    renderDeveloperRequest(scan),
+    "```",
+    "",
+  ];
+
+  return `${lines.join("\n").replace(/\n{3,}/g, "\n\n")}\n`;
+}
+
 function targetLabel(domain) {
   return domain.hostname === domain.apex ? domain.apex : `${domain.hostname} -> ${domain.apex}`;
 }
@@ -120,6 +259,18 @@ function plainEmailLine(theme, analysis) {
   }
 
   return `${theme.bullet("›")} Email appears to use ${theme.label(analysis.email.provider)}. Document MX, SPF, DKIM, and DMARC before changing DNS.`;
+}
+
+function markdownEmailLine(analysis) {
+  if (analysis.email.provider === "No mail configured") {
+    return "- Email appears to be **not configured for this domain** based on MX records.";
+  }
+
+  if (analysis.email.provider === "Unknown") {
+    return "- Email provider is **unclear**. Ask before changing DNS because email may depend on hidden or incomplete records.";
+  }
+
+  return `- Email appears to use **${analysis.email.provider}**. Document MX, SPF, DKIM, and DMARC before changing DNS.`;
 }
 
 function confidenceChip(theme, value) {
@@ -167,4 +318,61 @@ Could you please provide or delegate access for:
 ${needs}
 
 If any of these are managed under your account, please let us know the best handoff path so we can avoid downtime or email disruption.`;
+}
+
+function markdownTable(rows) {
+  return [
+    "| Field | Value |",
+    "| --- | --- |",
+    ...rows.map(([key, value]) => `| ${escapeTable(key)} | ${escapeTable(value)} |`),
+  ].join("\n");
+}
+
+function markdownListSection(label, values) {
+  if (!values || values.length === 0) {
+    return `- **${label}:** None detected`;
+  }
+
+  return [`- **${label}:**`, ...values.map((value) => `  - ${value}`)].join("\n");
+}
+
+function markdownObjectList(values) {
+  const entries = Object.entries(values || {});
+  if (!entries.length) return "- None captured";
+  return entries.map(([key, value]) => `- **${key}:** ${value}`).join("\n");
+}
+
+function clientQuestions(scan) {
+  const { analysis } = scan;
+  const registrarAccount = analysis.registrar === "Unknown" ? "domain registrar" : analysis.registrar;
+  const questions = [
+    `Who owns the ${registrarAccount} account, and can we get delegated access instead of a shared password?`,
+    analysis.dnsProvider === "Cloudflare"
+      ? "Who owns the Cloudflare account, and are there any page rules, redirects, workers, WAF rules, or SSL settings we should preserve?"
+      : `Who controls DNS${analysis.dnsProvider === "Unknown" ? "" : ` at ${analysis.dnsProvider}`}, and can we review the complete zone before making changes?`,
+    analysis.hosting.provider === "Unknown" || analysis.hosting.provider === "Hidden behind Cloudflare"
+      ? "Where is the website actually hosted, and who can grant hosting or deployment access?"
+      : `Who can grant ${analysis.hosting.provider} hosting access, and are backups already configured?`,
+    "Who should be the technical owner for renewals, billing alerts, DNS changes, and emergency access after handoff?",
+    "Are there active subdomains, staging sites, portals, booking tools, shops, email tools, or CRMs we should avoid disrupting?",
+    "Which analytics, Search Console, Tag Manager, ad accounts, call tracking, forms, CRM, and email marketing tools are currently in use?",
+  ];
+
+  if (analysis.cms.platform === "WordPress") {
+    questions.push("Can we create a fresh WordPress administrator account and review plugins, theme, users, backups, and update history?");
+  }
+
+  if (analysis.email.provider !== "No mail configured") {
+    questions.push(`Who administers ${analysis.email.provider === "Unknown" ? "email" : analysis.email.provider}, and are SPF, DKIM, and DMARC records current?`);
+  }
+
+  return questions;
+}
+
+function yamlString(value) {
+  return String(value ?? "").replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+}
+
+function escapeTable(value) {
+  return String(value ?? "").replace(/\|/g, "\\|").replace(/\n/g, "<br>");
 }

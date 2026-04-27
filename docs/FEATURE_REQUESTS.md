@@ -45,7 +45,7 @@ Items here are not commitments. They need shaping before implementation.
 - Improve help output.
 - Add compact report mode.
 - Add quiet mode.
-- Add Markdown output.
+- Improve Obsidian note templates after real client use.
 - Add JSON schema for `--json`.
 - Improve terminal styling without sacrificing copy/paste quality.
 

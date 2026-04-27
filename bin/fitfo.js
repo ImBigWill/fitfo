@@ -8,12 +8,11 @@ import { renderDoctor } from "../src/doctor.js";
 import { scanDomain } from "../src/index.js";
 import { renderHelp, renderPromptIntro } from "../src/help.js";
 import { APP_VERSION } from "../src/meta.js";
-import { renderTextReport } from "../src/report.js";
+import { renderMarkdownReport, renderTextReport } from "../src/report.js";
 import { createTheme } from "../src/theme.js";
 
 const args = process.argv.slice(2);
 const options = parseArgs(args);
-const wantsJson = options.json;
 const noColor = options.noColor || process.env.NO_COLOR;
 let domainArg = options.domain;
 
@@ -38,17 +37,21 @@ if (!domainArg) {
 
 try {
   const scan = await scanDomain(domainArg);
-  const terminalOutput = wantsJson ? JSON.stringify(scan, null, 2) : renderTextReport(scan, { color: !noColor });
+  const terminalOutput = renderOutput(scan, {
+    color: !noColor,
+    format: options.format,
+    obsidian: options.obsidian,
+  });
 
-  if (wantsJson) {
-    console.log(terminalOutput);
-  } else {
-    console.log(terminalOutput);
-  }
+  console.log(terminalOutput);
 
-  const outputPath = options.save ? defaultReportPath(scan, wantsJson) : options.out;
+  const outputPath = options.out || (options.save || options.obsidian ? defaultReportPath(scan, options.format, options.obsidian) : null);
   if (outputPath) {
-    const fileOutput = wantsJson ? `${JSON.stringify(scan, null, 2)}\n` : `${renderTextReport(scan, { color: false })}\n`;
+    const fileOutput = renderOutput(scan, {
+      color: false,
+      format: options.format,
+      obsidian: options.obsidian,
+    });
     await writeReport(outputPath, fileOutput);
     console.log(`\nSaved FITFO report to ${outputPath}`);
   }
@@ -89,7 +92,9 @@ function parseArgs(argv) {
     domain: null,
     help: false,
     json: false,
+    format: "text",
     noColor: false,
+    obsidian: false,
     out: null,
     save: false,
     version: false,
@@ -104,8 +109,23 @@ function parseArgs(argv) {
       options.version = true;
     } else if (arg === "--json") {
       options.json = true;
+      options.format = "json";
     } else if (arg === "--no-color") {
       options.noColor = true;
+    } else if (arg === "--format" || arg === "-f") {
+      const value = argv[index + 1];
+      if (!value || value.startsWith("-")) {
+        throw new Error(`${arg} requires text, markdown, obsidian, or json.`);
+      }
+      options.format = normalizeFormat(value);
+      options.json = options.format === "json";
+      options.obsidian = options.format === "obsidian";
+      index += 1;
+    } else if (arg === "--markdown" || arg === "--md") {
+      options.format = "markdown";
+    } else if (arg === "--obsidian") {
+      options.format = "obsidian";
+      options.obsidian = true;
     } else if (arg === "--save") {
       options.save = true;
     } else if (arg === "--out" || arg === "-o") {
@@ -129,8 +149,27 @@ function parseArgs(argv) {
   return options;
 }
 
-function defaultReportPath(scan, json) {
-  const extension = json ? "json" : "txt";
+function renderOutput(scan, options) {
+  if (options.format === "json") {
+    return `${JSON.stringify(scan, null, 2)}\n`;
+  }
+
+  if (options.format === "markdown" || options.format === "obsidian") {
+    return renderMarkdownReport(scan, { obsidian: options.obsidian });
+  }
+
+  return `${renderTextReport(scan, { color: options.color })}\n`;
+}
+
+function normalizeFormat(value) {
+  const format = value.toLowerCase();
+  if (format === "md") return "markdown";
+  if (["text", "markdown", "obsidian", "json"].includes(format)) return format;
+  throw new Error(`Unsupported format "${value}". Use text, markdown, obsidian, or json.`);
+}
+
+function defaultReportPath(scan, format, obsidian) {
+  const extension = format === "json" ? "json" : format === "markdown" || format === "obsidian" || obsidian ? "md" : "txt";
   const stamp = scan.finishedAt.replace(/[:.]/g, "-");
   return path.join("fitfo-reports", `${scan.domain.apex}-${stamp}.${extension}`);
 }

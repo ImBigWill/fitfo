@@ -99,6 +99,18 @@ JSON output:
 fitfo example.com --json
 ```
 
+Markdown output:
+
+```bash
+fitfo example.com --format markdown
+```
+
+Obsidian-ready note:
+
+```bash
+fitfo example.com --obsidian
+```
+
 Version:
 
 ```bash
@@ -115,6 +127,18 @@ Save to a specific file:
 
 ```bash
 fitfo example.com --out reports/example.txt
+```
+
+Save Markdown to a specific file:
+
+```bash
+fitfo example.com --format markdown --out reports/example.md
+```
+
+Save an Obsidian-ready note to a vault folder:
+
+```bash
+fitfo example.com --obsidian --out ~/Obsidian/Clients/example.com.md
 ```
 
 ## What FITFO Checks
@@ -146,6 +170,8 @@ Key sections:
 - **Common Subdomains**: likely hidden properties to verify before DNS or hosting changes.
 - **Access Needed**: registrar, DNS, hosting, WordPress, email, analytics, and previous developer access.
 - **Previous Developer Request**: a starter message clients can send to whoever currently controls the setup.
+
+Markdown and Obsidian exports also include YAML frontmatter, tags, client-call questions, and checklist items.
 
 ## Important Limits
 

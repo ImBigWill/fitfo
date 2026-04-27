@@ -12,6 +12,8 @@ It can:
 - render a styled onboarding report
 - render plain output for copying/saving
 - output JSON
+- output Markdown
+- save Obsidian-ready Markdown notes with frontmatter, tags, checklists, and client-call questions
 - save reports when explicitly requested
 - print the current version
 - run a local `doctor` environment check
@@ -66,3 +68,4 @@ These may become separate commands or modules:
 - Add redirect checks.
 - Add `docs/RELEASE.md`.
 - Add GitHub Actions syntax check.
+- Refine Obsidian templates after a few real scans.

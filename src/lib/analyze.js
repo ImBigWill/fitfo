@@ -293,7 +293,7 @@ function detectCms(http) {
 
 function buildAccessChecklist({ cloudflare, hosting, cms, email, dnsProvider, registrar, marketing }) {
   const items = [];
-  const registrarName = registrar || "the domain registrar";
+  const registrarName = knownOrFallback(registrar, "domain registrar");
 
   items.push({
     item: `${registrarName} access`,
@@ -359,7 +359,7 @@ function buildAccessChecklist({ cloudflare, hosting, cms, email, dnsProvider, re
 
 function buildActionPlan({ registrar, cloudflare, hosting, cms, email, dnsProvider }) {
   const actions = [];
-  const registrarName = registrar || "domain registrar";
+  const registrarName = knownOrFallback(registrar, "domain registrar");
 
   actions.push({
     label: `Track down ${registrarName}`,
@@ -471,4 +471,8 @@ function buildRisks({ rdap, dns, http, cloudflare, hosting, email }) {
   }
 
   return risks;
+}
+
+function knownOrFallback(value, fallback) {
+  return value && value !== "Unknown" ? value : fallback;
 }

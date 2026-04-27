@@ -18,6 +18,7 @@ Initial private version.
 - Interactive `fitfo` prompt.
 - Styled terminal report with hot pink, black, and electric blue direction.
 - `--json`, `--no-color`, `--save`, and `--out` options.
+- `--format markdown`, `--markdown`, and `--obsidian` report exports.
 - `--version`, `version`, and `doctor` commands.
 - RDAP lookup with selected TLD fallback endpoints.
 - Classic WHOIS fallback for selected cases where RDAP is unavailable.
@@ -28,6 +29,7 @@ Initial private version.
 - Analytics and marketing tag detection for common platforms.
 - Common subdomain checks for onboarding-relevant names.
 - Access checklist and previous developer request output.
+- Obsidian-ready Markdown reports with YAML frontmatter, tags, checklists, and first-call questions.
 - Public-ready project docs for roadmap, feature requests, contributing, security, and project state.
 
 ### Known Limitations

@@ -36,8 +36,8 @@ fitfo brief clientdomain.com
 - Improve hosting fingerprints.
 - Improve DNS provider fingerprints.
 - Improve analytics and marketing tag detection.
-- Add clearer saved report formats.
 - Add package metadata for future npm publishing.
+- Improve Markdown report templates after real Obsidian use.
 
 ## Onboarding Scanner Ideas
 
