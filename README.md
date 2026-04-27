@@ -12,6 +12,20 @@ Motto: **Kickstarting onboarding.**
 
 Private repo for now. The goal is to open source this later once the scanner and CLI experience settle.
 
+## Licensing
+
+FITFO is currently **UNLICENSED** while this repository is private.
+
+If this becomes open source and we want the licensing posture to feel aligned with WordPress, the likely choice is **GPL-2.0-or-later**. WordPress itself is licensed under the GNU General Public License version 2 or later.
+
+MIT is also a valid open-source license, but it is more permissive and not the WordPress-style license.
+
+## Data Hygiene
+
+Do not commit scan output, client reports, secrets, API keys, credentials, or `.env` files.
+
+Generated reports are ignored by default through `fitfo-reports/` and `reports/`.
+
 ## Install Locally
 
 From this folder:
