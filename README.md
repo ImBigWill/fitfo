@@ -225,4 +225,10 @@ Syntax check:
 npm run check
 ```
 
+Tests:
+
+```bash
+npm test
+```
+
 The project currently has no npm dependencies.

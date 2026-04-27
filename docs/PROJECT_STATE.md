@@ -17,6 +17,7 @@ It can:
 - save reports when explicitly requested
 - print the current version
 - run a local `doctor` environment check
+- run fast dependency-free tests with `npm test`
 - infer registrar, DNS, hosting, Cloudflare/CDN, CMS, email, analytics, and common subdomain clues
 - generate a practical access checklist
 - generate a starter previous-developer request
@@ -69,3 +70,4 @@ These may become separate commands or modules:
 - Add `docs/RELEASE.md`.
 - Add GitHub Actions syntax check.
 - Refine Obsidian templates after a few real scans.
+- Add network fixture tests for real-world scanner edge cases without depending on live DNS during normal test runs.

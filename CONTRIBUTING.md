@@ -31,6 +31,12 @@ Run syntax checks:
 npm run check
 ```
 
+Run tests:
+
+```bash
+npm test
+```
+
 ## Commit Style
 
 Use small, meaningful commits.
