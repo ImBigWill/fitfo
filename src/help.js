@@ -1,0 +1,50 @@
+import { createTheme } from "./theme.js";
+import { kv, panel, renderAppHeader, renderSurface } from "./ui.js";
+
+export function renderHelp(options = {}) {
+  const theme = createTheme(options.color !== false);
+
+  return renderSurface(theme, [
+    renderAppHeader(theme, { mode: "onboarding intelligence", motto: "Kickstarting onboarding." }),
+    "",
+    panel(theme, "Run FITFO", [
+      `${theme.label("Figure It The Fuck Out")}`,
+      theme.dim("Find Infrastructure, Tech & Footprint Overview"),
+      theme.tagline("Kickstarting onboarding."),
+      "",
+      kv(theme, "Usage", `${theme.value("fitfo <domain>")} ${theme.dim("[options]")}`),
+      kv(theme, "Options", theme.dim("--json  --no-color  --save  --out file")),
+    ]),
+    "",
+    panel(theme, "Commands", [
+      kv(theme, "scan", `${theme.value("fitfo lght.co")} ${theme.dim("- styled Domain Brief")}`),
+      kv(theme, "prompt", `${theme.value("fitfo")} ${theme.dim("- ask for the domain")}`),
+      kv(theme, "save", `${theme.value("fitfo lght.co --save")} ${theme.dim("- timestamped report")}`),
+      kv(theme, "out", `${theme.value("fitfo lght.co -o report.txt")} ${theme.dim("- specific file")}`),
+      kv(theme, "json", `${theme.value("fitfo lght.co --json")} ${theme.dim("- machine-readable data")}`),
+    ]),
+    "",
+    panel(theme, "Checks", [
+      `${theme.bullet("›")} Registrar and RDAP`,
+      `${theme.bullet("›")} Nameservers, DNS, MX, SPF, DMARC, DNSSEC`,
+      `${theme.bullet("›")} Cloudflare, hosting, CMS, and email hints`,
+      `${theme.bullet("›")} Client access checklist and previous-developer request`,
+    ]),
+  ].join("\n"));
+}
+
+export function renderPromptIntro(options = {}) {
+  const theme = createTheme(options.color !== false);
+
+  return renderSurface(theme, [
+    renderAppHeader(theme, { mode: "interactive intake", motto: "Kickstarting onboarding." }),
+    "",
+    panel(theme, "Kickstart Intake", [
+      `${theme.label("Paste a client domain.")}`,
+      "",
+      `${theme.bullet("›")} ${theme.value("clientdomain.com")} is best`,
+      `${theme.bullet("›")} ${theme.dim("https:// and paths are accepted, but not required")}`,
+      `${theme.bullet("›")} ${theme.dim("FITFO checks domain records, DNS, hosting, CMS, and email clues")}`,
+    ]),
+  ].join("\n"));
+}
