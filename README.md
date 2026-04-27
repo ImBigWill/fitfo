@@ -156,6 +156,12 @@ Save a first-call brief:
 fitfo brief example.com --obsidian --out ~/Obsidian/Clients/example.com-brief.md
 ```
 
+Save without printing the full report:
+
+```bash
+fitfo brief example.com --obsidian --out ~/Obsidian/Clients/example.com-brief.md --quiet
+```
+
 ## What FITFO Checks
 
 - WHOIS-style domain records through RDAP, with selected WHOIS fallback support

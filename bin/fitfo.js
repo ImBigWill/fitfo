@@ -5,6 +5,7 @@ import { stdin as input, stdout as output } from "node:process";
 import { renderOutput } from "../src/cli/output.js";
 import { parseArgs } from "../src/cli/options.js";
 import { resolveOutputPath, writeReport } from "../src/cli/reports.js";
+import { renderRunStart, renderSavedMessage } from "../src/cli/status.js";
 import { renderDoctor } from "../src/doctor.js";
 import { scanDomain } from "../src/index.js";
 import { renderHelp, renderPromptIntro } from "../src/help.js";
@@ -36,6 +37,15 @@ if (!domainArg) {
 }
 
 try {
+  if (shouldRenderRunStart(options)) {
+    console.log(renderRunStart(domainArg, {
+      color: !noColor,
+      format: options.format,
+      report: options.command,
+    }));
+    console.log("");
+  }
+
   const scan = await scanDomain(domainArg);
   const terminalOutput = renderOutput(scan, {
     color: !noColor,
@@ -44,7 +54,9 @@ try {
     report: options.command,
   });
 
-  console.log(terminalOutput);
+  if (!options.quiet) {
+    console.log(terminalOutput);
+  }
 
   const outputPath = resolveOutputPath(scan, options);
   if (outputPath) {
@@ -55,11 +67,19 @@ try {
       report: options.command,
     });
     await writeReport(outputPath, fileOutput);
-    console.log(`\nSaved FITFO report to ${outputPath}`);
+    if (!options.quiet) {
+      console.log(`\n${renderSavedMessage(outputPath, { color: !noColor })}`);
+    } else {
+      console.log(`Saved FITFO report to ${outputPath}`);
+    }
   }
 } catch (error) {
   console.error(`FITFO failed: ${error.message}`);
   process.exit(1);
+}
+
+function shouldRenderRunStart(options) {
+  return !options.quiet && options.format === "text";
 }
 
 async function promptForDomain(options = {}) {

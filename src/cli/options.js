@@ -11,6 +11,7 @@ export function parseArgs(argv) {
     noColor: false,
     obsidian: false,
     out: null,
+    quiet: false,
     save: false,
     version: false,
   };
@@ -40,6 +41,8 @@ export function parseArgs(argv) {
       applyFormat(options, "obsidian");
     } else if (arg === "--save") {
       options.save = true;
+    } else if (arg === "--quiet" || arg === "-q") {
+      options.quiet = true;
     } else if (arg === "--out" || arg === "-o") {
       const value = argv[index + 1];
       if (!value || value.startsWith("-")) {

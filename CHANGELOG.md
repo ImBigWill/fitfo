@@ -20,6 +20,7 @@ Initial private version.
 - Styled terminal report with hot pink, black, and electric blue direction.
 - `--json`, `--no-color`, `--save`, and `--out` options.
 - `--format markdown`, `--markdown`, and `--obsidian` report exports.
+- `--quiet` mode for saving reports without printing the full output.
 - `--version`, `version`, and `doctor` commands.
 - RDAP lookup with selected TLD fallback endpoints.
 - Classic WHOIS fallback for selected cases where RDAP is unavailable.

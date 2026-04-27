@@ -12,6 +12,7 @@ test("parses default scan command with a domain", () => {
     noColor: false,
     obsidian: false,
     out: null,
+    quiet: false,
     save: false,
     version: false,
   });
@@ -30,6 +31,7 @@ test("parses brief command with Obsidian output path", () => {
 test("parses markdown and json aliases", () => {
   assert.equal(parseArgs(["example.com", "--md"]).format, "markdown");
   assert.equal(parseArgs(["example.com", "--json"]).format, "json");
+  assert.equal(parseArgs(["example.com", "--quiet"]).quiet, true);
   assert.equal(parseArgs(["version"]).version, true);
 });
 
