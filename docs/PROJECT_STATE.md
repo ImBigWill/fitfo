@@ -24,6 +24,8 @@ It can:
 - generate a practical access checklist
 - generate a starter previous-developer request
 
+Report organization is documented in [Report flow](REPORT_FLOW.md).
+
 ## Current Branch
 
 Default branch:
