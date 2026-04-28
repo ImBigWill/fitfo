@@ -61,7 +61,15 @@ fitfo plan clientdomain.com --deep --search --location "City, ST"
 
 ## Brief Mode Ideas
 
-`fitfo brief` prepares for the first client call. The current version can scaffold from scan signals, crawl a small set of sitemap pages with `--deep`, and optionally add Firecrawl-backed search research with `--search`. Research can use `FIRECRAWL_API_KEY` or the authenticated local Firecrawl CLI.
+`fitfo brief` prepares for the first client call. The current version can scaffold from scan signals, crawl a small set of sitemap pages with `--deep`, optionally add Firecrawl-backed search research with `--search`, and turn those signals into a kickoff research packet. Research can use `FIRECRAWL_API_KEY` or the authenticated local Firecrawl CLI.
+
+Current kickoff research sections:
+
+- current site read
+- market snapshot
+- keyword and page opportunities
+- positioning hypotheses
+- kickoff call agenda
 
 Possible sections:
 
@@ -71,10 +79,10 @@ Possible sections:
 - navigation and page structure
 - local SEO signals
 - schema markup
-- keyword hypotheses
-- positioning hypotheses
-- obvious copy opportunities
-- obvious conversion opportunities
+- sharper local keyword clustering
+- competitor-informed copy patterns
+- richer review/reputation summary
+- proof-asset request list
 - questions for the client to confirm, deny, or improve
 
 ## Plan Mode Ideas
@@ -86,6 +94,7 @@ Current sections:
 - focus priorities
 - recommended site structure
 - build workstreams
+- kickoff research game plan
 - confirmation questions
 
 Next improvements:

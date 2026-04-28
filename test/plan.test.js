@@ -14,7 +14,10 @@ const scan = {
   },
   research: {
     enabled: true,
-    results: [{ title: "Competitor", url: "https://competitor.example" }],
+    available: true,
+    location: "Richmond, VA",
+    queries: ["Client Plumbing services Richmond VA"],
+    results: [{ query: "Client Plumbing services Richmond VA", title: "Competitor Plumbing Services", description: "Drain repair and emergency plumbing", url: "https://competitor.example" }],
   },
   analysis: {
     cms: { platform: "WordPress", confidence: "Medium" },
@@ -33,6 +36,8 @@ test("builds a client plan from scan, crawl, and research signals", () => {
   assert.ok(plan.priorities.some((item) => item.label === "Market proof"));
   assert.ok(plan.structure.some((item) => item.path === "/services/{service}/"));
   assert.ok(plan.workstreams.some((item) => item.name === "Tracking and conversion"));
+  assert.ok(plan.kickoffResearch.marketSnapshot.some((item) => item.label === "Competitor and market SERP"));
+  assert.ok(plan.kickoffResearch.keywordPageOpportunities.some((item) => item.label === "Priority keyword candidates"));
   assert.ok(plan.clientCallIntelligence.some((item) => item.prompt === "Confirm top services/markets"));
 });
 
@@ -43,6 +48,8 @@ test("renders a Markdown plan for Obsidian", () => {
   assert.match(markdown, /## Focus First/);
   assert.match(markdown, /## Recommended Structure/);
   assert.match(markdown, /## Build Workstreams/);
+  assert.match(markdown, /## Kickoff Research Game Plan/);
+  assert.match(markdown, /### Market Snapshot/);
   assert.match(markdown, /## Client Call Next Steps/);
   assert.match(markdown, /Confirm analytics\/Search Console access/);
 });

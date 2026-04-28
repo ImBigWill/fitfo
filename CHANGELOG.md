@@ -19,6 +19,8 @@ Initial private version.
 - `fitfo plan <domain>` client build plan command for priorities, site structure, workstreams, and confirmation questions.
 - `fitfo brief <domain> --deep` crawl mode for sitemap pages, metadata, headings, CTAs, forms, schema, and suggested site structure.
 - `fitfo brief <domain> --search` optional Firecrawl-backed web research for market, review, and service SERP signals.
+- Kickoff research brief sections for current site read, market snapshot, keyword/page opportunities, positioning hypotheses, and first-call agenda.
+- `fitfo plan` kickoff research game plan that carries market, keyword, and positioning prompts into build planning.
 - Authenticated Firecrawl CLI fallback when `FIRECRAWL_API_KEY` is not set.
 - Interactive `fitfo` prompt.
 - Post-scan save prompt for interactive terminal runs without an explicit output path.

@@ -20,6 +20,12 @@ domain input
     -> first-call confirmations
     -> site intelligence
     -> market research
+    -> kickoff research brief
+      -> current site read
+      -> market snapshot
+      -> keyword/page opportunities
+      -> positioning hypotheses
+      -> kickoff call agenda
     -> research queue
     -> opportunities to inspect
     -> client questions
@@ -27,6 +33,7 @@ domain input
     -> focus priorities
     -> recommended structure
     -> build workstreams
+    -> kickoff research game plan
     -> confirmation questions
 ```
 

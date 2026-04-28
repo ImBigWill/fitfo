@@ -31,6 +31,8 @@ export async function getResearchProfile(domain, http, site, options = {}) {
       queries,
       results: [],
       errors: [`Unsupported research provider: ${provider}`],
+      location,
+      country,
     };
   }
 
@@ -43,6 +45,8 @@ export async function getResearchProfile(domain, http, site, options = {}) {
       queries,
       results: [],
       errors: ["FIRECRAWL_API_KEY is not set. Add it or run `firecrawl login` to enable live web research."],
+      location,
+      country,
     };
   }
 
@@ -72,6 +76,8 @@ export async function getResearchProfile(domain, http, site, options = {}) {
     queries,
     results: uniqueResults(results),
     errors,
+    location,
+    country,
   };
 }
 
@@ -88,6 +94,10 @@ export function buildResearchQueries(domain, http, site, options = {}) {
 
   for (const service of serviceHints) {
     queries.push(`${service} ${location || domain.apex}`);
+  }
+
+  if (serviceHints.length > 0 && location) {
+    queries.push(`best ${serviceHints[0]} ${location}`);
   }
 
   return [...new Set(queries)].slice(0, options.queryLimit || 6);

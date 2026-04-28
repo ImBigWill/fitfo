@@ -110,6 +110,13 @@ fitfo brief example.com --deep --search --location "Richmond, VA"
 
 FITFO uses `FIRECRAWL_API_KEY` when it is set. If no key is present, it falls back to the authenticated Firecrawl CLI, so `firecrawl login` and `firecrawl --status` are enough for local use.
 
+The research brief separates:
+
+- **Observed**: found on the current site, DNS, or public page crawl
+- **Research**: found from Firecrawl-backed web search
+- **Inferred**: a reasonable hypothesis to validate
+- **Ask Client**: something FITFO should not pretend to know
+
 Client build plan:
 
 ```bash
@@ -246,6 +253,8 @@ Key sections:
 - **Access Needed**: registrar, DNS, hosting, WordPress, email, analytics, and previous developer access.
 - **Previous Developer Request**: a starter message clients can send to whoever currently controls the setup.
 - **Site Intelligence**: when `--deep` is used, sitemap pages, headings, metadata, CTAs, forms, schema, phones, and suggested structure.
+- **Kickoff Research Brief**: when using brief mode, current site read, market snapshot, keyword/page opportunities, positioning hypotheses, and kickoff call agenda.
+- **Kickoff Research Game Plan**: when using plan mode, carries market, keyword, and positioning prompts into build planning.
 
 Markdown and Obsidian exports also include YAML frontmatter, tags, client-call questions, and checklist items.
 
@@ -288,6 +297,14 @@ fitfo brief clientdomain.com
 `fitfo brief` is the first-call prep mode. Today it scaffolds public-signal observations, research queues, opportunity areas, and questions for the client to confirm or correct. Deeper crawling, keyword ideas, copy notes, and local SEO checks can build on this command.
 
 Brief and plan reports also include client-call intelligence prompts that translate scan facts into follow-up decisions: lead flow, CRM/booking ownership, canonical launch host, priority services/markets, analytics/Search Console access, and previous developer handoff.
+
+For kickoff prep, run:
+
+```bash
+fitfo brief clientdomain.com --deep --search --location "City, ST" --obsidian
+```
+
+That produces a structured call packet: what FITFO observed, what search suggested, what it inferred, and what the client needs to confirm.
 
 ## Development
 

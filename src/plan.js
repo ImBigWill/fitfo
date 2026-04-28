@@ -10,6 +10,7 @@ export function buildClientPlan(scan) {
     priorities: buildPriorities(scan),
     structure: brief.suggestedStructure,
     workstreams: buildWorkstreams(scan),
+    kickoffResearch: brief.kickoffResearch,
     clientCallIntelligence: brief.clientCallIntelligence,
     questions: brief.callQuestions,
   };
@@ -38,6 +39,8 @@ export function renderPlanText(scan, options = {}) {
     panel(theme, "Recommended Structure", plan.structure.map((item) => `${theme.bullet("›")} ${theme.label(item.path)} ${theme.dim(item.reason)}`)),
     "",
     panel(theme, "Build Workstreams", plan.workstreams.map((item) => `${theme.bullet("›")} ${theme.label(item.name)} ${theme.dim(item.scope)}`)),
+    "",
+    panel(theme, "Kickoff Research Game Plan", formatPlanResearch(theme, plan.kickoffResearch)),
     "",
     panel(theme, "Client Call Next Steps", plan.clientCallIntelligence.map((item) => `${theme.bullet("›")} ${theme.label(item.prompt)} ${theme.dim(item.nextStep)}`)),
     "",
@@ -77,6 +80,10 @@ export function renderPlanMarkdown(scan, options = {}) {
     "",
     ...plan.workstreams.map((item) => `- **${item.name}:** ${item.scope}`),
     "",
+    "## Kickoff Research Game Plan",
+    "",
+    ...markdownPlanResearch(plan.kickoffResearch),
+    "",
     "## Client Call Next Steps",
     "",
     ...plan.clientCallIntelligence.map((item) => `- **${item.prompt}:** ${item.nextStep}`),
@@ -86,6 +93,35 @@ export function renderPlanMarkdown(scan, options = {}) {
     ...plan.questions.map((question) => `- ${question}`),
     "",
   ].join("\n")}\n`;
+}
+
+function formatPlanResearch(theme, kickoffResearch) {
+  const items = [
+    ...(kickoffResearch?.marketSnapshot || []).slice(0, 2),
+    ...(kickoffResearch?.keywordPageOpportunities || []).slice(0, 2),
+    ...(kickoffResearch?.positioningHypotheses || []).slice(0, 2),
+  ];
+
+  if (!items.length) {
+    return [`${theme.bullet("›")} ${theme.label("Research")} ${theme.dim("Run fitfo plan domain.com --deep --search --location \"City, ST\" for stronger kickoff prep.")}`];
+  }
+
+  return items.map((item) => `${theme.bullet("›")} ${theme.label(item.label)} ${theme.chip(`[${item.source}]`)} ${theme.dim(item.detail)}`);
+}
+
+function markdownPlanResearch(kickoffResearch) {
+  const groups = [
+    ["Market Snapshot", kickoffResearch?.marketSnapshot || []],
+    ["Keyword + Page Opportunities", kickoffResearch?.keywordPageOpportunities || []],
+    ["Positioning Hypotheses", kickoffResearch?.positioningHypotheses || []],
+  ];
+
+  return groups.flatMap(([label, items]) => [
+    `### ${label}`,
+    "",
+    ...(items.length ? items.slice(0, 4).map((item) => `- **${item.label}** _${item.source}_: ${item.detail}`) : ["- Run deep/search mode to generate this section."]),
+    "",
+  ]);
 }
 
 function buildPriorities(scan) {

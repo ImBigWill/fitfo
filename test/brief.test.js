@@ -37,10 +37,25 @@ const scan = {
   research: {
     enabled: true,
     provider: "firecrawl",
-    available: false,
+    method: "cli",
+    available: true,
+    location: "Richmond, VA",
     queries: ["Client Example Plumbing reviews", "Client Example Plumbing services"],
-    results: [],
-    errors: ["FIRECRAWL_API_KEY is not set. Add it to enable live web research."],
+    results: [
+      {
+        query: "Client Example Plumbing reviews",
+        title: "Client Example Plumbing Reviews",
+        description: "Customer reviews and ratings",
+        url: "https://client.example/reviews/",
+      },
+      {
+        query: "emergency plumbing repair Richmond, VA",
+        title: "Emergency Plumbing Repair Richmond VA",
+        description: "Emergency plumbing service from a local competitor",
+        url: "https://competitor.example/emergency-plumbing/",
+      },
+    ],
+    errors: [],
   },
   analysis: {
     cms: {
@@ -58,6 +73,9 @@ const scan = {
     marketing: {
       found: ["Google Tag Manager"],
     },
+    operations: {
+      found: ["ServiceTitan"],
+    },
   },
 };
 
@@ -68,7 +86,12 @@ test("builds a first-call brief from an existing scan", () => {
   assert.ok(brief.confirmations.some((item) => item.label === "WordPress operations"));
   assert.ok(brief.researchQueue.some((item) => item.area === "SEO"));
   assert.ok(brief.siteIntelligence.some((item) => item.label === "Pages crawled"));
-  assert.ok(brief.marketResearch.some((item) => item.label === "Firecrawl"));
+  assert.ok(brief.marketResearch.some((item) => item.label === "Queries"));
+  assert.ok(brief.kickoffResearch.currentSiteRead.some((item) => item.label === "Lead paths" && item.source === "Observed"));
+  assert.ok(brief.kickoffResearch.marketSnapshot.some((item) => item.label === "Review and reputation signals" && item.source === "Research"));
+  assert.ok(brief.kickoffResearch.keywordPageOpportunities.some((item) => item.label === "Priority keyword candidates" && item.detail.includes("drain cleaning")));
+  assert.ok(brief.kickoffResearch.positioningHypotheses.some((item) => item.label === "Differentiators to validate"));
+  assert.ok(brief.kickoffResearch.kickoffCallAgenda.some((item) => item.label === "Market and SEO assumptions"));
   assert.ok(brief.suggestedStructure.some((item) => item.path === "/services/{service}/"));
   assert.ok(brief.clientCallIntelligence.some((item) => item.prompt === "Confirm lead flow" && item.nextStep.includes("1 form(s)")));
   assert.ok(brief.clientCallIntelligence.some((item) => item.prompt === "Confirm analytics/Search Console access" && item.nextStep.includes("Google Tag Manager")));
@@ -85,6 +108,10 @@ test("renders a Markdown brief for Obsidian/client prep", () => {
   assert.match(markdown, /## Confirm On The Call/);
   assert.match(markdown, /## Site Intelligence/);
   assert.match(markdown, /## Market Research/);
+  assert.match(markdown, /## Kickoff Research Brief/);
+  assert.match(markdown, /### Current Site Read/);
+  assert.match(markdown, /### Keyword \+ Page Opportunities/);
+  assert.match(markdown, /_Research_:/);
   assert.match(markdown, /## Suggested Site Structure/);
   assert.match(markdown, /## Client Call Intelligence/);
   assert.match(markdown, /Confirm CRM\/booking owner/);

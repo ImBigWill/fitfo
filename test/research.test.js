@@ -17,6 +17,7 @@ test("builds Firecrawl research queries from title, location, and crawled servic
   assert.ok(queries.includes("\"Client Plumbing\""));
   assert.ok(queries.includes("Client Plumbing Richmond VA reviews"));
   assert.ok(queries.some((query) => query.includes("emergency plumbing repair")));
+  assert.ok(queries.some((query) => query.includes("best emergency plumbing repair Richmond VA")));
 });
 
 test("returns a clear unavailable profile when Firecrawl key is missing and CLI fallback is disabled", async () => {
@@ -64,6 +65,8 @@ test("uses authenticated Firecrawl CLI fallback when the API key is missing", as
   assert.equal(profile.available, true);
   assert.equal(profile.method, "cli");
   assert.equal(profile.results.length, 1);
+  assert.equal(profile.location, "Richmond, VA");
+  assert.equal(profile.country, "US");
   assert.equal(calls[0].options.limit, 2);
   assert.equal(calls[0].options.country, "US");
   assert.equal(calls[0].options.location, "Richmond, VA");
