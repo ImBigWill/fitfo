@@ -105,9 +105,10 @@ fitfo brief example.com --deep --crawl-limit 12
 Firecrawl-backed market research:
 
 ```bash
-export FIRECRAWL_API_KEY=fc_YOUR_KEY
 fitfo brief example.com --deep --search --location "Richmond, VA"
 ```
+
+FITFO uses `FIRECRAWL_API_KEY` when it is set. If no key is present, it falls back to the authenticated Firecrawl CLI, so `firecrawl login` and `firecrawl --status` are enough for local use.
 
 Client build plan:
 

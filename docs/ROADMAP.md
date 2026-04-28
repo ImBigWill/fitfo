@@ -58,7 +58,7 @@ fitfo plan clientdomain.com --deep --search --location "City, ST"
 
 ## Brief Mode Ideas
 
-`fitfo brief` prepares for the first client call. The current version can scaffold from scan signals, crawl a small set of sitemap pages with `--deep`, and optionally add Firecrawl-backed search research with `--search`.
+`fitfo brief` prepares for the first client call. The current version can scaffold from scan signals, crawl a small set of sitemap pages with `--deep`, and optionally add Firecrawl-backed search research with `--search`. Research can use `FIRECRAWL_API_KEY` or the authenticated local Firecrawl CLI.
 
 Possible sections:
 

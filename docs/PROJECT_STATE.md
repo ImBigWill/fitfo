@@ -12,6 +12,7 @@ It can:
 - generate a `fitfo brief` first-call prep scaffold from scan signals
 - generate a `fitfo brief --deep` site intelligence report from sitemap/robots/pages
 - generate optional Firecrawl-backed market research with `fitfo brief --search`
+- use either `FIRECRAWL_API_KEY` or an authenticated local Firecrawl CLI for market research
 - generate a `fitfo plan` client build plan from scan, crawl, and research signals
 - render a styled onboarding report
 - render plain output for copying/saving
@@ -60,7 +61,7 @@ Core should focus on fast onboarding discovery:
 - common passive subdomain checks
 - analytics/tag clues
 - light site intelligence for first-call prep
-- optional market/search research when a provider key is configured
+- optional market/search research when Firecrawl is configured by env key or CLI login
 - access checklist
 - previous developer/client handoff questions
 

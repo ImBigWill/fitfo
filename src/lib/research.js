@@ -1,4 +1,8 @@
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
+
 const FIRECRAWL_SEARCH_URL = "https://api.firecrawl.dev/v2/search";
+const execFileAsync = promisify(execFile);
 
 export async function getResearchProfile(domain, http, site, options = {}) {
   if (!options.search) {
@@ -14,11 +18,15 @@ export async function getResearchProfile(domain, http, site, options = {}) {
   const queries = buildResearchQueries(domain, http, site, options);
   const provider = options.provider || "firecrawl";
   const apiKey = Object.hasOwn(options, "firecrawlApiKey") ? options.firecrawlApiKey : process.env.FIRECRAWL_API_KEY;
+  const limit = options.searchLimit || 5;
+  const country = options.country || "US";
+  const location = options.location || null;
 
   if (provider !== "firecrawl") {
     return {
       enabled: true,
       provider,
+      method: null,
       available: false,
       queries,
       results: [],
@@ -26,26 +34,30 @@ export async function getResearchProfile(domain, http, site, options = {}) {
     };
   }
 
-  if (!apiKey) {
+  if (!apiKey && options.cliFallback === false) {
     return {
       enabled: true,
       provider: "firecrawl",
+      method: null,
       available: false,
       queries,
       results: [],
-      errors: ["FIRECRAWL_API_KEY is not set. Add it to enable live web research."],
+      errors: ["FIRECRAWL_API_KEY is not set. Add it or run `firecrawl login` to enable live web research."],
     };
   }
 
   const results = [];
   const errors = [];
+  const method = apiKey ? "api" : "cli";
+  const search = apiKey ? firecrawlApiSearch : options.firecrawlCliSearch || firecrawlCliSearch;
+
   for (const query of queries) {
     try {
-      results.push(...await firecrawlSearch(query, {
+      results.push(...await search(query, {
         apiKey,
-        limit: options.searchLimit || 5,
-        country: options.country || "US",
-        location: options.location || null,
+        limit,
+        country,
+        location,
       }));
     } catch (error) {
       errors.push(`${query}: ${error.message}`);
@@ -55,7 +67,8 @@ export async function getResearchProfile(domain, http, site, options = {}) {
   return {
     enabled: true,
     provider: "firecrawl",
-    available: true,
+    method,
+    available: results.length > 0 || errors.length < queries.length,
     queries,
     results: uniqueResults(results),
     errors,
@@ -80,7 +93,7 @@ export function buildResearchQueries(domain, http, site, options = {}) {
   return [...new Set(queries)].slice(0, options.queryLimit || 6);
 }
 
-async function firecrawlSearch(query, options) {
+async function firecrawlApiSearch(query, options) {
   const response = await fetch(FIRECRAWL_SEARCH_URL, {
     method: "POST",
     headers: {
@@ -102,8 +115,54 @@ async function firecrawlSearch(query, options) {
     throw new Error(`Firecrawl HTTP ${response.status}`);
   }
 
-  const body = await response.json();
-  const web = body?.data?.web || [];
+  return normalizeFirecrawlResults(await response.json(), query);
+}
+
+async function firecrawlCliSearch(query, options) {
+  const args = [
+    "search",
+    query,
+    "--limit",
+    String(options.limit),
+    "--sources",
+    "web",
+    "--country",
+    options.country,
+    "--ignore-invalid-urls",
+    "--json",
+  ];
+
+  if (options.location) {
+    args.push("--location", options.location);
+  }
+
+  try {
+    const { stdout } = await execFileAsync("firecrawl", args, {
+      timeout: options.timeout || 60000,
+      maxBuffer: 1024 * 1024 * 4,
+    });
+
+    return normalizeFirecrawlResults(JSON.parse(stdout), query);
+  } catch (error) {
+    if (error.code === "ENOENT") {
+      throw new Error("Firecrawl CLI is not installed. Install it or set FIRECRAWL_API_KEY.");
+    }
+
+    if (error instanceof SyntaxError) {
+      throw new Error("Firecrawl CLI returned invalid JSON.");
+    }
+
+    const detail = String(error.stderr || error.message || "").trim();
+    throw new Error(detail || "Firecrawl CLI search failed. Run `firecrawl login` or set FIRECRAWL_API_KEY.");
+  }
+}
+
+export function normalizeFirecrawlResults(body, query) {
+  if (body?.success === false) {
+    throw new Error(body.error || "Firecrawl search failed.");
+  }
+
+  const web = body?.data?.web || body?.web || [];
   return web.map((result) => ({
     query,
     title: result.title || result.metadata?.title || "Untitled",
