@@ -16,6 +16,7 @@ Initial private version.
 
 - `fitfo <domain>` scanner command.
 - `fitfo brief <domain>` first-call prep scaffold.
+- `fitfo plan <domain>` client build plan command for priorities, site structure, workstreams, and confirmation questions.
 - `fitfo brief <domain> --deep` crawl mode for sitemap pages, metadata, headings, CTAs, forms, schema, and suggested site structure.
 - `fitfo brief <domain> --search` optional Firecrawl-backed web research for market, review, and service SERP signals.
 - Interactive `fitfo` prompt.

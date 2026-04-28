@@ -23,6 +23,7 @@ export function renderHelp(options = {}) {
     panel(theme, "Commands", [
       kv(theme, "scan", `${theme.value("fitfo lght.co")} ${theme.dim("- styled Domain Brief")}`),
       kv(theme, "brief", `${theme.value("fitfo brief lght.co")} ${theme.dim("- first-call prep")}`),
+      kv(theme, "plan", `${theme.value("fitfo plan lght.co --deep")} ${theme.dim("- build plan")}`),
       kv(theme, "deep", `${theme.value("fitfo brief lght.co --deep")} ${theme.dim("- crawl site")}`),
       kv(theme, "search", `${theme.value("fitfo brief lght.co --search")} ${theme.dim("- Firecrawl research")}`),
       kv(theme, "prompt", `${theme.value("fitfo")} ${theme.dim("- ask for the domain")}`),

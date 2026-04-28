@@ -109,6 +109,12 @@ export FIRECRAWL_API_KEY=fc_YOUR_KEY
 fitfo brief example.com --deep --search --location "Richmond, VA"
 ```
 
+Client build plan:
+
+```bash
+fitfo plan example.com --deep --search --location "Richmond, VA"
+```
+
 Plain output:
 
 ```bash

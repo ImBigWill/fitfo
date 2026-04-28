@@ -1,4 +1,4 @@
-const COMMANDS = new Set(["scan", "brief", "doctor", "version", "help"]);
+const COMMANDS = new Set(["scan", "brief", "plan", "doctor", "version", "help"]);
 const FORMATS = new Set(["text", "markdown", "obsidian", "json"]);
 
 export function parseArgs(argv) {

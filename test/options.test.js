@@ -36,6 +36,14 @@ test("parses brief command with Obsidian output path", () => {
   assert.equal(options.out, "notes/example.md");
 });
 
+test("parses plan command", () => {
+  const options = parseArgs(["plan", "example.com", "--deep"]);
+
+  assert.equal(options.command, "plan");
+  assert.equal(options.domain, "example.com");
+  assert.equal(options.deep, true);
+});
+
 test("parses vault as an Obsidian output target", () => {
   const options = parseArgs(["brief", "example.com", "--vault", "~/Obsidian/Clients"]);
 

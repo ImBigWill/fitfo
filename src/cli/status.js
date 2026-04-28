@@ -3,7 +3,7 @@ import { commandHint, kv, panel, renderSurface } from "../ui.js";
 
 export function renderRunStart(domain, options = {}) {
   const theme = createTheme(options.color !== false);
-  const report = options.report === "brief" ? "First-call brief" : "Domain scan";
+  const report = options.report === "brief" ? "First-call brief" : options.report === "plan" ? "Client build plan" : "Domain scan";
   const output = options.format === "text" ? "Styled terminal" : options.format;
   const depth = options.deep ? `Deep crawl, max ${options.crawlLimit || 8} pages` : "Public records + homepage";
   const research = options.search ? "Firecrawl web research" : "Not enabled";
