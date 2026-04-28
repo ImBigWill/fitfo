@@ -1,0 +1,216 @@
+export const providerPatternFixtures = [
+  {
+    name: "GoDaddy DNS with WP Engine, Google Workspace, and ServiceTitan",
+    profile: providerProfile({
+      registrar: "GoDaddy",
+      nameservers: ["ns01.domaincontrol.com", "ns02.domaincontrol.com"],
+      cnames: ["client.wpengine.com"],
+      mx: [{ priority: 1, exchange: "aspmx.l.google.com" }],
+      txt: ["google-site-verification=abc123"],
+      finalUrl: "https://www.client.example/",
+      headers: { server: "nginx", "x-powered-by": "WP Engine" },
+      htmlSample: "<script src=\"https://www.googletagmanager.com/gtm.js?id=GTM-ABC123\"></script><script src=\"https://embed.servicetitan.com/widget.js\"></script>",
+      wordpress: true,
+      urlStructure: wwwUrlStructure(),
+    }),
+    expected: {
+      registrar: "GoDaddy",
+      dnsProvider: "GoDaddy",
+      hosting: "WP Engine",
+      email: "Google Workspace",
+      cms: "WordPress",
+      operations: ["ServiceTitan"],
+      marketing: ["Google Tag Manager"],
+      canonicalStyle: "www",
+    },
+  },
+  {
+    name: "Cloudflare DNS with hidden origin and Microsoft 365",
+    profile: providerProfile({
+      registrar: "Namecheap",
+      nameservers: ["rose.ns.cloudflare.com", "sid.ns.cloudflare.com"],
+      mx: [{ priority: 0, exchange: "client-example.mail.protection.outlook.com" }],
+      txt: ["MS=ms12345678"],
+      finalUrl: "https://client.example/",
+      headers: { server: "cloudflare", "cf-cache-status": "DYNAMIC" },
+      urlStructure: apexUrlStructure(),
+    }),
+    expected: {
+      registrar: "Namecheap",
+      dnsProvider: "Cloudflare",
+      hosting: "Hidden behind Cloudflare",
+      email: "Microsoft 365",
+      cloudflare: "Yes",
+      connectedServices: ["Microsoft verification"],
+      canonicalStyle: "apex/non-www",
+    },
+  },
+  {
+    name: "Hostinger DNS and hosting with Housecall Pro booking",
+    profile: providerProfile({
+      registrar: "Hostinger",
+      nameservers: ["ns1.dns-parking.com", "ns2.dns-parking.com"],
+      cnames: ["client.hostingerapp.com"],
+      mx: [{ priority: 10, exchange: "mx1.hostinger.com" }],
+      finalUrl: "https://client.example/",
+      headers: { server: "hcdn" },
+      htmlSample: "<a href=\"https://client.housecallpro.com/book\">Book Online</a>",
+      urlStructure: apexUrlStructure(),
+    }),
+    expected: {
+      registrar: "Hostinger",
+      dnsProvider: "Hostinger",
+      hosting: "Hostinger",
+      operations: ["Housecall Pro"],
+      canonicalStyle: "apex/non-www",
+    },
+  },
+  {
+    name: "Shopify storefront with Klaviyo",
+    profile: providerProfile({
+      registrar: "GoDaddy",
+      nameservers: ["ns01.domaincontrol.com"],
+      cnames: ["shops.myshopify.com"],
+      txt: ["klaviyo-site-verification=abc123"],
+      finalUrl: "https://shop.client.example/",
+      headers: { server: "cloudflare", "x-shopid": "1234" },
+      htmlSample: "<script src=\"https://cdn.shopify.com/s/files/theme.js\"></script><script src=\"https://static.klaviyo.com/onsite/js/klaviyo.js\"></script>",
+    }),
+    expected: {
+      dnsProvider: "GoDaddy",
+      hosting: "Shopify",
+      cms: "Shopify",
+      marketing: ["Klaviyo"],
+      connectedServices: ["Klaviyo", "Shopify"],
+    },
+  },
+  {
+    name: "Webflow marketing site",
+    profile: providerProfile({
+      registrar: "Namecheap",
+      nameservers: ["dns1.registrar-servers.com", "dns2.registrar-servers.com"],
+      cnames: ["proxy-ssl.webflow.com"],
+      finalUrl: "https://client.example/",
+      headers: { "x-webflow-page-id": "page123" },
+      htmlSample: "<html data-wf-page=\"page123\"><script src=\"https://assets.website-files.com/js/webflow.js\"></script></html>",
+    }),
+    expected: {
+      dnsProvider: "Namecheap",
+      hosting: "Webflow",
+      cms: "Webflow",
+      connectedServices: ["Webflow"],
+    },
+  },
+  {
+    name: "Wix all-in-one site",
+    profile: providerProfile({
+      registrar: "Wix",
+      nameservers: ["ns6.wixdns.net", "ns7.wixdns.net"],
+      finalUrl: "https://client.example/",
+      headers: { "x-wix-request-id": "abc", "x-seen-by": "wix-cache" },
+      htmlSample: "<script src=\"https://static.wixstatic.com/services/js\"></script>",
+    }),
+    expected: {
+      dnsProvider: "Wix",
+      hosting: "Wix",
+      cms: "Wix",
+    },
+  },
+  {
+    name: "Squarespace site",
+    profile: providerProfile({
+      registrar: "Squarespace Domains LLC",
+      nameservers: ["dns1.p01.nsone.net", "dns2.p01.nsone.net", "ns01.squarespacedns.com"],
+      finalUrl: "https://client.example/",
+      headers: { server: "Squarespace" },
+      htmlSample: "<link href=\"https://static.squarespace.com/universal/styles.css\" rel=\"stylesheet\">",
+    }),
+    expected: {
+      dnsProvider: "Squarespace",
+      hosting: "Squarespace",
+      cms: "Squarespace",
+    },
+  },
+  {
+    name: "Vercel app with Jobber link",
+    profile: providerProfile({
+      registrar: "Cloudflare",
+      nameservers: ["a.zeit-world.net", "b.zeit-world.net"],
+      cnames: ["cname.vercel-dns.com"],
+      finalUrl: "https://client.example/",
+      headers: { server: "Vercel" },
+      htmlSample: "<a href=\"https://client.getjobber.com/client_hubs/new\">Book now</a>",
+    }),
+    expected: {
+      hosting: "Vercel",
+      operations: ["Jobber"],
+    },
+  },
+  {
+    name: "Netlify static site",
+    profile: providerProfile({
+      registrar: "Hover",
+      nameservers: ["ns1.hover.com", "ns2.hover.com"],
+      cnames: ["client.netlify.app"],
+      finalUrl: "https://client.example/",
+      headers: { server: "Netlify" },
+    }),
+    expected: {
+      dnsProvider: "Hover",
+      hosting: "Netlify",
+    },
+  },
+];
+
+function providerProfile(options) {
+  return {
+    domain: {
+      apex: "client.example",
+      hostname: "client.example",
+    },
+    rdap: {
+      available: true,
+      registrar: { name: options.registrar || "Unknown" },
+      nameservers: options.nameservers || [],
+    },
+    dns: {
+      nameservers: options.nameservers || [],
+      cnames: options.cnames || [],
+      mx: options.mx || [],
+      txt: options.txt || [],
+      caa: options.caa || [],
+      subdomains: [],
+    },
+    http: {
+      reachable: true,
+      finalUrl: options.finalUrl || "https://client.example/",
+      headers: options.headers || {},
+      htmlSample: options.htmlSample || "",
+      metaGenerator: options.metaGenerator || null,
+      wordpress: {
+        likely: Boolean(options.wordpress),
+        signals: options.wordpress ? ["HTML references /wp-content/"] : [],
+      },
+      urlStructure: options.urlStructure || apexUrlStructure(),
+      redirects: [],
+    },
+  };
+}
+
+function apexUrlStructure() {
+  return {
+    preferredHost: "client.example",
+    preferredProtocol: "https:",
+    www: false,
+    recommendation: "Likely primary launch URL is HTTPS on apex/non-www. Preserve this choice unless the client intentionally wants to change canonical host.",
+  };
+}
+
+function wwwUrlStructure() {
+  return {
+    preferredHost: "www.client.example",
+    preferredProtocol: "https:",
+    www: true,
+    recommendation: "Likely primary launch URL is HTTPS on www. Preserve this choice unless the client intentionally wants to change canonical host.",
+  };
+}

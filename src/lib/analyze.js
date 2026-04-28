@@ -40,6 +40,7 @@ const DNS_PROVIDER_HINTS = [
   ["namecheaphosting.com", "Namecheap"],
   ["hostinger", "Hostinger"],
   ["dns-parking.com", "Hostinger"],
+  ["squarespacedns.com", "Squarespace"],
   ["wpengine.com", "WP Engine"],
   ["kinsta.cloud", "Kinsta"],
   ["bluehost.com", "Bluehost"],
@@ -55,7 +56,6 @@ const DNS_PROVIDER_HINTS = [
   ["dynect.net", "Oracle Dyn"],
   ["nsone.net", "NS1"],
   ["wixdns.net", "Wix"],
-  ["squarespacedns.com", "Squarespace"],
   ["siteground.net", "SiteGround"],
   ["siteground", "SiteGround"],
   ["cloudflare.com", "Cloudflare"],
@@ -378,6 +378,42 @@ function detectCms(http) {
       platform: "WordPress",
       confidence: "Medium",
       signals: http.wordpress.signals,
+    };
+  }
+
+  const html = http.htmlSample || "";
+  const headers = http.headers || {};
+  const metaGenerator = http.metaGenerator || "";
+  const haystack = [html, JSON.stringify(headers), metaGenerator, http.finalUrl || ""].join("\n");
+  const checks = [
+    {
+      platform: "Shopify",
+      pattern: /cdn\.shopify\.com|myshopify\.com|x-shopid|x-shopify-stage|Shopify/i,
+      signal: "Shopify storefront clues",
+    },
+    {
+      platform: "Webflow",
+      pattern: /webflow\.js|data-wf-page|webflow\.io|x-webflow-page-id|Webflow/i,
+      signal: "Webflow page clues",
+    },
+    {
+      platform: "Wix",
+      pattern: /wixstatic\.com|wix\.com|x-wix-request-id|x-seen-by|Wix\.com Website Builder/i,
+      signal: "Wix site clues",
+    },
+    {
+      platform: "Squarespace",
+      pattern: /static\.squarespace\.com|squarespace-cdn|squarespace\.com|Squarespace/i,
+      signal: "Squarespace site clues",
+    },
+  ];
+  const match = checks.find((check) => check.pattern.test(haystack));
+
+  if (match) {
+    return {
+      platform: match.platform,
+      confidence: "Medium",
+      signals: [match.signal],
     };
   }
 

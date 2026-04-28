@@ -38,13 +38,14 @@ Initial private version.
 - Registrar, DNS provider, Cloudflare/CDN, hosting, CMS, and email inference.
 - Apex vs `www` URL structure checks with likely primary launch URL guidance.
 - WordPress detection from HTML and headers.
+- Hosted-builder detection for Shopify, Webflow, Wix, and Squarespace clues.
 - Analytics and marketing tag detection for common platforms.
 - CRM, booking, and field-service platform detection for common service-business tools.
 - Common subdomain checks for onboarding-relevant names.
 - Access checklist and previous developer request output.
 - Dev pre-launch checklist for canonical host, redirects, DNS, hosting, CMS, email, tracking, CRM, and QA.
 - Obsidian-ready Markdown reports with YAML frontmatter, tags, checklists, and first-call questions.
-- Node built-in tests for domain normalization, analysis inference, and Markdown report rendering.
+- Node built-in tests for domain normalization, analysis inference, provider fixtures, and Markdown report rendering.
 - GitHub Actions workflow for syntax checks and tests on `master` and pull requests.
 - Package metadata and release checklist for eventual public npm/open-source release.
 - Public-ready project docs for roadmap, feature requests, contributing, security, and project state.

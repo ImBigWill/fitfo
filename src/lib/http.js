@@ -297,6 +297,11 @@ function pickHeaders(headers) {
     "x-hosted-by",
     "x-pantheon-styx-hostname",
     "x-acquia-application-uuid",
+    "x-shopid",
+    "x-shopify-stage",
+    "x-seen-by",
+    "x-wix-request-id",
+    "x-webflow-page-id",
   ];
 
   const picked = {};
