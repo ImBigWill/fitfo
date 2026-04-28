@@ -18,6 +18,8 @@ const HOSTING_HINTS = [
   ["linode", "Akamai/Linode"],
   ["liquidweb", "Liquid Web"],
   ["cloudways", "Cloudways"],
+  ["ionos", "IONOS"],
+  ["ui-dns", "IONOS"],
   ["pressable", "Pressable"],
   ["wordpress.com", "WordPress.com"],
   ["godaddy", "GoDaddy"],

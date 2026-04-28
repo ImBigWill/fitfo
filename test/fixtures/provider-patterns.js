@@ -160,6 +160,79 @@ export const providerPatternFixtures = [
       hosting: "Netlify",
     },
   },
+  {
+    name: "SiteGround DNS and hosting with Zoho Mail",
+    profile: providerProfile({
+      registrar: "Tucows",
+      nameservers: ["ns1.siteground.net", "ns2.siteground.net"],
+      cnames: ["www.client.example.siteground.net"],
+      mx: [{ priority: 10, exchange: "mx.zoho.com" }],
+      txt: ["v=spf1 include:zoho.com ~all"],
+      finalUrl: "https://client.example/",
+      headers: { server: "nginx" },
+      htmlSample: "<meta name=\"generator\" content=\"WordPress\"><script src=\"https://www.googletagmanager.com/gtag/js?id=G-123\"></script>",
+      wordpress: true,
+    }),
+    expected: {
+      dnsProvider: "SiteGround",
+      hosting: "SiteGround",
+      email: "Zoho Mail",
+      cms: "WordPress",
+      marketing: ["Google Analytics / GA4"],
+    },
+  },
+  {
+    name: "Bluehost hosting with Rackspace email and FieldEdge",
+    profile: providerProfile({
+      registrar: "FastDomain",
+      nameservers: ["ns1.bluehost.com", "ns2.bluehost.com"],
+      mx: [{ priority: 10, exchange: "mx1.emailsrvr.com" }],
+      finalUrl: "https://www.client.example/",
+      headers: { server: "bluehost" },
+      htmlSample: "<a href=\"https://fieldedge.com/booking/client\">Schedule service</a>",
+      urlStructure: wwwUrlStructure(),
+    }),
+    expected: {
+      dnsProvider: "Bluehost",
+      hosting: "Bluehost",
+      operations: ["FieldEdge"],
+      canonicalStyle: "www",
+    },
+  },
+  {
+    name: "IONOS DNS and hosting",
+    profile: providerProfile({
+      registrar: "IONOS SE",
+      nameservers: ["ns1045.ui-dns.biz", "ns1045.ui-dns.com", "ns1045.ui-dns.de", "ns1045.ui-dns.org"],
+      cnames: ["client.ionoshosting.com"],
+      mx: [{ priority: 10, exchange: "mx00.ionos.com" }],
+      finalUrl: "https://client.example/",
+      headers: { server: "Apache" },
+    }),
+    expected: {
+      registrar: "IONOS SE",
+      dnsProvider: "IONOS",
+      hosting: "IONOS",
+    },
+  },
+  {
+    name: "DigitalOcean host with HubSpot and CallRail",
+    profile: providerProfile({
+      registrar: "Namecheap",
+      nameservers: ["dns1.registrar-servers.com", "dns2.registrar-servers.com"],
+      cnames: ["client.ondigitalocean.app"],
+      txt: ["hubspot-developer-verification=abc123"],
+      finalUrl: "https://client.example/",
+      headers: { server: "nginx", "x-served-by": "digitalocean" },
+      htmlSample: "<script src=\"https://js.hsforms.net/forms/v2.js\"></script><script src=\"https://cdn.callrail.com/companies/123/tracker.js\"></script>",
+    }),
+    expected: {
+      dnsProvider: "Namecheap",
+      hosting: "DigitalOcean",
+      connectedServices: ["HubSpot"],
+      marketing: ["CallRail", "HubSpot"],
+    },
+  },
 ];
 
 function providerProfile(options) {
