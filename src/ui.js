@@ -79,11 +79,11 @@ export function renderLaunchScreen(theme, meta = {}) {
 
 export function renderWordmark(theme, options = {}) {
   const lines = [
-    "██████ █████ █████ █████ ████",
-    "██       █     █   ██    ██ ██",
-    "████     █     █   ████  ██ ██",
-    "██       █     █   ██    ██ ██",
-    "██     █████   █   ██    ████",
+    "██████ █████ █████ █████  █████ ",
+    "██       █     █   ██    ██   ██",
+    "████     █     █   ████  ██   ██",
+    "██       █     █   ██    ██   ██",
+    "██     █████   █   ██     █████ ",
   ];
 
   return lines
