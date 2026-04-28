@@ -34,6 +34,14 @@ export function normalizeSaveDestination(value) {
 }
 
 export function defaultDesktopReportPath(scan) {
-  const stamp = scan.finishedAt.replace(/[:.]/g, "-");
-  return path.join(homedir(), "Desktop", `${scan.domain.apex}-${stamp}.md`);
+  return path.join(homedir(), "Desktop", reportFileName(scan, "markdown"));
+}
+
+export function promptedReportFileName(scan, format = "markdown") {
+  return reportFileName(scan, format);
+}
+
+function reportFileName(scan, format) {
+  const extension = format === "text" ? "txt" : "md";
+  return `${scan.domain.apex}.${extension}`;
 }

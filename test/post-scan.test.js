@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { defaultDesktopReportPath, normalizeSaveDestination, normalizeSaveFormat, shouldPromptForReportSave } from "../src/cli/post-scan.js";
+import { defaultDesktopReportPath, normalizeSaveDestination, normalizeSaveFormat, promptedReportFileName, shouldPromptForReportSave } from "../src/cli/post-scan.js";
 
 test("prompts to save only for normal interactive text runs without an explicit output", () => {
   const streams = {
@@ -41,5 +41,15 @@ test("builds a findable Desktop markdown path by default", () => {
     domain: { apex: "example.com" },
   });
 
-  assert.match(outputPath, /\/Desktop\/example\.com-2026-04-28T17-05-10-001Z\.md$/);
+  assert.match(outputPath, /\/Desktop\/example\.com\.md$/);
+});
+
+test("uses simple domain filenames for prompted saves", () => {
+  const scan = {
+    domain: { apex: "example.com" },
+  };
+
+  assert.equal(promptedReportFileName(scan, "markdown"), "example.com.md");
+  assert.equal(promptedReportFileName(scan, "obsidian"), "example.com.md");
+  assert.equal(promptedReportFileName(scan, "text"), "example.com.txt");
 });

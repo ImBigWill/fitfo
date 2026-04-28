@@ -5,7 +5,7 @@ import { stdin as input, stdout as output } from "node:process";
 import { applyConfigDefaults, handleConfigCommand, loadConfig } from "../src/cli/config.js";
 import { renderOutput } from "../src/cli/output.js";
 import { parseArgs } from "../src/cli/options.js";
-import { defaultDesktopReportPath, normalizeSaveDestination, normalizeSaveFormat, shouldPromptForReportSave } from "../src/cli/post-scan.js";
+import { defaultDesktopReportPath, normalizeSaveDestination, normalizeSaveFormat, promptedReportFileName, shouldPromptForReportSave } from "../src/cli/post-scan.js";
 import { absoluteOutputPath, resolveOutputPath, writeReport } from "../src/cli/reports.js";
 import { renderRunStart, renderSavedMessage } from "../src/cli/status.js";
 import { renderDoctor } from "../src/doctor.js";
@@ -171,7 +171,7 @@ async function promptForReportSave(scan, options = {}, display = {}) {
       const format = normalizeSaveFormat(formatAnswer || "markdown");
       saveOptions.format = format === "obsidian" ? "markdown" : format;
       saveOptions.obsidian = false;
-      suggestedPath = absoluteOutputPath(resolveOutputPath(scan, saveOptions));
+      suggestedPath = absoluteOutputPath(promptedReportFileName(scan, saveOptions.format));
     }
 
     const pathAnswer = await rl.question(theme.surface(`${theme.hotChip("WHERE")} ${theme.prompt("save report file?")} ${theme.dim(`[${suggestedPath}]`)} `));

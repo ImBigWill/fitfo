@@ -23,6 +23,7 @@ Initial private version.
 - Interactive `fitfo` prompt.
 - Post-scan save prompt for interactive terminal runs without an explicit output path.
 - Destination-first post-scan save prompt with Desktop Markdown as the findable default, plus Obsidian vault/folder and custom path options.
+- Simple domain-based filenames for prompted saves, such as `example.com.md`.
 - Styled terminal report with hot pink, black, and electric blue direction.
 - Dedicated interactive startup screen with launch-frame styling and scan/map/brief flow.
 - `--json`, `--no-color`, `--save`, and `--out` options.
