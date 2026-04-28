@@ -15,6 +15,25 @@ const scan = {
     reachable: true,
     title: "Client Example Plumbing",
   },
+  site: {
+    enabled: true,
+    summary: {
+      pagesScanned: 3,
+      pagesWithMetaDescription: 1,
+      pagesMissingH1: 1,
+      pagesWithMultipleH1: 0,
+      formsDetected: 1,
+      phonesDetected: ["555-123-4567"],
+      schemaTypes: ["LocalBusiness"],
+      ctas: ["Request an Estimate"],
+    },
+    pages: [
+      { path: "/", headings: { h1: ["Client Example"] } },
+      { path: "/services/drain-cleaning/", headings: { h1: ["Drain Cleaning"] } },
+      { path: "/contact/", headings: { h1: ["Contact"] } },
+    ],
+    recommendations: ["Write unique meta descriptions for important pages before launch."],
+  },
   analysis: {
     cms: {
       platform: "WordPress",
@@ -40,6 +59,8 @@ test("builds a first-call brief from an existing scan", () => {
   assert.equal(brief.subject, "client.example");
   assert.ok(brief.confirmations.some((item) => item.label === "WordPress operations"));
   assert.ok(brief.researchQueue.some((item) => item.area === "SEO"));
+  assert.ok(brief.siteIntelligence.some((item) => item.label === "Pages crawled"));
+  assert.ok(brief.suggestedStructure.some((item) => item.path === "/services/{service}/"));
   assert.ok(brief.opportunityQueue.some((item) => item.area === "Subdomains"));
   assert.ok(brief.callQuestions.some((question) => question.includes("Google Tag Manager")));
 });
@@ -50,6 +71,8 @@ test("renders a Markdown brief for Obsidian/client prep", () => {
   assert.match(markdown, /report_type: "obsidian-brief"/);
   assert.match(markdown, /# FITFO Brief - client.example/);
   assert.match(markdown, /## Confirm On The Call/);
+  assert.match(markdown, /## Site Intelligence/);
+  assert.match(markdown, /## Suggested Site Structure/);
   assert.match(markdown, /## Research Queue/);
   assert.match(markdown, /## First-Call Questions/);
 });

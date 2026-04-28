@@ -96,6 +96,12 @@ First-call prep brief:
 fitfo brief example.com
 ```
 
+Deep site intelligence brief:
+
+```bash
+fitfo brief example.com --deep --crawl-limit 12
+```
+
 Plain output:
 
 ```bash
@@ -207,6 +213,7 @@ Key sections:
 - **Website Fingerprint**: reachability, final URL, redirects, TLS certificate, title, generator, and selected headers.
 - **Access Needed**: registrar, DNS, hosting, WordPress, email, analytics, and previous developer access.
 - **Previous Developer Request**: a starter message clients can send to whoever currently controls the setup.
+- **Site Intelligence**: when `--deep` is used, sitemap pages, headings, metadata, CTAs, forms, schema, phones, and suggested structure.
 
 Markdown and Obsidian exports also include YAML frontmatter, tags, client-call questions, and checklist items.
 

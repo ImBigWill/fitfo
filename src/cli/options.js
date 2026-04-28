@@ -4,6 +4,8 @@ const FORMATS = new Set(["text", "markdown", "obsidian", "json"]);
 export function parseArgs(argv) {
   const options = {
     command: "scan",
+    crawlLimit: 8,
+    deep: false,
     domain: null,
     help: false,
     json: false,
@@ -22,6 +24,19 @@ export function parseArgs(argv) {
 
     if (arg === "--help" || arg === "-h") {
       options.help = true;
+    } else if (arg === "--deep") {
+      options.deep = true;
+    } else if (arg === "--crawl-limit") {
+      const value = argv[index + 1];
+      if (!value || value.startsWith("-")) {
+        throw new Error("--crawl-limit requires a number.");
+      }
+      const limit = Number(value);
+      if (!Number.isInteger(limit) || limit < 1 || limit > 50) {
+        throw new Error("--crawl-limit must be an integer between 1 and 50.");
+      }
+      options.crawlLimit = limit;
+      index += 1;
     } else if (arg === "--version" || arg === "-v") {
       options.version = true;
     } else if (arg === "--json") {

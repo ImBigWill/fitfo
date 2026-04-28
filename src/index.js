@@ -2,10 +2,11 @@ import { normalizeDomainInput } from "./lib/domain.js";
 import { getDnsProfile } from "./lib/dns.js";
 import { getHttpProfile } from "./lib/http.js";
 import { getRdapProfile } from "./lib/rdap.js";
+import { getSiteProfile } from "./lib/site.js";
 import { analyzeProfile } from "./lib/analyze.js";
 import { APP_VERSION } from "./meta.js";
 
-export async function scanDomain(input) {
+export async function scanDomain(input, options = {}) {
   const startedAt = new Date().toISOString();
   const domain = normalizeDomainInput(input);
 
@@ -16,6 +17,10 @@ export async function scanDomain(input) {
   ]);
 
   const analysis = analyzeProfile({ domain, rdap, dns, http });
+  const site = await getSiteProfile(domain, http, {
+    deep: options.deep,
+    limit: options.crawlLimit,
+  });
 
   return {
     tool: "FITFO",
@@ -26,6 +31,7 @@ export async function scanDomain(input) {
     rdap,
     dns,
     http,
+    site,
     analysis,
   };
 }

@@ -6,6 +6,8 @@ export function buildBrief(scan) {
   const connectedServices = analysis.connectedServices || [];
   const marketing = analysis.marketing?.found || [];
   const subdomains = scan.dns.subdomains || [];
+  const site = scan.site || {};
+  const siteSummary = site.summary || {};
 
   return {
     subject: domain.apex,
@@ -19,7 +21,12 @@ export function buildBrief(scan) {
       ["Marketing tags", marketing.length ? marketing.join(", ") : "None detected"],
       ["Connected services", connectedServices.length ? connectedServices.join(", ") : "None detected"],
       ["Subdomains found", String(subdomains.length)],
+      ["Deep crawl", site.enabled ? `${siteSummary.pagesScanned || 0} page(s)` : "Not enabled"],
+      ["Forms found", site.enabled ? String(siteSummary.formsDetected || 0) : "Not checked"],
+      ["Schema", site.enabled && siteSummary.schemaTypes?.length ? siteSummary.schemaTypes.join(", ") : "Not detected"],
     ],
+    siteIntelligence: buildSiteIntelligence(scan),
+    suggestedStructure: buildSuggestedStructure(scan),
     confirmations: buildConfirmations(scan),
     researchQueue: buildResearchQueue(scan),
     opportunityQueue: buildOpportunityQueue(scan),
@@ -45,6 +52,10 @@ export function renderBriefText(scan, options = {}) {
     ]),
     "",
     panel(theme, "Confirm On The Call", brief.confirmations.flatMap((item, index) => numbered(theme, index + 1, item.label, item.detail))),
+    "",
+    panel(theme, "Site Intelligence", brief.siteIntelligence.map((item) => `${theme.bullet("›")} ${theme.label(item.label)} ${theme.dim(item.detail)}`)),
+    "",
+    panel(theme, "Suggested Site Structure", brief.suggestedStructure.map((item) => `${theme.bullet("›")} ${theme.label(item.path)} ${theme.dim(item.reason)}`)),
     "",
     panel(theme, "Research Queue", brief.researchQueue.map((item) => `${theme.bullet("›")} ${theme.label(item.area)} ${theme.dim(item.task)}`)),
     "",
@@ -86,6 +97,14 @@ export function renderBriefMarkdown(scan, options = {}) {
       `- [ ] **${item.label}**`,
       `  ${item.detail}`,
     ]),
+    "",
+    "## Site Intelligence",
+    "",
+    ...brief.siteIntelligence.map((item) => `- **${item.label}:** ${item.detail}`),
+    "",
+    "## Suggested Site Structure",
+    "",
+    ...brief.suggestedStructure.map((item) => `- **${item.path}:** ${item.reason}`),
     "",
     "## Research Queue",
     "",
@@ -136,11 +155,84 @@ function buildConfirmations(scan) {
   return confirmations;
 }
 
+function buildSiteIntelligence(scan) {
+  const site = scan.site || {};
+  if (!site.enabled) {
+    return [{
+      label: "Deep crawl",
+      detail: "Not enabled. Run with --deep to inspect sitemap pages, headings, CTAs, forms, schema, and content gaps.",
+    }];
+  }
+
+  const summary = site.summary || {};
+  const items = [
+    {
+      label: "Pages crawled",
+      detail: `${summary.pagesScanned || 0} page(s) from sitemap and priority URLs.`,
+    },
+    {
+      label: "Metadata",
+      detail: `${summary.pagesWithMetaDescription || 0}/${summary.pagesScanned || 0} crawled page(s) have meta descriptions.`,
+    },
+    {
+      label: "Headings",
+      detail: `${summary.pagesMissingH1 || 0} missing H1; ${summary.pagesWithMultipleH1 || 0} with multiple H1s.`,
+    },
+    {
+      label: "Lead paths",
+      detail: `${summary.formsDetected || 0} form(s), ${summary.phonesDetected?.length || 0} phone number(s), ${summary.ctas?.length || 0} CTA label(s) detected.`,
+    },
+    {
+      label: "Schema",
+      detail: summary.schemaTypes?.length ? summary.schemaTypes.join(", ") : "No JSON-LD schema types detected in crawled pages.",
+    },
+  ];
+
+  for (const recommendation of site.recommendations || []) {
+    items.push({
+      label: "Recommendation",
+      detail: recommendation,
+    });
+  }
+
+  return items;
+}
+
+function buildSuggestedStructure(scan) {
+  const pages = scan.site?.pages || [];
+  const hasContact = hasPath(pages, "contact");
+  const hasReviews = hasPath(pages, "review") || hasPath(pages, "testimonial");
+  const hasServices = hasPath(pages, "service");
+  const hasLocations = hasPath(pages, "location") || hasPath(pages, "area");
+  const structure = [
+    { path: "/", reason: "Clarify primary offer, service area, proof, and conversion path." },
+    { path: "/services/", reason: hasServices ? "Consolidate and organize existing service content." : "Create a clear hub for all major revenue-driving services." },
+    { path: "/services/{service}/", reason: "Build one focused page per important service for SEO, clarity, and sales conversations." },
+    { path: "/contact/", reason: hasContact ? "Audit forms, phone routing, and tracking." : "Add a dedicated conversion page with phone, form, and service-area expectations." },
+  ];
+
+  if (!hasLocations) {
+    structure.push({ path: "/locations/{city}/", reason: "Add local landing pages only where the business actually serves and can support them." });
+  }
+  if (!hasReviews) {
+    structure.push({ path: "/reviews/", reason: "Centralize trust proof from reviews, testimonials, and project outcomes." });
+  }
+
+  structure.push(
+    { path: "/about/", reason: "Explain credibility, team, process, and why clients should trust the business." },
+    { path: "/faq/", reason: "Answer sales objections and support long-tail search demand." },
+  );
+
+  return structure;
+}
+
 function buildResearchQueue(scan) {
   return [
     {
       area: "SEO",
-      task: "Review title, meta description, H1s, sitemap, robots.txt, schema, service pages, and local landing pages.",
+      task: scan.site?.enabled
+        ? "Use crawled metadata/headings/schema to prioritize service, location, and FAQ page improvements."
+        : "Run --deep to review title, meta description, H1s, sitemap, robots.txt, schema, service pages, and local landing pages.",
     },
     {
       area: "Positioning",
@@ -159,6 +251,10 @@ function buildResearchQueue(scan) {
       task: "Confirm GA4, Search Console, Tag Manager, ads, call tracking, forms, CRM, and campaign attribution ownership.",
     },
   ];
+}
+
+function hasPath(pages, needle) {
+  return pages.some((page) => page.path?.toLowerCase().includes(needle));
 }
 
 function buildOpportunityQueue(scan) {

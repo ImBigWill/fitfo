@@ -49,11 +49,16 @@ try {
       color: !noColor,
       format: options.format,
       report: options.command,
+      deep: options.deep,
+      crawlLimit: options.crawlLimit,
     }));
     console.log("");
   }
 
-  const scan = await scanDomain(domainArg);
+  const scan = await scanDomain(domainArg, {
+    deep: options.deep,
+    crawlLimit: options.crawlLimit,
+  });
   const terminalOutput = renderOutput(scan, {
     color: !noColor,
     format: options.format,
