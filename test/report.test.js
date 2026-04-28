@@ -168,6 +168,10 @@ test("renders an Obsidian-ready Markdown report with frontmatter, checklists, an
   assert.match(markdown, /email_risk: "Medium"/);
   assert.match(markdown, /## Email Safety/);
   assert.match(markdown, /Google Workspace has MX, SPF, and DMARC records/);
+  assert.match(markdown, /## Handoff Packet/);
+  assert.match(markdown, /### What FITFO Found/);
+  assert.match(markdown, /### Ask Previous Developer/);
+  assert.match(markdown, /Registrar: GoDaddy/);
   assert.match(markdown, /### Redirects/);
   assert.match(markdown, /### URL Structure/);
   assert.match(markdown, /## CRM \/ Operations Access/);

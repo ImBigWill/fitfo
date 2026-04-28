@@ -99,6 +99,8 @@ export function renderTextReport(scan, options = {}) {
       `  ${theme.dim(access.reason)}`,
     ])),
     "",
+    panel(theme, "Handoff Packet", formatHandoffPacket(theme, scan)),
+    "",
     panel(theme, "Analytics / Marketing Access", [
       formatList(theme, "Detected", analysis.marketing?.found || []),
       "",
@@ -177,7 +179,6 @@ export function renderMarkdownReport(scan, options = {}) {
     ...(analysis.inputStatus?.status === "Unresolved" ? [`- **Input check:** ${analysis.inputStatus.summary}`] : []),
     `- Registrar is **${analysis.registrar}**.`,
     `- Hosting is **${analysis.hosting.provider}**. ${analysis.hosting.note}`,
-    `- Launch URL guidance: **${analysis.urlStructure?.canonicalStyle || "Unknown"}**. ${analysis.urlStructure?.recommendation || "Confirm canonical host manually."}`,
     markdownEmailLine(analysis),
     ...(analysis.emailSafety?.summary ? [`- Mail safety: **${analysis.emailSafety.riskLevel} risk.** ${analysis.emailSafety.summary}`] : []),
     "- Previous developer contact is **not discoverable from public records**. Ask the client who last managed the site, DNS, hosting, or WordPress account.",
@@ -195,6 +196,10 @@ export function renderMarkdownReport(scan, options = {}) {
       `- [ ] **${access.item}**`,
       `  ${access.reason}`,
     ]),
+    "",
+    "## Handoff Packet",
+    "",
+    markdownHandoffPacket(scan),
     "",
     "## Questions For The Client Call",
     "",
@@ -390,6 +395,23 @@ function formatEmailSafety(theme, safety, email) {
   ].filter(Boolean);
 }
 
+function formatHandoffPacket(theme, scan) {
+  const packet = buildHandoffPacket(scan);
+  return [
+    `${theme.label("What FITFO Found")}`,
+    ...packet.found.map((item) => `  ${theme.bullet("›")} ${item}`),
+    "",
+    `${theme.label("What We Need")}`,
+    ...packet.needs.map((item) => `  ${theme.bullet("›")} ${item}`),
+    "",
+    `${theme.label("Ask Previous Developer")}`,
+    ...packet.previousDeveloper.map((item) => `  ${theme.bullet("›")} ${item}`),
+    "",
+    `${theme.label("Before Launch")}`,
+    ...packet.beforeLaunch.map((item) => `  ${theme.bullet("›")} ${item}`),
+  ];
+}
+
 function formatObject(theme, label, values) {
   const entries = Object.entries(values || {});
   if (!entries.length) return kv(theme, label, theme.dim("None captured"));
@@ -510,6 +532,62 @@ function markdownEmailSafety(safety, email) {
     "",
     ...(safety.checklist || []).map((item) => `- [ ] ${item}`),
   ].join("\n");
+}
+
+function markdownHandoffPacket(scan) {
+  const packet = buildHandoffPacket(scan);
+  return [
+    "### What FITFO Found",
+    "",
+    ...packet.found.map((item) => `- ${item}`),
+    "",
+    "### What We Need",
+    "",
+    ...packet.needs.map((item) => `- [ ] ${item}`),
+    "",
+    "### Ask Previous Developer",
+    "",
+    ...packet.previousDeveloper.map((item) => `- [ ] ${item}`),
+    "",
+    "### Before Launch",
+    "",
+    ...packet.beforeLaunch.map((item) => `- [ ] ${item}`),
+  ].join("\n");
+}
+
+function buildHandoffPacket(scan) {
+  const { analysis, dns } = scan;
+  const accessItems = (analysis.accessNeeded || []).map((access) => access.item);
+  const launchItems = (analysis.launchChecklist || []).map((item) => `${item.item}: ${item.detail}`);
+  const found = [
+    `Registrar: ${analysis.registrar}.`,
+    `DNS provider: ${analysis.dnsProvider}.`,
+    `Hosting: ${analysis.hosting.provider}.`,
+    `Launch URL: ${analysis.urlStructure?.canonicalStyle || "Unknown"}${analysis.urlStructure?.preferredHost && analysis.urlStructure.preferredHost !== "Unknown" ? ` (${analysis.urlStructure.preferredHost})` : ""}.`,
+    `CMS: ${analysis.cms.platform}.`,
+    `Email: ${analysis.email.provider}${analysis.emailSafety?.riskLevel ? ` (${analysis.emailSafety.riskLevel} risk)` : ""}.`,
+  ];
+
+  if ((dns.subdomains || []).length > 0) {
+    found.push(`${dns.subdomains.length} common subdomain(s) resolved and need owner confirmation.`);
+  }
+
+  const previousDeveloper = [
+    "Confirm who last managed domain, DNS, hosting, CMS, redirects, forms, analytics, and launch/deployment.",
+    "Ask whether any services live under their account and need transfer, collaborator access, or billing handoff.",
+    "Request current backups, deployment notes, DNS zone export, redirect rules, and rollback contacts.",
+  ];
+
+  if (analysis.hosting.provider === "Unknown" || analysis.hosting.provider === "Hidden behind Cloudflare") {
+    previousDeveloper.unshift("Ask where the origin website is actually hosted and who can grant access.");
+  }
+
+  return {
+    found,
+    needs: accessItems.slice(0, 10),
+    previousDeveloper,
+    beforeLaunch: launchItems.slice(0, 8),
+  };
 }
 
 function markdownSslSummary(ssl) {
