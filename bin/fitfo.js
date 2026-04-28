@@ -8,6 +8,7 @@ import { parseArgs } from "../src/cli/options.js";
 import { defaultDesktopReportPath, normalizeSaveDestination, normalizeSaveFormat, promptedReportFileName, resolvePromptedOutputPath, shouldPromptForReportSave } from "../src/cli/post-scan.js";
 import { absoluteOutputPath, resolveOutputPath, writeReport } from "../src/cli/reports.js";
 import { renderRunStart, renderSavedMessage } from "../src/cli/status.js";
+import { applyWizardIntent, normalizeWizardIntent, shouldAskForWizardLocation, WIZARD_INTENTS } from "../src/cli/wizard.js";
 import { renderDoctor } from "../src/doctor.js";
 import { scanDomain } from "../src/index.js";
 import { renderHelp, renderPromptIntro } from "../src/help.js";
@@ -52,7 +53,9 @@ try {
   domainArg = options.domain;
 
   if (!domainArg) {
-    domainArg = await promptForDomain({ color: !noColor, version: APP_VERSION });
+    const wizard = await promptForWizard(options, { color: !noColor, version: APP_VERSION });
+    domainArg = wizard.domain;
+    options = wizard.options;
   }
 
   if (shouldRenderRunStart(options)) {
@@ -113,30 +116,54 @@ function shouldRenderRunStart(options) {
   return !options.quiet && options.format === "text";
 }
 
-async function promptForDomain(options = {}) {
-  const theme = createTheme(options.color !== false);
+async function promptForWizard(baseOptions = {}, display = {}) {
+  const color = display.color !== false;
+  const themed = createTheme(color);
   const rl = readline.createInterface({ input, output });
 
-  console.log(renderPromptIntro({ color: options.color !== false, version: options.version }));
+  console.log(renderPromptIntro({ color, version: display.version }));
   console.log("");
 
   try {
-    const prompt = theme.surface(`${theme.hotChip("DOMAIN")} ${theme.prompt("fitfo >")} `);
-    const answer = await rl.question(prompt);
-    const domain = answer.trim();
+    const domainAnswer = await rl.question(themed.surface(`${themed.hotChip("DOMAIN")} ${themed.prompt("client domain?")} `));
+    const domain = domainAnswer.trim();
     if (!domain) {
       throw new Error("A domain is required.");
     }
-    return domain;
+
+    console.log("");
+    console.log(formatWizardChoices(themed));
+    const intentAnswer = await rl.question(themed.surface(`${themed.hotChip("MODE")} ${themed.prompt("what are we making?")} ${themed.dim("[3]")} `));
+    const intent = normalizeWizardIntent(intentAnswer || "3");
+    let nextOptions = applyWizardIntent(baseOptions, intent);
+
+    if (shouldAskForWizardLocation(nextOptions)) {
+      const locationAnswer = await rl.question(themed.surface(`${themed.blueChip("LOCAL")} ${themed.prompt("market/location?")} ${themed.dim("[skip]")} `));
+      nextOptions = {
+        ...nextOptions,
+        location: locationAnswer.trim() || nextOptions.location,
+      };
+    }
+
+    return {
+      domain,
+      options: nextOptions,
+    };
   } catch (error) {
     if (error.code === "ABORT_ERR") {
-      console.log(`\n${theme.dim("FITFO cancelled.")}`);
+      console.log(`\n${themed.dim("FITFO cancelled.")}`);
       process.exit(130);
     }
     throw error;
   } finally {
     rl.close();
   }
+}
+
+function formatWizardChoices(theme) {
+  return WIZARD_INTENTS.map((intent) => (
+    theme.surface(`${theme.prompt(`${intent.choice}.`)} ${theme.label(intent.label)}\n   ${theme.dim(intent.description)}`)
+  )).join("\n");
 }
 
 async function promptForReportSave(scan, options = {}, display = {}) {

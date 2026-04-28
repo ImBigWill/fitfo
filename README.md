@@ -76,6 +76,21 @@ Interactive mode:
 fitfo
 ```
 
+Use this when you want FITFO to ask what to make:
+
+- quick domain scan
+- client onboarding handoff
+- kickoff research brief
+- client build plan
+
+Fast path when you already know the command:
+
+```bash
+fitfo clientdomain.com
+fitfo brief clientdomain.com --deep --search --location "City, ST"
+fitfo plan clientdomain.com --deep --search --location "City, ST"
+```
+
 Environment check:
 
 ```bash

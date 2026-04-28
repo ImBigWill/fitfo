@@ -23,6 +23,7 @@ Initial private version.
 - `fitfo plan` kickoff research game plan that carries market, keyword, and positioning prompts into build planning.
 - Authenticated Firecrawl CLI fallback when `FIRECRAWL_API_KEY` is not set.
 - Interactive `fitfo` prompt.
+- Guided interactive wizard for quick scan, client handoff, kickoff research brief, and client build plan presets.
 - Post-scan save prompt for interactive terminal runs without an explicit output path.
 - Destination-first post-scan save prompt with Desktop Markdown as the findable default, plus Obsidian vault/folder and custom path options.
 - Simple domain-based filenames for prompted saves, such as `example.com.md`.
