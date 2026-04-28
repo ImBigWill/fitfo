@@ -24,6 +24,7 @@ It can:
 - prompt to save findings after normal interactive terminal scans, defaulting to Desktop Markdown with Obsidian vault/folder and custom path choices
 - save safe CLI defaults with `fitfo config`
 - save reports when explicitly requested
+- run a guided wizard from plain `fitfo` for scan, handoff, kickoff brief, or build plan presets
 - print the current version
 - run a local `doctor` environment check
 - run fast dependency-free tests with `npm test`
@@ -37,6 +38,7 @@ It can:
 - inspect page metadata, headings, CTAs, forms, phone/email signals, schema types, and suggested site structure when deep mode is enabled
 - detect common CRM, booking, and field-service platform clues
 - generate a practical access checklist
+- generate a handoff packet for found facts, needed access, previous-developer asks, and pre-launch verification
 - generate a dev pre-launch checklist
 - generate a starter previous-developer request
 

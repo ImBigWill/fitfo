@@ -51,10 +51,12 @@ Initial private version.
 - CRM, booking, and field-service platform detection for common service-business tools.
 - Common subdomain checks for onboarding-relevant names.
 - Client-call intelligence prompts in `fitfo brief` and `fitfo plan` for lead flow, CRM/booking ownership, canonical launch host, service/market priorities, measurement access, and prior developer handoff.
+- Client handoff packet that summarizes what FITFO found, what access is needed, what to ask the previous developer, and what to verify before launch.
 - Access checklist and previous developer request output.
 - Dev pre-launch checklist for canonical host, redirects, DNS, hosting, CMS, email, tracking, CRM, and QA.
 - Obsidian-ready Markdown reports with YAML frontmatter, tags, checklists, and first-call questions.
 - Node built-in tests for domain normalization, analysis inference, provider fixtures, and Markdown report rendering.
+- Provider fixtures for GoDaddy, Cloudflare, Hostinger, Shopify, Webflow, Wix, Squarespace, Vercel, Netlify, SiteGround, Bluehost, IONOS, and DigitalOcean patterns.
 - GitHub Actions workflow for syntax checks and tests on `master` and pull requests.
 - Package metadata and release checklist for eventual public npm/open-source release.
 - Public-ready project docs for roadmap, feature requests, contributing, security, and project state.

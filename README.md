@@ -266,6 +266,7 @@ Key sections:
 - **Common Subdomains**: likely hidden properties to verify before DNS or hosting changes.
 - **Website Fingerprint**: reachability, final URL, redirects, TLS certificate, title, generator, and selected headers.
 - **Access Needed**: registrar, DNS, hosting, WordPress, email, analytics, and previous developer access.
+- **Handoff Packet**: what FITFO found, what access is needed, what to ask the previous developer, and what to verify before launch.
 - **Previous Developer Request**: a starter message clients can send to whoever currently controls the setup.
 - **Site Intelligence**: when `--deep` is used, sitemap pages, headings, metadata, CTAs, forms, schema, phones, and suggested structure.
 - **Kickoff Research Brief**: when using brief mode, current site read, market snapshot, keyword/page opportunities, positioning hypotheses, and kickoff call agenda.

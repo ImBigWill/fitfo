@@ -14,6 +14,7 @@ domain input
     -> verdict
     -> plain English
     -> track-this-down checklist
+    -> handoff packet
     -> raw records
     -> previous developer request
   -> brief report
