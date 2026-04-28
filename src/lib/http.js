@@ -1,10 +1,11 @@
 import tls from "node:tls";
 
-export async function getHttpProfile(hostname) {
+export async function getHttpProfile(hostname, apex = hostname) {
   const targets = [`https://${hostname}`, `http://${hostname}`];
   const attempts = [];
   const redirectChecks = [];
   const ssl = await getTlsProfile(hostname);
+  const urlStructure = await getUrlStructure(hostname, apex);
   let primary = null;
 
   for (const target of targets) {
@@ -35,6 +36,7 @@ export async function getHttpProfile(hostname) {
       wordpress: detectWordPress(primary.result),
       attempts,
       redirects: redirectChecks,
+      urlStructure,
       ssl,
     };
   }
@@ -53,8 +55,90 @@ export async function getHttpProfile(hostname) {
     },
     attempts,
     redirects: redirectChecks,
+    urlStructure,
     ssl,
   };
+}
+
+async function getUrlStructure(hostname, apex) {
+  const hosts = [...new Set([hostname, apex, apex.startsWith("www.") ? apex : `www.${apex}`])].filter(Boolean);
+  const checks = await Promise.all(hosts.map((host) => getHostUrlChecks(host)));
+  const reachableChecks = checks.flatMap((check) => check.variants).filter((variant) => variant.reachable && variant.finalUrl);
+  const finalHosts = reachableChecks.map((variant) => safeHost(variant.finalUrl)).filter(Boolean);
+  const finalProtocols = reachableChecks.map((variant) => safeProtocol(variant.finalUrl)).filter(Boolean);
+  const preferredHost = mostCommon(finalHosts);
+  const preferredProtocol = mostCommon(finalProtocols);
+
+  return {
+    checkedHosts: checks,
+    preferredHost: preferredHost || null,
+    preferredProtocol: preferredProtocol || null,
+    www: preferredHost ? preferredHost.startsWith("www.") : null,
+    recommendation: buildUrlRecommendation(apex, preferredHost, preferredProtocol, reachableChecks),
+  };
+}
+
+async function getHostUrlChecks(host) {
+  const variants = [];
+
+  for (const protocol of ["https", "http"]) {
+    const startUrl = `${protocol}://${host}`;
+    try {
+      variants.push(await fetchRedirectCheck(startUrl));
+    } catch (error) {
+      variants.push({
+        startUrl,
+        reachable: false,
+        finalUrl: null,
+        status: null,
+        hops: [],
+        error: error.message,
+      });
+    }
+  }
+
+  return { host, variants };
+}
+
+async function fetchRedirectCheck(url) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 10_000);
+
+  try {
+    const result = await followRedirects(url, controller.signal);
+    const response = result.response;
+    response.body?.cancel?.();
+
+    return {
+      startUrl: url,
+      reachable: true,
+      finalUrl: response.url,
+      status: response.status,
+      hops: result.hops,
+    };
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+function buildUrlRecommendation(apex, preferredHost, preferredProtocol, checks) {
+  if (!preferredHost) {
+    return "No reachable canonical URL was detected. Confirm launch host manually.";
+  }
+
+  const hostLabel = preferredHost === apex
+    ? "apex/non-www"
+    : preferredHost === `www.${apex}`
+      ? "www"
+      : preferredHost;
+  const protocolLabel = preferredProtocol === "https:" ? "HTTPS" : "HTTP";
+  const splitHosts = new Set(checks.map((check) => safeHost(check.finalUrl)).filter(Boolean)).size > 1;
+
+  if (splitHosts) {
+    return `Launch planning should preserve ${hostLabel} as the likely primary URL, but redirect behavior is split. Confirm canonical redirects before launch.`;
+  }
+
+  return `Likely primary launch URL is ${protocolLabel} on ${hostLabel}. Preserve this choice unless the client intentionally wants to change canonical host.`;
 }
 
 async function fetchSite(url) {
@@ -221,6 +305,31 @@ function pickHeaders(headers) {
     if (value) picked[header] = value;
   }
   return picked;
+}
+
+function safeHost(url) {
+  try {
+    return new URL(url).hostname.toLowerCase();
+  } catch {
+    return null;
+  }
+}
+
+function safeProtocol(url) {
+  try {
+    return new URL(url).protocol.toLowerCase();
+  } catch {
+    return null;
+  }
+}
+
+function mostCommon(values) {
+  const counts = new Map();
+  for (const value of values) {
+    counts.set(value, (counts.get(value) || 0) + 1);
+  }
+
+  return [...counts.entries()].sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0]))[0]?.[0] || null;
 }
 
 function extractTitle(html) {

@@ -1,8 +1,11 @@
 const HOSTING_HINTS = [
   ["wp engine", "WP Engine"],
   ["wpengine", "WP Engine"],
+  ["wpenginepowered", "WP Engine"],
+  ["wpeproxy", "WP Engine"],
   ["flywheel", "Flywheel"],
   ["kinsta", "Kinsta"],
+  ["kinsta.cloud", "Kinsta"],
   ["pantheonsite", "Pantheon"],
   ["pantheon", "Pantheon"],
   ["acquia", "Acquia"],
@@ -10,7 +13,16 @@ const HOSTING_HINTS = [
   ["dreamhost", "DreamHost"],
   ["bluehost", "Bluehost"],
   ["hostgator", "HostGator"],
+  ["hostinger", "Hostinger"],
+  ["digitalocean", "DigitalOcean"],
+  ["linode", "Akamai/Linode"],
+  ["liquidweb", "Liquid Web"],
+  ["cloudways", "Cloudways"],
+  ["pressable", "Pressable"],
+  ["wordpress.com", "WordPress.com"],
   ["godaddy", "GoDaddy"],
+  ["secureserver", "GoDaddy"],
+  ["namecheap", "Namecheap"],
   ["squarespace", "Squarespace"],
   ["shopify", "Shopify"],
   ["myshopify", "Shopify"],
@@ -26,6 +38,22 @@ const DNS_PROVIDER_HINTS = [
   ["godaddy", "GoDaddy"],
   ["registrar-servers.com", "Namecheap"],
   ["namecheaphosting.com", "Namecheap"],
+  ["hostinger", "Hostinger"],
+  ["dns-parking.com", "Hostinger"],
+  ["wpengine.com", "WP Engine"],
+  ["kinsta.cloud", "Kinsta"],
+  ["bluehost.com", "Bluehost"],
+  ["hostgator.com", "HostGator"],
+  ["dreamhost.com", "DreamHost"],
+  ["digitalocean.com", "DigitalOcean"],
+  ["linode.com", "Akamai/Linode"],
+  ["hover.com", "Hover"],
+  ["tucows.com", "Tucows"],
+  ["ionos.com", "IONOS"],
+  ["ui-dns", "IONOS"],
+  ["enom.com", "eNom"],
+  ["dynect.net", "Oracle Dyn"],
+  ["nsone.net", "NS1"],
   ["wixdns.net", "Wix"],
   ["squarespacedns.com", "Squarespace"],
   ["siteground.net", "SiteGround"],
@@ -72,6 +100,27 @@ const CONNECTED_SERVICE_HINTS = [
   ["helpscout", "Help Scout"],
 ];
 
+const OPERATIONS_HINTS = [
+  [/servicetitan|service titan|servicetitan\.com|schedule\.engine/i, "ServiceTitan"],
+  [/housecallpro|housecall-pro|housecall pro/i, "Housecall Pro"],
+  [/jobber|getjobber/i, "Jobber"],
+  [/fieldedge/i, "FieldEdge"],
+  [/servicefusion/i, "Service Fusion"],
+  [/servicem8/i, "ServiceM8"],
+  [/workiz/i, "Workiz"],
+  [/podium/i, "Podium"],
+  [/birdeye/i, "Birdeye"],
+  [/nicejob/i, "NiceJob"],
+  [/broadly/i, "Broadly"],
+  [/angi|homeadvisor/i, "Angi/HomeAdvisor"],
+  [/thumbtack/i, "Thumbtack"],
+  [/scheduleengine/i, "Schedule Engine"],
+  [/fieldroutes/i, "FieldRoutes"],
+  [/salesforce/i, "Salesforce"],
+  [/zoho/i, "Zoho CRM"],
+  [/hubspot/i, "HubSpot CRM"],
+];
+
 export function analyzeProfile({ domain, rdap, dns, http }) {
   const cloudflare = detectCloudflare({ rdap, dns, http });
   const dnsProvider = detectDnsProvider({ rdap, dns, cloudflare });
@@ -80,8 +129,10 @@ export function analyzeProfile({ domain, rdap, dns, http }) {
   const connectedServices = detectConnectedServices(dns);
   const cms = detectCms(http);
   const marketing = detectMarketingStack(http);
+  const operations = detectOperationsStack({ dns, http });
+  const urlStructure = analyzeUrlStructure({ domain, http });
   const previousDeveloper = detectPreviousDeveloper();
-  const accessNeeded = buildAccessChecklist({ cloudflare, hosting, cms, email, dnsProvider, registrar: rdap.registrar?.name, marketing });
+  const accessNeeded = buildAccessChecklist({ cloudflare, hosting, cms, email, dnsProvider, registrar: rdap.registrar?.name, marketing, operations });
   const actionPlan = buildActionPlan({
     registrar: rdap.registrar?.name,
     cloudflare,
@@ -91,9 +142,11 @@ export function analyzeProfile({ domain, rdap, dns, http }) {
     connectedServices,
     marketing,
     dnsProvider,
+    urlStructure,
     previousDeveloper,
   });
-  const risks = buildRisks({ rdap, dns, http, cloudflare, hosting, email });
+  const risks = buildRisks({ rdap, dns, http, cloudflare, hosting, email, urlStructure });
+  const launchChecklist = buildLaunchChecklist({ urlStructure, hosting, cms, email, marketing, operations, dnsProvider, cloudflare });
 
   return {
     subject: domain.apex,
@@ -105,10 +158,13 @@ export function analyzeProfile({ domain, rdap, dns, http }) {
     email,
     connectedServices,
     marketing,
+    operations,
+    urlStructure,
     previousDeveloper,
     accessNeeded,
     actionPlan,
     risks,
+    launchChecklist,
   };
 }
 
@@ -275,6 +331,47 @@ function detectMarketingStack(http) {
   };
 }
 
+function detectOperationsStack({ dns, http }) {
+  const haystack = [
+    http.htmlSample || "",
+    JSON.stringify(http.headers || {}),
+    ...(dns.txt || []),
+    ...(dns.cnames || []),
+  ].join("\n");
+  const found = [];
+
+  for (const [pattern, service] of OPERATIONS_HINTS) {
+    if (pattern.test(haystack)) {
+      found.push(service);
+    }
+  }
+
+  return {
+    found: [...new Set(found)].sort(),
+    requiredAccess: [
+      "CRM or field-service platform admin access, if one exists",
+      "Lead source and form routing settings",
+      "Call tracking numbers and booking widgets",
+      "Pipeline, estimate, dispatch, and notification owners",
+    ],
+  };
+}
+
+function analyzeUrlStructure({ domain, http }) {
+  const profile = http.urlStructure || {};
+  const preferredHost = profile.preferredHost || safeHost(http.finalUrl);
+  const preferredProtocol = profile.preferredProtocol || safeProtocol(http.finalUrl);
+  const isWww = typeof profile.www === "boolean" ? profile.www : preferredHost ? preferredHost.startsWith("www.") : null;
+  const recommendation = profile.recommendation || buildFallbackUrlRecommendation(domain.apex, preferredHost, preferredProtocol);
+
+  return {
+    preferredHost: preferredHost || "Unknown",
+    preferredProtocol: preferredProtocol ? preferredProtocol.replace(":", "").toUpperCase() : "Unknown",
+    canonicalStyle: isWww === null ? "Unknown" : isWww ? "www" : "apex/non-www",
+    recommendation,
+  };
+}
+
 function detectCms(http) {
   if (http.wordpress?.likely) {
     return {
@@ -291,7 +388,7 @@ function detectCms(http) {
   };
 }
 
-function buildAccessChecklist({ cloudflare, hosting, cms, email, dnsProvider, registrar, marketing }) {
+function buildAccessChecklist({ cloudflare, hosting, cms, email, dnsProvider, registrar, marketing, operations }) {
   const items = [];
   const registrarName = knownOrFallback(registrar, "domain registrar");
 
@@ -350,6 +447,11 @@ function buildAccessChecklist({ cloudflare, hosting, cms, email, dnsProvider, re
   });
 
   items.push({
+    item: "CRM / booking / field-service access",
+    reason: `Needed to confirm where leads go after form fills, calls, bookings, and quote requests.${operations.found.length ? ` Detected: ${operations.found.join(", ")}.` : ""}`,
+  });
+
+  items.push({
     item: "Previous developer contact",
     reason: "Useful if hosting, DNS, or origin details are hidden or owned by a third party.",
   });
@@ -357,7 +459,7 @@ function buildAccessChecklist({ cloudflare, hosting, cms, email, dnsProvider, re
   return items;
 }
 
-function buildActionPlan({ registrar, cloudflare, hosting, cms, email, dnsProvider }) {
+function buildActionPlan({ registrar, cloudflare, hosting, cms, email, dnsProvider, urlStructure }) {
   const actions = [];
   const registrarName = knownOrFallback(registrar, "domain registrar");
 
@@ -400,6 +502,13 @@ function buildActionPlan({ registrar, cloudflare, hosting, cms, email, dnsProvid
     });
   }
 
+  if (urlStructure?.preferredHost && urlStructure.preferredHost !== "Unknown") {
+    actions.push({
+      label: `Confirm ${urlStructure.canonicalStyle} launch URL`,
+      detail: `${urlStructure.recommendation} Confirm this before redesign launch, Search Console setup, sitemap submission, redirects, and analytics filters.`,
+    });
+  }
+
   if (cms.platform === "WordPress") {
     actions.push({
       label: "Get WordPress administrator access",
@@ -439,7 +548,7 @@ function buildActionPlan({ registrar, cloudflare, hosting, cms, email, dnsProvid
   return actions;
 }
 
-function buildRisks({ rdap, dns, http, cloudflare, hosting, email }) {
+function buildRisks({ rdap, dns, http, cloudflare, hosting, email, urlStructure }) {
   const risks = [];
 
   if (!rdap.available) {
@@ -481,6 +590,10 @@ function buildRisks({ rdap, dns, http, cloudflare, hosting, email }) {
     risks.push("HTTP does not appear to redirect to HTTPS. Confirm SSL redirect behavior before launch.");
   }
 
+  if (urlStructure?.canonicalStyle === "Unknown") {
+    risks.push("Canonical URL style could not be identified. Confirm whether launch should use www or apex/non-www.");
+  }
+
   if ((cloudflare.status === "Yes" || cloudflare.status === "Likely") && hosting.provider === "Hidden behind Cloudflare") {
     risks.push("Origin hosting is hidden behind Cloudflare and must be confirmed with account access.");
   }
@@ -488,6 +601,73 @@ function buildRisks({ rdap, dns, http, cloudflare, hosting, email }) {
   return risks;
 }
 
+function buildLaunchChecklist({ urlStructure, hosting, cms, email, marketing, operations, dnsProvider, cloudflare }) {
+  return [
+    {
+      item: "Canonical host",
+      detail: urlStructure?.recommendation || "Confirm whether the redesign launches on www or apex/non-www.",
+    },
+    {
+      item: "Redirects",
+      detail: "Map old URLs, preserve important paths, force HTTPS, and redirect the non-primary host to the primary host.",
+    },
+    {
+      item: "DNS cutover",
+      detail: `Confirm TTLs, DNS owner${dnsProvider && dnsProvider !== "Unknown" ? ` at ${dnsProvider}` : ""}, rollback path, and whether Cloudflare/CDN settings are involved${cloudflare.status !== "No obvious Cloudflare" ? " before changing records" : ""}.`,
+    },
+    {
+      item: "Hosting and backups",
+      detail: `Confirm ${hosting.provider === "Unknown" ? "hosting" : hosting.provider} access, backups, deployment path, PHP/runtime settings, and emergency restore ownership.`,
+    },
+    {
+      item: "CMS launch state",
+      detail: cms.platform === "WordPress"
+        ? "Confirm admin users, plugins, theme, forms, permalinks, caching, redirects, and update/backups before launch."
+        : "Confirm CMS owner, admin access, redirects, forms, and deployment process before launch.",
+    },
+    {
+      item: "Email safety",
+      detail: email.provider === "No mail configured"
+        ? "Confirm the domain truly does not send or receive mail before DNS changes."
+        : `Preserve ${email.provider === "Unknown" ? "email" : email.provider} MX, SPF, DKIM, and DMARC records during DNS changes.`,
+    },
+    {
+      item: "Tracking and CRM",
+      detail: `Reinstall/verify GA4, GTM, Search Console, call tracking, form routing, pixels, and CRM/booking tools${[...marketing.found, ...operations.found].length ? ` (${[...marketing.found, ...operations.found].join(", ")})` : ""}.`,
+    },
+    {
+      item: "Post-launch QA",
+      detail: "Check homepage, key service pages, forms, phone links, thank-you pages, sitemap, robots.txt, indexability, speed, and 404s.",
+    },
+  ];
+}
+
 function knownOrFallback(value, fallback) {
   return value && value !== "Unknown" ? value : fallback;
+}
+
+function safeHost(url) {
+  try {
+    return new URL(url).hostname.toLowerCase();
+  } catch {
+    return null;
+  }
+}
+
+function safeProtocol(url) {
+  try {
+    return new URL(url).protocol.toLowerCase();
+  } catch {
+    return null;
+  }
+}
+
+function buildFallbackUrlRecommendation(apex, preferredHost, preferredProtocol) {
+  if (!preferredHost) {
+    return "No reachable canonical URL was detected. Confirm launch host manually.";
+  }
+
+  const hostLabel = preferredHost === apex ? "apex/non-www" : preferredHost === `www.${apex}` ? "www" : preferredHost;
+  const protocolLabel = preferredProtocol === "https:" ? "HTTPS" : "HTTP";
+  return `Likely primary launch URL is ${protocolLabel} on ${hostLabel}. Preserve this choice unless the client intentionally wants to change canonical host.`;
 }

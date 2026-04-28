@@ -39,6 +39,7 @@ fitfo plan clientdomain.com --deep --search --location "City, ST"
 - Improve redirect checks for `www` and apex canonical behavior.
 - Improve hosting fingerprints.
 - Improve DNS provider fingerprints.
+- Add fixture coverage for common registrar, DNS, hosting, and CRM/service-business patterns.
 - Improve analytics and marketing tag detection.
 - Improve Markdown report templates after real Obsidian use.
 - Add `fitfo config` for saved defaults.
@@ -50,11 +51,13 @@ fitfo plan clientdomain.com --deep --search --location "City, ST"
 - Plain-English domain status interpretation.
 - Registrar/DNS mismatch explanation.
 - Cross-host redirect map for apex, `www`, HTTP, and HTTPS.
+- Primary launch URL recommendation for apex/non-www vs `www`.
 - `robots.txt` and `sitemap.xml` presence.
 - Known WordPress plugin/theme/page builder clues.
 - Better form and lead-routing detection.
 - Better email service detection from SPF/DKIM/TXT records.
 - Known call tracking and CRM clues.
+- Common field-service tools such as ServiceTitan, Housecall Pro, Jobber, FieldEdge, Service Fusion, ServiceM8, Workiz, Podium, and Birdeye.
 
 ## Brief Mode Ideas
 
@@ -92,6 +95,7 @@ Next improvements:
 - local SEO/service-area recommendations
 - content inventory and proof-asset requests
 - launch checklist grouped by access, content, tracking, and technical QA
+- pre-launch dev checklist for canonical host, redirects, DNS cutover, hosting, CMS, email safety, tracking, CRM, and QA
 
 Important: brief mode should label findings as public signals, inferred hypotheses, and questions. It should not pretend to know the business from one scan.
 

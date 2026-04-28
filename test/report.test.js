@@ -95,6 +95,16 @@ test("renders an Obsidian-ready Markdown report with frontmatter, checklists, an
         found: ["Google Tag Manager"],
         requiredAccess: ["Google Analytics / GA4", "Google Search Console"],
       },
+      operations: {
+        found: ["ServiceTitan"],
+        requiredAccess: ["CRM or field-service platform admin access"],
+      },
+      urlStructure: {
+        preferredHost: "www.client.example",
+        preferredProtocol: "HTTPS",
+        canonicalStyle: "www",
+        recommendation: "Likely primary launch URL is HTTPS on www. Preserve this choice unless the client intentionally wants to change canonical host.",
+      },
       previousDeveloper: {
         contact: "Not publicly identifiable",
         note: "Ask the client for the person or agency that last managed the site.",
@@ -111,6 +121,12 @@ test("renders an Obsidian-ready Markdown report with frontmatter, checklists, an
           reason: "Needed for ownership and renewals.",
         },
       ],
+      launchChecklist: [
+        {
+          item: "Canonical host",
+          detail: "Preserve www.",
+        },
+      ],
       risks: ["1 common subdomain resolved."],
     },
   }, { obsidian: true });
@@ -123,6 +139,9 @@ test("renders an Obsidian-ready Markdown report with frontmatter, checklists, an
   assert.match(markdown, /## Questions For The Client Call/);
   assert.match(markdown, /Who owns the GoDaddy account/);
   assert.match(markdown, /### Redirects/);
+  assert.match(markdown, /### URL Structure/);
+  assert.match(markdown, /## CRM \/ Operations Access/);
+  assert.match(markdown, /## Dev Pre-Launch Checklist/);
   assert.match(markdown, /issuer Example CA/);
   assert.match(markdown, /## Previous Developer Request/);
 });

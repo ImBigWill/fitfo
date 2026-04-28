@@ -24,6 +24,7 @@ export function renderTextReport(scan, options = {}) {
       verdictRow(theme, "DNS", confidenceChip(theme, analysis.dnsProvider === "Unknown" ? "MANUAL" : "FOUND"), analysis.dnsProvider),
       verdictRow(theme, "Cloudflare", confidenceChip(theme, analysis.cloudflare.confidence.toUpperCase()), analysis.cloudflare.status),
       verdictRow(theme, "Hosting", confidenceChip(theme, analysis.hosting.confidence.toUpperCase()), analysis.hosting.provider),
+      verdictRow(theme, "Launch URL", confidenceChip(theme, analysis.urlStructure?.canonicalStyle === "Unknown" ? "MANUAL" : "FOUND"), analysis.urlStructure?.canonicalStyle || "Unknown"),
       verdictRow(theme, "Prev Dev", confidenceChip(theme, "MANUAL"), analysis.previousDeveloper.contact),
       verdictRow(theme, "CMS", confidenceChip(theme, analysis.cms.confidence.toUpperCase()), analysis.cms.platform),
       verdictRow(theme, "Email", confidenceChip(theme, analysis.email.provider === "Unknown" ? "MANUAL" : "FOUND"), analysis.email.provider),
@@ -38,6 +39,7 @@ export function renderTextReport(scan, options = {}) {
     panel(theme, "Plain English", [
       `${theme.bullet("›")} Registrar is ${theme.label(analysis.registrar)}.`,
       `${theme.bullet("›")} Hosting is ${theme.label(analysis.hosting.provider)}. ${analysis.hosting.note}`,
+      `${theme.bullet("›")} Launch URL guidance: ${theme.label(analysis.urlStructure?.canonicalStyle || "Unknown")}. ${analysis.urlStructure?.recommendation || "Confirm canonical host manually."}`,
       plainEmailLine(theme, analysis),
       `${theme.bullet("›")} Previous developer contact is ${theme.label("not discoverable from public records")}. Ask the client who last managed the site, DNS, hosting, or WordPress account.`,
     ]),
@@ -68,11 +70,13 @@ export function renderTextReport(scan, options = {}) {
     panel(theme, "Website Fingerprint", [
       kv(theme, "Reachable", http.reachable ? theme.ok("Yes") : theme.bad("No")),
       http.finalUrl ? kv(theme, "Final URL", http.finalUrl) : null,
+      analysis.urlStructure ? kv(theme, "Launch URL", `${analysis.urlStructure.preferredProtocol} ${analysis.urlStructure.preferredHost} (${analysis.urlStructure.canonicalStyle})`) : null,
       http.status ? kv(theme, "HTTP", String(http.status)) : null,
       http.title ? kv(theme, "Title", http.title) : null,
       http.metaGenerator ? kv(theme, "Generator", http.metaGenerator) : null,
       formatSsl(theme, http.ssl),
       formatRedirects(theme, http.redirects),
+      formatUrlStructure(theme, http.urlStructure),
       formatObject(theme, "Headers", http.headers),
     ]),
     "",
@@ -93,6 +97,14 @@ export function renderTextReport(scan, options = {}) {
       "",
       ...((analysis.marketing?.requiredAccess || []).map((item) => `${theme.bullet("›")} ${item}`)),
     ]),
+    "",
+    panel(theme, "CRM / Operations Access", [
+      formatList(theme, "Detected", analysis.operations?.found || []),
+      "",
+      ...((analysis.operations?.requiredAccess || []).map((item) => `${theme.bullet("›")} ${item}`)),
+    ]),
+    "",
+    panel(theme, "Dev Pre-Launch Checklist", (analysis.launchChecklist || []).flatMap((item, index) => numbered(theme, index + 1, item.item, item.detail))),
     "",
     panel(theme, "Risks / Manual Checks", analysis.risks.length
       ? analysis.risks.map((risk) => `${theme.bullet("›")} ${theme.warn(risk)}`)
@@ -119,6 +131,7 @@ export function renderMarkdownReport(scan, options = {}) {
     `registrar: "${yamlString(analysis.registrar)}"`,
     `dns_provider: "${yamlString(analysis.dnsProvider)}"`,
     `hosting_provider: "${yamlString(analysis.hosting.provider)}"`,
+    `canonical_host: "${yamlString(analysis.urlStructure?.preferredHost || "Unknown")}"`,
     `cms: "${yamlString(analysis.cms.platform)}"`,
     `email_provider: "${yamlString(analysis.email.provider)}"`,
     `cloudflare: "${yamlString(analysis.cloudflare.status)}"`,
@@ -142,6 +155,7 @@ export function renderMarkdownReport(scan, options = {}) {
       ["DNS Provider", analysis.dnsProvider],
       ["Cloudflare", `${analysis.cloudflare.status} (${analysis.cloudflare.confidence})`],
       ["Hosting", `${analysis.hosting.provider} (${analysis.hosting.confidence})`],
+      ["Launch URL", analysis.urlStructure ? `${analysis.urlStructure.preferredProtocol} ${analysis.urlStructure.preferredHost} (${analysis.urlStructure.canonicalStyle})` : "Unknown"],
       ["CMS", `${analysis.cms.platform} (${analysis.cms.confidence})`],
       ["Email", analysis.email.provider],
       ["Connected Services", connectedServices.length ? connectedServices.join(", ") : "None detected"],
@@ -151,6 +165,7 @@ export function renderMarkdownReport(scan, options = {}) {
     "",
     `- Registrar is **${analysis.registrar}**.`,
     `- Hosting is **${analysis.hosting.provider}**. ${analysis.hosting.note}`,
+    `- Launch URL guidance: **${analysis.urlStructure?.canonicalStyle || "Unknown"}**. ${analysis.urlStructure?.recommendation || "Confirm canonical host manually."}`,
     markdownEmailLine(analysis),
     "- Previous developer contact is **not discoverable from public records**. Ask the client who last managed the site, DNS, hosting, or WordPress account.",
     "",
@@ -206,6 +221,7 @@ export function renderMarkdownReport(scan, options = {}) {
     markdownTable([
       ["Reachable", http.reachable ? "Yes" : "No"],
       ["Final URL", http.finalUrl || "Unknown"],
+      ["Launch URL", analysis.urlStructure ? `${analysis.urlStructure.preferredProtocol} ${analysis.urlStructure.preferredHost} (${analysis.urlStructure.canonicalStyle})` : "Unknown"],
       ["HTTP", http.status ? String(http.status) : "Unknown"],
       ["Title", http.title || "Unknown"],
       ["Generator", http.metaGenerator || "Unknown"],
@@ -215,6 +231,10 @@ export function renderMarkdownReport(scan, options = {}) {
     "### Redirects",
     "",
     markdownRedirects(http.redirects),
+    "",
+    "### URL Structure",
+    "",
+    markdownUrlStructure(http.urlStructure),
     "",
     "### Headers",
     "",
@@ -232,6 +252,19 @@ export function renderMarkdownReport(scan, options = {}) {
     markdownListSection("Detected", analysis.marketing?.found || []),
     "",
     ...((analysis.marketing?.requiredAccess || []).map((item) => `- [ ] ${item}`)),
+    "",
+    "## CRM / Operations Access",
+    "",
+    markdownListSection("Detected", analysis.operations?.found || []),
+    "",
+    ...((analysis.operations?.requiredAccess || []).map((item) => `- [ ] ${item}`)),
+    "",
+    "## Dev Pre-Launch Checklist",
+    "",
+    ...((analysis.launchChecklist || []).flatMap((item) => [
+      `- [ ] **${item.item}**`,
+      `  ${item.detail}`,
+    ])),
     "",
     "## Risks / Manual Checks",
     "",
@@ -333,6 +366,22 @@ function formatRedirects(theme, redirects) {
   })].join("\n");
 }
 
+function formatUrlStructure(theme, urlStructure) {
+  if (!urlStructure?.checkedHosts?.length) return kv(theme, "URL checks", theme.dim("Not checked"));
+
+  return [kv(theme, "URL checks", ""), ...urlStructure.checkedHosts.flatMap((hostCheck) => {
+    const lines = [`  ${theme.bullet("›")} ${theme.label(hostCheck.host)}`];
+    for (const variant of hostCheck.variants || []) {
+      if (!variant.reachable) {
+        lines.push(`    ${theme.dim(`${variant.startUrl} failed${variant.error ? `: ${variant.error}` : ""}`)}`);
+      } else {
+        lines.push(`    ${theme.dim(`${variant.startUrl} -> ${variant.finalUrl || "unknown"} (${variant.status || "unknown"})`)}`);
+      }
+    }
+    return lines;
+  })].join("\n");
+}
+
 function formatSubdomains(theme, subdomains) {
   if (!subdomains.length) {
     return [kv(theme, "Resolved", theme.dim("None found in common checks"))];
@@ -404,6 +453,27 @@ function markdownRedirects(redirects) {
     }
     return lines;
   }).join("\n");
+}
+
+function markdownUrlStructure(urlStructure) {
+  if (!urlStructure?.checkedHosts?.length) return "- Not checked";
+
+  const lines = [
+    `- **Recommendation:** ${urlStructure.recommendation || "Confirm canonical host manually."}`,
+  ];
+
+  for (const hostCheck of urlStructure.checkedHosts) {
+    lines.push(`- **${hostCheck.host}:**`);
+    for (const variant of hostCheck.variants || []) {
+      if (!variant.reachable) {
+        lines.push(`  - ${variant.startUrl}: failed${variant.error ? `: ${variant.error}` : ""}`);
+      } else {
+        lines.push(`  - ${variant.startUrl}: ${variant.finalUrl || "unknown"} (${variant.status || "unknown"})`);
+      }
+    }
+  }
+
+  return lines.join("\n");
 }
 
 function clientQuestions(scan) {

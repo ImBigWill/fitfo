@@ -21,10 +21,16 @@ test("infers registrar, DNS, hosting, CMS, email, and marketing clues from mocke
     },
     http: {
       finalUrl: "https://www.client.example/",
+      urlStructure: {
+        preferredHost: "www.client.example",
+        preferredProtocol: "https:",
+        www: true,
+        recommendation: "Likely primary launch URL is HTTPS on www. Preserve this choice unless the client intentionally wants to change canonical host.",
+      },
       headers: {
         server: "nginx",
       },
-      htmlSample: "<html><head><script src=\"https://www.googletagmanager.com/gtm.js?id=GTM-ABC123\"></script></head></html>",
+      htmlSample: "<html><head><script src=\"https://www.googletagmanager.com/gtm.js?id=GTM-ABC123\"></script><script src=\"https://embed.servicetitan.com/widget.js\"></script></head></html>",
       wordpress: {
         likely: true,
         signals: ["wp-content path found"],
@@ -37,10 +43,15 @@ test("infers registrar, DNS, hosting, CMS, email, and marketing clues from mocke
   assert.equal(analysis.hosting.provider, "WP Engine");
   assert.equal(analysis.cms.platform, "WordPress");
   assert.equal(analysis.email.provider, "Google Workspace");
+  assert.equal(analysis.urlStructure.canonicalStyle, "www");
   assert.ok(analysis.connectedServices.includes("Google verification"));
   assert.ok(analysis.marketing.found.includes("Google Tag Manager"));
+  assert.ok(analysis.operations.found.includes("ServiceTitan"));
   assert.ok(analysis.accessNeeded.some((item) => item.item === "GoDaddy access"));
   assert.ok(analysis.accessNeeded.some((item) => item.item === "WP Engine hosting access"));
+  assert.ok(analysis.accessNeeded.some((item) => item.item === "CRM / booking / field-service access"));
+  assert.ok(analysis.actionPlan.some((item) => item.label === "Confirm www launch URL"));
+  assert.ok(analysis.launchChecklist.some((item) => item.item === "Canonical host"));
 });
 
 test("treats Cloudflare nameservers as DNS ownership and hides origin hosting", () => {
@@ -76,6 +87,43 @@ test("treats Cloudflare nameservers as DNS ownership and hides origin hosting", 
   assert.equal(analysis.hosting.provider, "Hidden behind Cloudflare");
   assert.ok(analysis.accessNeeded.some((item) => item.item === "Cloudflare access"));
   assert.ok(analysis.actionPlan.some((item) => item.label === "Track down Cloudflare"));
+});
+
+test("detects common registrar, DNS, hosting, and field-service provider patterns", () => {
+  const analysis = analyzeProfile({
+    domain: {
+      apex: "client.example",
+      hostname: "client.example",
+    },
+    rdap: {
+      registrar: { name: "Hostinger" },
+      nameservers: ["ns1.dns-parking.com", "ns2.dns-parking.com"],
+    },
+    dns: {
+      nameservers: ["ns1.dns-parking.com", "ns2.dns-parking.com"],
+      cnames: ["client.hostingerapp.com"],
+      mx: [{ priority: 10, exchange: "mx1.hostinger.com" }],
+      txt: [],
+      caa: [],
+    },
+    http: {
+      reachable: true,
+      finalUrl: "https://client.example/",
+      headers: {
+        server: "hcdn",
+      },
+      htmlSample: "<a href=\"https://client.housecallpro.com/book\">Book Online</a>",
+      wordpress: {
+        likely: false,
+        signals: [],
+      },
+    },
+  });
+
+  assert.equal(analysis.registrar, "Hostinger");
+  assert.equal(analysis.dnsProvider, "Hostinger");
+  assert.equal(analysis.hosting.provider, "Hostinger");
+  assert.ok(analysis.operations.found.includes("Housecall Pro"));
 });
 
 test("flags TLS and HTTP redirect risks from mocked website checks", () => {

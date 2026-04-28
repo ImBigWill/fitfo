@@ -29,8 +29,11 @@ It can:
 - document release readiness in [Release notes](RELEASE.md)
 - infer registrar, DNS, hosting, Cloudflare/CDN, CMS, email, analytics, and common subdomain clues
 - inspect TLS certificate metadata and HTTP/HTTPS redirect behavior
+- inspect apex vs `www` URL structure and recommend the likely primary launch host
 - inspect page metadata, headings, CTAs, forms, phone/email signals, schema types, and suggested site structure when deep mode is enabled
+- detect common CRM, booking, and field-service platform clues
 - generate a practical access checklist
+- generate a dev pre-launch checklist
 - generate a starter previous-developer request
 
 Report organization is documented in [Report flow](REPORT_FLOW.md).
@@ -58,8 +61,10 @@ Core should focus on fast onboarding discovery:
 - domain records
 - DNS records
 - hosting/CMS/email clues
+- apex vs `www` launch URL guidance
 - common passive subdomain checks
 - analytics/tag clues
+- CRM, booking, call tracking, and field-service clues
 - light site intelligence for first-call prep
 - optional market/search research when Firecrawl is configured by env key or CLI login
 - access checklist
@@ -81,5 +86,5 @@ These may become separate commands or modules:
 ## Next Sensible Commit Candidates
 
 - Refine Obsidian templates after a few real scans.
-- Add network fixture tests for real-world scanner edge cases without depending on live DNS during normal test runs.
+- Add real-domain fixture cases for the top registrar, DNS, hosting, and CRM patterns without depending on live DNS during normal test runs.
 - Improve `plan` with stronger service/location sitemap heuristics after testing real client sites.

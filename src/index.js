@@ -14,7 +14,7 @@ export async function scanDomain(input, options = {}) {
   const [rdap, dns, http] = await Promise.all([
     getRdapProfile(domain.apex),
     getDnsProfile(domain.hostname, domain.apex, domain.candidates),
-    getHttpProfile(domain.hostname),
+    getHttpProfile(domain.hostname, domain.apex),
   ]);
 
   const analysis = analyzeProfile({ domain, rdap, dns, http });
