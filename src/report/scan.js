@@ -17,9 +17,11 @@ export function renderTextReport(scan, options = {}) {
       kv(theme, "Target", targetLabel(domain)),
       kv(theme, "Scanned", scan.finishedAt),
       kv(theme, "Lookup", "WHOIS-style records + DNS + website fingerprints"),
+      analysis.inputStatus ? kv(theme, "Input Check", `${analysis.inputStatus.status} (${analysis.inputStatus.confidence})`) : null,
     ]),
     "",
     panel(theme, "Verdict", [
+      analysis.inputStatus ? verdictRow(theme, "Input", confidenceChip(theme, analysis.inputStatus.status === "Unresolved" ? "MANUAL" : "FOUND"), analysis.inputStatus.status) : null,
       verdictRow(theme, "Registrar", confidenceChip(theme, rdap.registrar?.name ? "FOUND" : "MANUAL"), analysis.registrar),
       verdictRow(theme, "DNS", confidenceChip(theme, analysis.dnsProvider === "Unknown" ? "MANUAL" : "FOUND"), analysis.dnsProvider),
       verdictRow(theme, "Cloudflare", confidenceChip(theme, analysis.cloudflare.confidence.toUpperCase()), analysis.cloudflare.status),
@@ -37,6 +39,7 @@ export function renderTextReport(scan, options = {}) {
     ]),
     "",
     panel(theme, "Plain English", [
+      analysis.inputStatus?.status === "Unresolved" ? `${theme.bullet("›")} ${theme.warn(analysis.inputStatus.summary)}` : null,
       `${theme.bullet("›")} Registrar is ${theme.label(analysis.registrar)}.`,
       `${theme.bullet("›")} Hosting is ${theme.label(analysis.hosting.provider)}. ${analysis.hosting.note}`,
       `${theme.bullet("›")} Launch URL guidance: ${theme.label(analysis.urlStructure?.canonicalStyle || "Unknown")}. ${analysis.urlStructure?.recommendation || "Confirm canonical host manually."}`,
@@ -70,7 +73,7 @@ export function renderTextReport(scan, options = {}) {
     panel(theme, "Website Fingerprint", [
       kv(theme, "Reachable", http.reachable ? theme.ok("Yes") : theme.bad("No")),
       http.finalUrl ? kv(theme, "Final URL", http.finalUrl) : null,
-      analysis.urlStructure ? kv(theme, "Launch URL", `${analysis.urlStructure.preferredProtocol} ${analysis.urlStructure.preferredHost} (${analysis.urlStructure.canonicalStyle})`) : null,
+      analysis.urlStructure ? kv(theme, "Launch URL", formatLaunchUrl(analysis.urlStructure)) : null,
       http.status ? kv(theme, "HTTP", String(http.status)) : null,
       http.title ? kv(theme, "Title", http.title) : null,
       http.metaGenerator ? kv(theme, "Generator", http.metaGenerator) : null,
@@ -132,6 +135,7 @@ export function renderMarkdownReport(scan, options = {}) {
     `dns_provider: "${yamlString(analysis.dnsProvider)}"`,
     `hosting_provider: "${yamlString(analysis.hosting.provider)}"`,
     `canonical_host: "${yamlString(analysis.urlStructure?.preferredHost || "Unknown")}"`,
+    `input_status: "${yamlString(analysis.inputStatus?.status || "Unknown")}"`,
     `cms: "${yamlString(analysis.cms.platform)}"`,
     `email_provider: "${yamlString(analysis.email.provider)}"`,
     `cloudflare: "${yamlString(analysis.cloudflare.status)}"`,
@@ -151,11 +155,12 @@ export function renderMarkdownReport(scan, options = {}) {
       ["Target", targetLabel(domain)],
       ["Scanned", scan.finishedAt],
       ["Lookup", "WHOIS-style RDAP + DNS + website fingerprints"],
+      ["Input Check", analysis.inputStatus ? `${analysis.inputStatus.status} (${analysis.inputStatus.confidence})` : "Unknown"],
       ["Registrar", analysis.registrar],
       ["DNS Provider", analysis.dnsProvider],
       ["Cloudflare", `${analysis.cloudflare.status} (${analysis.cloudflare.confidence})`],
       ["Hosting", `${analysis.hosting.provider} (${analysis.hosting.confidence})`],
-      ["Launch URL", analysis.urlStructure ? `${analysis.urlStructure.preferredProtocol} ${analysis.urlStructure.preferredHost} (${analysis.urlStructure.canonicalStyle})` : "Unknown"],
+      ["Launch URL", analysis.urlStructure ? formatLaunchUrl(analysis.urlStructure) : "Unknown"],
       ["CMS", `${analysis.cms.platform} (${analysis.cms.confidence})`],
       ["Email", analysis.email.provider],
       ["Connected Services", connectedServices.length ? connectedServices.join(", ") : "None detected"],
@@ -163,6 +168,7 @@ export function renderMarkdownReport(scan, options = {}) {
     "",
     "## Plain English",
     "",
+    ...(analysis.inputStatus?.status === "Unresolved" ? [`- **Input check:** ${analysis.inputStatus.summary}`] : []),
     `- Registrar is **${analysis.registrar}**.`,
     `- Hosting is **${analysis.hosting.provider}**. ${analysis.hosting.note}`,
     `- Launch URL guidance: **${analysis.urlStructure?.canonicalStyle || "Unknown"}**. ${analysis.urlStructure?.recommendation || "Confirm canonical host manually."}`,
@@ -221,7 +227,7 @@ export function renderMarkdownReport(scan, options = {}) {
     markdownTable([
       ["Reachable", http.reachable ? "Yes" : "No"],
       ["Final URL", http.finalUrl || "Unknown"],
-      ["Launch URL", analysis.urlStructure ? `${analysis.urlStructure.preferredProtocol} ${analysis.urlStructure.preferredHost} (${analysis.urlStructure.canonicalStyle})` : "Unknown"],
+      ["Launch URL", analysis.urlStructure ? formatLaunchUrl(analysis.urlStructure) : "Unknown"],
       ["HTTP", http.status ? String(http.status) : "Unknown"],
       ["Title", http.title || "Unknown"],
       ["Generator", http.metaGenerator || "Unknown"],
@@ -283,6 +289,11 @@ export function renderMarkdownReport(scan, options = {}) {
 
 function targetLabel(domain) {
   return domain.hostname === domain.apex ? domain.apex : `${domain.hostname} -> ${domain.apex}`;
+}
+
+function formatLaunchUrl(urlStructure) {
+  if (!urlStructure || urlStructure.preferredHost === "Unknown") return "Unknown";
+  return `${urlStructure.preferredProtocol} ${urlStructure.preferredHost} (${urlStructure.canonicalStyle})`;
 }
 
 function verdictRow(theme, label, chip, value) {

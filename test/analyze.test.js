@@ -172,3 +172,57 @@ test("flags TLS and HTTP redirect risks from mocked website checks", () => {
   assert.ok(analysis.risks.some((risk) => risk.includes("TLS certificate expires in 12 day")));
   assert.ok(analysis.risks.some((risk) => risk.includes("HTTP does not appear to redirect to HTTPS")));
 });
+
+test("flags unresolved or misspelled domains clearly", () => {
+  const analysis = analyzeProfile({
+    domain: {
+      apex: "spartplumbing.us",
+      hostname: "spartplumbing.us",
+    },
+    rdap: {
+      available: false,
+      error: "RDAP lookup failed",
+      registrar: null,
+      nameservers: [],
+    },
+    dns: {
+      nameservers: [],
+      addresses: [],
+      ipv6Addresses: [],
+      cnames: [],
+      mx: [],
+      txt: [],
+      caa: [],
+      errors: {
+        A: "DNS A lookup failed for spartplumbing.us",
+      },
+    },
+    http: {
+      reachable: false,
+      finalUrl: null,
+      headers: {},
+      htmlSample: "",
+      wordpress: {
+        likely: false,
+        signals: [],
+      },
+      ssl: {
+        available: false,
+        valid: false,
+        error: "getaddrinfo ENOTFOUND spartplumbing.us",
+      },
+      redirects: [
+        {
+          startUrl: "https://spartplumbing.us",
+          reachable: false,
+          error: "fetch failed",
+        },
+      ],
+    },
+  });
+
+  assert.equal(analysis.inputStatus.status, "Unresolved");
+  assert.match(analysis.inputStatus.summary, /Check exact spelling/);
+  assert.ok(analysis.actionPlan.some((action) => action.label === "Check exact domain spelling"));
+  assert.ok(analysis.risks.some((risk) => risk.includes("spartplumbing.us")));
+});

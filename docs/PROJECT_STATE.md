@@ -20,6 +20,7 @@ It can:
 - output Markdown
 - save Obsidian-ready Markdown notes with frontmatter, tags, checklists, and client-call questions
 - save stable Obsidian vault notes with `--vault` or `FITFO_OBSIDIAN_DIR`
+- prompt to save findings after normal interactive terminal scans
 - save safe CLI defaults with `fitfo config`
 - save reports when explicitly requested
 - print the current version
@@ -63,6 +64,7 @@ Core should focus on fast onboarding discovery:
 - DNS records
 - hosting/CMS/email clues
 - apex vs `www` launch URL guidance
+- unresolved-domain checks for typos, unregistered domains, or dead DNS
 - common passive subdomain checks
 - analytics/tag clues
 - CRM, booking, call tracking, and field-service clues

@@ -5,6 +5,7 @@ import { stdin as input, stdout as output } from "node:process";
 import { applyConfigDefaults, handleConfigCommand, loadConfig } from "../src/cli/config.js";
 import { renderOutput } from "../src/cli/output.js";
 import { parseArgs } from "../src/cli/options.js";
+import { normalizeSaveFormat, shouldPromptForReportSave } from "../src/cli/post-scan.js";
 import { resolveOutputPath, writeReport } from "../src/cli/reports.js";
 import { renderRunStart, renderSavedMessage } from "../src/cli/status.js";
 import { renderDoctor } from "../src/doctor.js";
@@ -88,22 +89,24 @@ try {
 
   const outputPath = resolveOutputPath(scan, options);
   if (outputPath) {
-    const fileOutput = renderOutput(scan, {
-      color: false,
-      format: options.format,
-      obsidian: options.obsidian,
-      report: options.command,
-    });
-    await writeReport(outputPath, fileOutput);
-    if (!options.quiet) {
-      console.log(`\n${renderSavedMessage(outputPath, { color: !noColor })}`);
-    } else {
-      console.log(`Saved FITFO report to ${outputPath}`);
-    }
+    await saveReport(scan, outputPath, options);
+    console.log(options.quiet ? `Saved FITFO report to ${outputPath}` : `\n${renderSavedMessage(outputPath, { color: !noColor })}`);
+  } else if (shouldPromptForReportSave(options)) {
+    await promptForReportSave(scan, options, { color: !noColor });
   }
 } catch (error) {
   console.error(`\nFITFO failed: ${error.message}`);
   process.exit(1);
+}
+
+async function saveReport(scan, outputPath, options) {
+  const fileOutput = renderOutput(scan, {
+    color: false,
+    format: options.format,
+    obsidian: options.obsidian,
+    report: options.command,
+  });
+  await writeReport(outputPath, fileOutput);
 }
 
 function shouldRenderRunStart(options) {
@@ -129,6 +132,42 @@ async function promptForDomain(options = {}) {
     if (error.code === "ABORT_ERR") {
       console.log(`\n${theme.dim("FITFO cancelled.")}`);
       process.exit(130);
+    }
+    throw error;
+  } finally {
+    rl.close();
+  }
+}
+
+async function promptForReportSave(scan, options = {}, display = {}) {
+  const theme = createTheme(display.color !== false);
+  const rl = readline.createInterface({ input, output });
+
+  try {
+    const shouldSave = await rl.question(theme.surface(`${theme.hotChip("SAVE")} ${theme.prompt("Save findings?")} ${theme.dim("[y/N]")} `));
+    if (!/^y(es)?$/i.test(shouldSave.trim())) {
+      return;
+    }
+
+    const formatAnswer = await rl.question(theme.surface(`${theme.blueChip("FORMAT")} ${theme.prompt("text, markdown, or obsidian")} ${theme.dim("[markdown]")} `));
+    const format = normalizeSaveFormat(formatAnswer || "markdown");
+    const saveOptions = {
+      ...options,
+      format,
+      obsidian: format === "obsidian",
+      save: true,
+      out: null,
+    };
+    const suggestedPath = resolveOutputPath(scan, saveOptions);
+    const pathAnswer = await rl.question(theme.surface(`${theme.hotChip("PATH")} ${theme.prompt("where should FITFO save it?")} ${theme.dim(`[${suggestedPath}]`)} `));
+    const outputPath = pathAnswer.trim() || suggestedPath;
+
+    await saveReport(scan, outputPath, saveOptions);
+    console.log(`\n${renderSavedMessage(outputPath, { color: display.color !== false })}`);
+  } catch (error) {
+    if (error.code === "ABORT_ERR") {
+      console.log(`\n${theme.dim("FITFO save prompt cancelled.")}`);
+      return;
     }
     throw error;
   } finally {

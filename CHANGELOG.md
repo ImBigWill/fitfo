@@ -21,6 +21,7 @@ Initial private version.
 - `fitfo brief <domain> --search` optional Firecrawl-backed web research for market, review, and service SERP signals.
 - Authenticated Firecrawl CLI fallback when `FIRECRAWL_API_KEY` is not set.
 - Interactive `fitfo` prompt.
+- Post-scan save prompt for interactive terminal runs without an explicit output path.
 - Styled terminal report with hot pink, black, and electric blue direction.
 - Dedicated interactive startup screen with launch-frame styling and scan/map/brief flow.
 - `--json`, `--no-color`, `--save`, and `--out` options.
@@ -37,6 +38,7 @@ Initial private version.
 - TLS certificate and HTTP/HTTPS redirect checks.
 - Registrar, DNS provider, Cloudflare/CDN, hosting, CMS, and email inference.
 - Apex vs `www` URL structure checks with likely primary launch URL guidance.
+- Clear unresolved-domain input check for likely typos, unregistered domains, or dead DNS.
 - WordPress detection from HTML and headers.
 - Hosted-builder detection for Shopify, Webflow, Wix, and Squarespace clues.
 - Analytics and marketing tag detection for common platforms.

@@ -122,6 +122,7 @@ const OPERATIONS_HINTS = [
 ];
 
 export function analyzeProfile({ domain, rdap, dns, http }) {
+  const inputStatus = analyzeInputStatus({ domain, rdap, dns, http });
   const cloudflare = detectCloudflare({ rdap, dns, http });
   const dnsProvider = detectDnsProvider({ rdap, dns, cloudflare });
   const hosting = detectHosting({ dns, http, cloudflare });
@@ -143,13 +144,15 @@ export function analyzeProfile({ domain, rdap, dns, http }) {
     marketing,
     dnsProvider,
     urlStructure,
+    inputStatus,
     previousDeveloper,
   });
-  const risks = buildRisks({ rdap, dns, http, cloudflare, hosting, email, urlStructure });
+  const risks = buildRisks({ rdap, dns, http, cloudflare, hosting, email, urlStructure, inputStatus });
   const launchChecklist = buildLaunchChecklist({ urlStructure, hosting, cms, email, marketing, operations, dnsProvider, cloudflare });
 
   return {
     subject: domain.apex,
+    inputStatus,
     registrar: rdap.registrar?.name || "Unknown",
     dnsProvider,
     cloudflare,
@@ -165,6 +168,48 @@ export function analyzeProfile({ domain, rdap, dns, http }) {
     actionPlan,
     risks,
     launchChecklist,
+  };
+}
+
+function analyzeInputStatus({ domain, rdap, dns, http }) {
+  const nameservers = dns.nameservers || [];
+  const hostRecords = [
+    ...(dns.addresses || []),
+    ...(dns.ipv6Addresses || []),
+    ...(dns.cnames || []),
+  ];
+  const rdapFailed = rdap.available === false;
+  const noDnsAuthority = nameservers.length === 0;
+  const noHostRecords = hostRecords.length === 0;
+  const siteUnreachable = !http.reachable;
+  const errors = [
+    rdap.error,
+    http.ssl?.error,
+    ...(http.redirects || []).map((check) => check.error),
+    ...Object.values(dns.errors || {}),
+  ].filter(Boolean);
+  const nameResolutionFailed = errors.some((error) => /ENOTFOUND|NXDOMAIN|not found|fetch failed/i.test(error));
+
+  if (rdapFailed && noDnsAuthority && noHostRecords && siteUnreachable) {
+    return {
+      status: "Unresolved",
+      confidence: nameResolutionFailed ? "High" : "Medium",
+      summary: `No RDAP, DNS, or website records were found for ${domain.hostname}. Check exact spelling or confirm the domain is registered before onboarding.`,
+    };
+  }
+
+  if (noDnsAuthority && noHostRecords && siteUnreachable) {
+    return {
+      status: "DNS/website unreachable",
+      confidence: "Medium",
+      summary: `FITFO could not find DNS authority or a reachable website for ${domain.hostname}. Confirm spelling and DNS status before planning launch work.`,
+    };
+  }
+
+  return {
+    status: "Looks resolvable",
+    confidence: "Medium",
+    summary: "Public records or website signals were found for this exact input.",
   };
 }
 
@@ -495,9 +540,16 @@ function buildAccessChecklist({ cloudflare, hosting, cms, email, dnsProvider, re
   return items;
 }
 
-function buildActionPlan({ registrar, cloudflare, hosting, cms, email, dnsProvider, urlStructure }) {
+function buildActionPlan({ registrar, cloudflare, hosting, cms, email, dnsProvider, urlStructure, inputStatus }) {
   const actions = [];
   const registrarName = knownOrFallback(registrar, "domain registrar");
+
+  if (inputStatus?.status === "Unresolved") {
+    actions.push({
+      label: "Check exact domain spelling",
+      detail: inputStatus.summary,
+    });
+  }
 
   actions.push({
     label: `Track down ${registrarName}`,
@@ -584,8 +636,12 @@ function buildActionPlan({ registrar, cloudflare, hosting, cms, email, dnsProvid
   return actions;
 }
 
-function buildRisks({ rdap, dns, http, cloudflare, hosting, email, urlStructure }) {
+function buildRisks({ rdap, dns, http, cloudflare, hosting, email, urlStructure, inputStatus }) {
   const risks = [];
+
+  if (inputStatus?.status === "Unresolved") {
+    risks.push(inputStatus.summary);
+  }
 
   if (!rdap.available) {
     risks.push("RDAP lookup failed, so registrar details need manual verification.");
