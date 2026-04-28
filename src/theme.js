@@ -14,14 +14,19 @@ const DARK_GRAY = "\x1b[38;2;74;76;82m";
 const GREEN = "\x1b[38;2;67;220;120m";
 const YELLOW = "\x1b[38;2;255;210;90m";
 const RED = "\x1b[38;2;255;85;85m";
+const PINK_RGB = [255, 0, 170];
+const BLUE_RGB = [0, 220, 255];
+const WHITE_RGB = [245, 245, 245];
 
 export function createTheme(enabled = true) {
   const paint = (code, value) => (enabled ? `${code}${value}${RESET}` : value);
+  const rgb = ([red, green, blue]) => `\x1b[38;2;${red};${green};${blue}m`;
   const surfacePaint = (value) => (enabled ? `${BLACK_BG}${String(value).replaceAll(RESET, `${RESET}${BLACK_BG}`)}${RESET}` : value);
 
   return {
     enabled,
     surface: surfacePaint,
+    gradient: (value, stops = [PINK_RGB, BLUE_RGB, PINK_RGB]) => (enabled ? gradientPaint(String(value), stops, rgb) : value),
     banner: (value) => paint(`${BLACK_BG}${HOT_PINK}${BOLD}`, value),
     inverted: (value) => paint(`${PINK_BG}${BLACK}${BOLD}`, value),
     blueInverted: (value) => paint(`${BLUE_BG}${BLACK}${BOLD}`, value),
@@ -47,4 +52,27 @@ export function createTheme(enabled = true) {
     accentBorder: (value) => paint(HOT_PINK, value),
     prompt: (value) => paint(`${HOT_PINK}${BOLD}`, value),
   };
+}
+
+function gradientPaint(value, stops, rgb) {
+  const chars = [...value];
+  const paintedChars = chars.map((char, index) => {
+    if (char === " ") return char;
+    const ratio = chars.length <= 1 ? 0 : index / (chars.length - 1);
+    return `${rgb(interpolateStops(stops, ratio))}${BOLD}${char}`;
+  });
+
+  return `${paintedChars.join("")}${RESET}`;
+}
+
+function interpolateStops(stops, ratio) {
+  const clamped = Math.max(0, Math.min(1, ratio));
+  const segmentCount = Math.max(1, stops.length - 1);
+  const scaled = clamped * segmentCount;
+  const segment = Math.min(segmentCount - 1, Math.floor(scaled));
+  const localRatio = scaled - segment;
+  const start = stops[segment] || WHITE_RGB;
+  const end = stops[segment + 1] || start;
+
+  return start.map((value, index) => Math.round(value + (end[index] - value) * localRatio));
 }

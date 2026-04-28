@@ -45,8 +45,10 @@ export function renderLaunchScreen(theme, meta = {}) {
   const version = meta.version || "0.1.0";
   const width = meta.width || TERMINAL_WIDTH;
   const innerWidth = width - 4;
-  const logo = renderWordmark(theme).split("\n");
-  const rail = `${theme.accentBorder("━".repeat(16))}${theme.border("━".repeat(innerWidth - 32))}${theme.accentBorder("━".repeat(16))}`;
+  const logo = renderWordmark(theme, { gradient: true }).split("\n");
+  const rail = signalRail(theme, innerWidth);
+  const microRail = centerVisible(theme.gradient("▰▰▰▰▰▰▰▰▰▰▰▰"), innerWidth);
+  const deck = centerVisible(`${theme.hotChip("FITFO")} ${theme.dim(`v${version}`)} ${theme.faint("::")} ${theme.blue("blackout intake console")}`, innerWidth);
   const pipeline = [
     theme.hotChip("SCAN"),
     theme.faint("domain records"),
@@ -61,12 +63,13 @@ export function renderLaunchScreen(theme, meta = {}) {
   return [
     theme.border(`╭${"─".repeat(width - 2)}╮`),
     boxLine(theme, rail, innerWidth),
-    boxLine(theme, `${theme.hotChip("FITFO")} ${theme.dim(`v${version}`)} ${theme.faint("::")} ${theme.blue("client onboarding console")}`, innerWidth),
+    boxLine(theme, microRail, innerWidth),
+    boxLine(theme, deck, innerWidth),
     boxLine(theme, "", innerWidth),
     ...logo.map((line) => boxLine(theme, centerVisible(line, innerWidth), innerWidth)),
     boxLine(theme, "", innerWidth),
     boxLine(theme, centerVisible(theme.tagline("Kickstarting onboarding."), innerWidth), innerWidth),
-    boxLine(theme, centerVisible(`${theme.dim("Figure It The Fuck Out")} ${theme.faint("/")} ${theme.dim("Find Infrastructure, Tech & Footprint Overview")}`, innerWidth), innerWidth),
+    boxLine(theme, centerVisible(`${theme.italic(theme.dim("Figure It The Fuck Out"))} ${theme.faint("/")} ${theme.dim("Find Infrastructure, Tech & Footprint Overview")}`, innerWidth), innerWidth),
     boxLine(theme, "", innerWidth),
     boxLine(theme, centerVisible(pipeline, innerWidth), innerWidth),
     boxLine(theme, rail, innerWidth),
@@ -74,7 +77,7 @@ export function renderLaunchScreen(theme, meta = {}) {
   ].join("\n");
 }
 
-export function renderWordmark(theme) {
+export function renderWordmark(theme, options = {}) {
   const lines = [
     "██████ █████ █████ █████ ████",
     "██       █     █   ██    ██ ██",
@@ -84,7 +87,12 @@ export function renderWordmark(theme) {
   ];
 
   return lines
-    .map((line, index) => (index === 2 ? theme.blue(line) : theme.title(line)))
+    .map((line, index) => {
+      if (options.gradient) {
+        return theme.gradient(line);
+      }
+      return index === 2 ? theme.blue(line) : theme.title(line);
+    })
     .join("\n");
 }
 
@@ -173,6 +181,11 @@ function centerVisible(value, width) {
 
 function boxLine(theme, value, innerWidth) {
   return `${theme.border("│")} ${padVisible(value, innerWidth)} ${theme.border("│")}`;
+}
+
+function signalRail(theme, width) {
+  const plain = "━".repeat(width);
+  return theme.gradient(plain);
 }
 
 function normalizeLines(lines, width) {
