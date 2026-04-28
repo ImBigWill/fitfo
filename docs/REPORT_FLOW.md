@@ -29,6 +29,8 @@ domain input
       -> kickoff call agenda
     -> detailed action report
       -> priority actions
+      -> proof assets needed
+      -> content inventory
       -> keyword clusters
       -> competitor research
       -> keyword-to-page map
@@ -53,6 +55,8 @@ domain input
 - `src/plan.js` renders the client build plan in terminal text and Markdown.
 - `src/lib/site.js` handles local deep crawl/site intelligence extraction.
 - `src/lib/research.js` handles optional Firecrawl-backed market/search research.
+
+Markdown and Obsidian brief exports put the action report, proof assets, content inventory, keyword clusters, competitor research, and keyword-to-page map into tables so they can be scanned quickly or moved into a client workspace.
 
 This keeps the default scan focused on access and infrastructure while giving deeper research its own lane.
 

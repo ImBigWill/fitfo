@@ -28,9 +28,9 @@ const scan = {
       ctas: ["Request an Estimate"],
     },
     pages: [
-      { path: "/", headings: { h1: ["Client Example"] } },
-      { path: "/services/drain-cleaning/", headings: { h1: ["Drain Cleaning"] } },
-      { path: "/contact/", headings: { h1: ["Contact"] } },
+      { path: "/", title: "Client Example Plumbing", metaDescription: "Local plumbing help.", headings: { h1: ["Client Example"] }, forms: [], phones: ["555-123-4567"], ctas: ["Request an Estimate"] },
+      { path: "/services/drain-cleaning/", title: "Drain Cleaning", headings: { h1: ["Drain Cleaning"] }, forms: [], phones: [], ctas: ["Request an Estimate"] },
+      { path: "/contact/", title: "Contact", metaDescription: "Contact us.", headings: { h1: ["Contact"] }, forms: [{ raw: "<form>" }], phones: ["555-123-4567"], ctas: [] },
     ],
     recommendations: ["Write unique meta descriptions for important pages before launch."],
   },
@@ -104,6 +104,8 @@ test("builds a first-call brief from an existing scan", () => {
   assert.ok(brief.actionReport.competitorResearch.competitors.some((result) => result.title === "Emergency Plumbing Repair Richmond VA"));
   assert.ok(brief.actionReport.competitorResearch.reviewProfiles.some((result) => result.title.includes("Yelp")));
   assert.ok(brief.actionReport.pageMap.some((item) => item.keyword === "drain cleaning" && item.status === "Improve existing"));
+  assert.ok(brief.actionReport.proofAssets.some((item) => item.asset === "Reviews and testimonials" && item.priority === "High"));
+  assert.ok(brief.actionReport.contentInventory.some((item) => item.path === "/services/drain-cleaning/" && item.type === "Service"));
   assert.ok(brief.suggestedStructure.some((item) => item.path === "/services/{service}/"));
   assert.ok(brief.clientCallIntelligence.some((item) => item.prompt === "Confirm lead flow" && item.nextStep.includes("1 form(s)")));
   assert.ok(brief.clientCallIntelligence.some((item) => item.prompt === "Confirm analytics/Search Console access" && item.nextStep.includes("Google Tag Manager")));
@@ -125,7 +127,11 @@ test("renders a Markdown brief for Obsidian/client prep", () => {
   assert.match(markdown, /### Keyword \+ Page Opportunities/);
   assert.match(markdown, /_Research_:/);
   assert.match(markdown, /## Detailed Action Report/);
+  assert.match(markdown, /\| Priority \| Owner \| Action \| Detail \|/);
+  assert.match(markdown, /## Proof Assets Needed/);
+  assert.match(markdown, /## Content Inventory/);
   assert.match(markdown, /## Keyword Research/);
+  assert.match(markdown, /\| Cluster \| Keywords \|/);
   assert.match(markdown, /## Competitor Research/);
   assert.match(markdown, /## Keyword To Page Map/);
   assert.match(markdown, /## Suggested Site Structure/);

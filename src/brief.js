@@ -73,6 +73,10 @@ export function renderBriefText(scan, options = {}) {
     "",
     panel(theme, "Detailed Action Report", formatActionReport(theme, brief.actionReport)),
     "",
+    panel(theme, "Proof Assets Needed", formatProofAssets(theme, brief.actionReport.proofAssets)),
+    "",
+    panel(theme, "Content Inventory", formatContentInventory(theme, brief.actionReport.contentInventory)),
+    "",
     panel(theme, "Keyword Research", formatKeywordClusters(theme, brief.actionReport.keywordClusters)),
     "",
     panel(theme, "Competitor Research", formatCompetitorResearch(theme, brief.actionReport.competitorResearch)),
@@ -117,20 +121,36 @@ export function renderBriefMarkdown(scan, options = {}) {
     "",
     markdownTable(brief.snapshot),
     "",
+    "## Detailed Action Report",
+    "",
+    ...markdownActionReport(brief.actionReport),
+    "",
+    "## Proof Assets Needed",
+    "",
+    markdownProofAssets(brief.actionReport.proofAssets),
+    "",
+    "## Content Inventory",
+    "",
+    markdownContentInventory(brief.actionReport.contentInventory),
+    "",
+    "## Keyword Research",
+    "",
+    ...markdownKeywordClusters(brief.actionReport.keywordClusters),
+    "",
+    "## Competitor Research",
+    "",
+    ...markdownCompetitorResearch(brief.actionReport.competitorResearch),
+    "",
+    "## Keyword To Page Map",
+    "",
+    ...markdownPageMap(brief.actionReport.pageMap),
+    "",
     "## Confirm On The Call",
     "",
     ...brief.confirmations.flatMap((item) => [
       `- [ ] **${item.label}**`,
       `  ${item.detail}`,
     ]),
-    "",
-    "## Site Intelligence",
-    "",
-    ...brief.siteIntelligence.map((item) => `- **${item.label}:** ${item.detail}`),
-    "",
-    "## Market Research",
-    "",
-    ...brief.marketResearch.map((item) => `- **${item.label}:** ${item.detail}`),
     "",
     "## Kickoff Research Brief",
     "",
@@ -154,25 +174,17 @@ export function renderBriefMarkdown(scan, options = {}) {
     "",
     ...markdownResearchItems(brief.kickoffResearch.kickoffCallAgenda),
     "",
-    "## Detailed Action Report",
-    "",
-    ...markdownActionReport(brief.actionReport),
-    "",
-    "## Keyword Research",
-    "",
-    ...markdownKeywordClusters(brief.actionReport.keywordClusters),
-    "",
-    "## Competitor Research",
-    "",
-    ...markdownCompetitorResearch(brief.actionReport.competitorResearch),
-    "",
-    "## Keyword To Page Map",
-    "",
-    ...markdownPageMap(brief.actionReport.pageMap),
-    "",
     "## Suggested Site Structure",
     "",
     ...brief.suggestedStructure.map((item) => `- **${item.path}:** ${item.reason}`),
+    "",
+    "## Site Intelligence",
+    "",
+    ...brief.siteIntelligence.map((item) => `- **${item.label}:** ${item.detail}`),
+    "",
+    "## Market Research",
+    "",
+    ...brief.marketResearch.map((item) => `- **${item.label}:** ${item.detail}`),
     "",
     "## Client Call Intelligence",
     "",
@@ -327,7 +339,7 @@ function buildCurrentSiteRead(scan) {
   const pages = site.pages || [];
   const homepage = pages.find((page) => page.path === "/" || page.path === "") || pages[0] || {};
   const homeH1 = homepage.headings?.h1?.[0];
-  const servicePages = pages.filter((page) => /\b(service|repair|install|emergency|commercial|residential)\b/i.test(page.path || ""));
+  const servicePages = pages.filter((page) => /\b(services?|repairs?|install|installation|emergency|commercial|residential)\b/i.test(page.path || ""));
   const trustPages = pages.filter((page) => /\b(review|testimonial|gallery|project|case-study|about)\b/i.test(page.path || ""));
   const marketing = scan.analysis.marketing?.found || [];
   const operations = scan.analysis.operations?.found || [];
@@ -562,12 +574,16 @@ function buildActionReport(scan) {
   const keywordClusters = buildKeywordClusters(scan);
   const competitorResearch = buildCompetitorResearch(scan);
   const pageMap = buildKeywordPageMap(scan, keywordClusters);
+  const contentInventory = buildContentInventory(scan);
+  const proofAssets = buildProofAssets(scan, competitorResearch);
 
   return {
     priorityActions: buildPriorityActions(scan, keywordClusters, competitorResearch, pageMap),
     keywordClusters,
     competitorResearch,
     pageMap,
+    contentInventory,
+    proofAssets,
   };
 }
 
@@ -623,7 +639,7 @@ function buildKeywordClusters(scan) {
     if (/\breview|testimonial|best|top|near me\b/i.test(keyword)) clusters.proofTrust.push(keyword);
     if (/\bhow|cost|price|faq|what|why|when|guide\b/i.test(keyword)) clusters.informational.push(keyword);
     if (location && keyword.toLowerCase().includes(location.toLowerCase().split(",")[0].trim())) clusters.local.push(keyword);
-    if (/\b(clean|drain|electric|emergency|hvac|install|plumb|repair|roof|service|sewer|water)\b/i.test(keyword)) clusters.coreServices.push(keyword);
+    if (/\b(clean|drain|electric|emergency|hvac|install|plumb(?:er|ing)?|repair|roof|service|sewer|water)\b/i.test(keyword)) clusters.coreServices.push(keyword);
   }
 
   if (location) {
@@ -685,6 +701,80 @@ function buildKeywordPageMap(scan, keywordClusters) {
         : "No obvious existing page found in the crawl. Confirm business value before building.",
     };
   });
+}
+
+function buildContentInventory(scan) {
+  const pages = scan.site?.pages || [];
+  if (!pages.length) {
+    return [{
+      path: "Unknown",
+      type: "Manual",
+      title: scan.http?.title || "Unknown",
+      status: "Needs crawl",
+      action: "Run --deep or manually inventory homepage, service pages, location pages, proof pages, FAQ, and contact paths.",
+    }];
+  }
+
+  return pages.slice(0, 20).map((page) => {
+    const type = classifyPageType(page.path || "/");
+    const hasMeta = Boolean(page.metaDescription);
+    const h1Count = page.headings?.h1?.length || 0;
+    const hasLeadPath = (page.forms?.length || 0) > 0 || (page.phones?.length || 0) > 0 || (page.ctas?.length || 0) > 0;
+    const issues = [
+      hasMeta ? null : "missing meta",
+      h1Count === 1 ? null : h1Count === 0 ? "missing H1" : "multiple H1s",
+      hasLeadPath ? null : "no visible lead path",
+    ].filter(Boolean);
+
+    return {
+      path: page.path || "/",
+      type,
+      title: page.title || "Unknown",
+      status: issues.length ? issues.join(", ") : "Looks usable",
+      action: inventoryAction(type, issues),
+    };
+  });
+}
+
+function buildProofAssets(scan, competitorResearch) {
+  const pages = scan.site?.pages || [];
+  const hasReviews = pages.some((page) => /\breview|testimonial\b/i.test(`${page.path || ""} ${page.title || ""}`));
+  const hasAbout = pages.some((page) => /\babout|team|company\b/i.test(`${page.path || ""} ${page.title || ""}`));
+  const hasGallery = pages.some((page) => /\bgallery|project|portfolio|case-study|case studies\b/i.test(`${page.path || ""} ${page.title || ""}`));
+  const patterns = competitorResearch.patterns.join(" ").toLowerCase();
+
+  return [
+    {
+      asset: "Reviews and testimonials",
+      priority: hasReviews ? "Medium" : "High",
+      owner: "Client",
+      reason: hasReviews ? "Review/testimonial page exists; confirm freshness, sources, and usage rights." : "No review/testimonial page was crawled; collect review sources and best quotes.",
+    },
+    {
+      asset: "Project photos or before/after examples",
+      priority: hasGallery ? "Medium" : "High",
+      owner: "Client",
+      reason: hasGallery ? "Gallery/project page exists; confirm which examples support priority services." : "No gallery/project page was crawled; collect proof for priority services and locations.",
+    },
+    {
+      asset: "Credentials, licensing, insurance, awards",
+      priority: patterns.includes("licensed") ? "High" : "Medium",
+      owner: "Client",
+      reason: "Needed to substantiate trust claims and local/service-page copy.",
+    },
+    {
+      asset: "Process, guarantees, and service expectations",
+      priority: "Medium",
+      owner: "Client",
+      reason: "Useful for FAQ, conversion copy, lead quality, and objection handling.",
+    },
+    {
+      asset: "Team/company story",
+      priority: hasAbout ? "Low" : "Medium",
+      owner: "Client",
+      reason: hasAbout ? "About/team content exists; confirm it is current." : "No about/team page was crawled; collect credibility and company story notes.",
+    },
+  ];
 }
 
 function buildSuggestedStructure(scan) {
@@ -886,6 +976,14 @@ function formatActionReport(theme, report) {
   ));
 }
 
+function formatProofAssets(theme, proofAssets) {
+  return proofAssets.map((item) => `${theme.bullet("›")} ${theme.label(item.asset)} ${theme.chip(`[${item.priority}]`)} ${theme.dim(`${item.owner}: ${item.reason}`)}`);
+}
+
+function formatContentInventory(theme, inventory) {
+  return inventory.slice(0, 10).map((item) => `${theme.bullet("›")} ${theme.label(item.path)} ${theme.dim(`${item.type} | ${item.status} | ${item.action}`)}`);
+}
+
 function formatKeywordClusters(theme, clusters) {
   return [
     formatCluster(theme, "Core services", clusters.coreServices),
@@ -925,36 +1023,71 @@ function markdownResearchItems(items) {
 }
 
 function markdownActionReport(report) {
-  return report.priorityActions.map((item) => `- [ ] **${item.priority} - ${item.label}** (${item.owner})\n  ${item.detail}`);
+  return [
+    markdownTableWithHeaders(["Priority", "Owner", "Action", "Detail"], report.priorityActions.map((item) => [
+      item.priority,
+      item.owner,
+      item.label,
+      item.detail,
+    ])),
+  ];
+}
+
+function markdownProofAssets(proofAssets) {
+  return markdownTableWithHeaders(["Priority", "Owner", "Asset", "Reason"], proofAssets.map((item) => [
+    item.priority,
+    item.owner,
+    item.asset,
+    item.reason,
+  ]));
+}
+
+function markdownContentInventory(inventory) {
+  return markdownTableWithHeaders(["Path", "Type", "Title", "Status", "Action"], inventory.map((item) => [
+    item.path,
+    item.type,
+    item.title,
+    item.status,
+    item.action,
+  ]));
 }
 
 function markdownKeywordClusters(clusters) {
   return [
-    markdownCluster("Core services", clusters.coreServices),
-    markdownCluster("Emergency / high intent", clusters.emergency),
-    markdownCluster("Local modifiers", clusters.local),
-    markdownCluster("Informational", clusters.informational),
-    markdownCluster("Proof / trust", clusters.proofTrust),
+    markdownTableWithHeaders(["Cluster", "Keywords"], [
+      ["Core services", clusters.coreServices.length ? clusters.coreServices.join(", ") : "No strong signals yet"],
+      ["Emergency / high intent", clusters.emergency.length ? clusters.emergency.join(", ") : "No strong signals yet"],
+      ["Local modifiers", clusters.local.length ? clusters.local.join(", ") : "No strong signals yet"],
+      ["Informational", clusters.informational.length ? clusters.informational.join(", ") : "No strong signals yet"],
+      ["Proof / trust", clusters.proofTrust.length ? clusters.proofTrust.join(", ") : "No strong signals yet"],
+    ]),
   ];
-}
-
-function markdownCluster(label, values) {
-  return `- **${label}:** ${values.length ? values.join(", ") : "No strong signals yet"}`;
 }
 
 function markdownCompetitorResearch(research) {
   return [
-    `- **Likely competitors:** ${formatResultTitles(research.competitors)}`,
-    `- **Directories:** ${formatResultTitles(research.directories)}`,
-    `- **Review profiles:** ${formatResultTitles(research.reviewProfiles)}`,
-    `- **Owned footprint:** ${formatResultTitles(research.owned)}`,
-    `- **Observed patterns:** ${research.patterns.length ? research.patterns.join(", ") : "No repeated competitor patterns detected"}`,
+    markdownTableWithHeaders(["Type", "Results"], [
+      ["Likely competitors", formatResultTitles(research.competitors)],
+      ["Directories", formatResultTitles(research.directories)],
+      ["Review profiles", formatResultTitles(research.reviewProfiles)],
+      ["Owned footprint", formatResultTitles(research.owned)],
+      ["Observed patterns", research.patterns.length ? research.patterns.join(", ") : "No repeated competitor patterns detected"],
+    ]),
   ];
 }
 
 function markdownPageMap(pageMap) {
   if (!pageMap.length) return ["- No keyword page map yet. Run `--deep --search` or confirm service priorities manually."];
-  return pageMap.slice(0, 14).map((item) => `- **${item.keyword}** (${item.intent}, ${item.priority}): ${item.status} -> \`${item.page}\`\n  ${item.note}`);
+  return [
+    markdownTableWithHeaders(["Priority", "Intent", "Keyword", "Page", "Status", "Note"], pageMap.slice(0, 14).map((item) => [
+      item.priority,
+      item.intent,
+      item.keyword,
+      item.page,
+      item.status,
+      item.note,
+    ])),
+  ];
 }
 
 function extractKeywordCandidates(scan) {
@@ -988,7 +1121,7 @@ function extractKeywordCandidates(scan) {
     .map((value) => String(value).toLowerCase().replace(/[^a-z0-9\s-]/g, " ").replace(/-/g, " ").replace(/\s+/g, " ").trim())
     .filter((value) => value.length >= 5 && value.length <= 48)
     .filter((value) => !stop.has(value))
-    .filter((value) => /\b(clean|drain|electric|emergency|hvac|install|plumb|repair|roof|service|sewer|water)\b/i.test(value)))]
+    .filter((value) => /\b(clean|drain|electric|emergency|hvac|install|plumb(?:er|ing)?|repair|roof|service|sewer|water)\b/i.test(value)))]
     .slice(0, 12);
 }
 
@@ -1063,7 +1196,10 @@ function findMatchingPage(keyword, pages) {
   const tokens = keywordTokens(keyword);
   if (!tokens.length) return null;
 
-  return pages.find((page) => {
+  let bestPage = null;
+  let bestScore = 0;
+
+  for (const page of pages) {
     const haystack = [
       page.path || "",
       page.title || "",
@@ -1072,8 +1208,15 @@ function findMatchingPage(keyword, pages) {
       ...(page.headings?.h2 || []),
     ].join(" ").toLowerCase();
 
-    return tokens.some((token) => haystack.includes(token));
-  }) || null;
+    const score = tokens.filter((token) => haystack.includes(token)).length;
+    if (score > bestScore) {
+      bestPage = page;
+      bestScore = score;
+    }
+  }
+
+  const minimumScore = tokens.length <= 1 ? 1 : 2;
+  return bestScore >= minimumScore ? bestPage : null;
 }
 
 function classifyKeywordIntent(keyword, location = "") {
@@ -1091,6 +1234,29 @@ function suggestedPathForKeyword(keyword, intent) {
   if (intent === "informational") return `/faq/${slug}/`;
   if (intent === "proof") return "/reviews/";
   return `/services/${slug}/`;
+}
+
+function classifyPageType(path) {
+  const value = String(path || "/").toLowerCase();
+  if (value === "/" || value === "") return "Homepage";
+  if (/\bservice|repair|install|emergency|drain|plumb|hvac|roof|electric\b/.test(value)) return "Service";
+  if (/\blocation|area|city|near\b/.test(value)) return "Location";
+  if (/\breview|testimonial\b/.test(value)) return "Proof";
+  if (/\bgallery|project|portfolio|case-study\b/.test(value)) return "Proof";
+  if (/\bfaq|question\b/.test(value)) return "FAQ";
+  if (/\bcontact|quote|schedule|book\b/.test(value)) return "Conversion";
+  if (/\babout|team|company\b/.test(value)) return "Trust";
+  return "Content";
+}
+
+function inventoryAction(type, issues) {
+  if (!issues.length) return "Keep, refresh proof and CTA during content pass.";
+  if (type === "Service") return "Improve service intent, proof, FAQs, CTA, metadata, and internal links.";
+  if (type === "Location") return "Confirm real service area and add local proof before expanding.";
+  if (type === "Conversion") return "Verify lead routing, tracking, thank-you flow, and mobile usability.";
+  if (type === "Proof") return "Refresh testimonials, review sources, project examples, and usage rights.";
+  if (type === "Homepage") return "Clarify offer, service area, proof, and primary conversion path.";
+  return "Review content quality, metadata, headings, CTA, and role in the sitemap.";
 }
 
 function keywordTokens(keyword) {
@@ -1140,6 +1306,14 @@ function markdownTable(rows) {
     "| Field | Value |",
     "| --- | --- |",
     ...rows.map(([key, value]) => `| ${escapeTable(key)} | ${escapeTable(value)} |`),
+  ].join("\n");
+}
+
+function markdownTableWithHeaders(headers, rows) {
+  return [
+    `| ${headers.map(escapeTable).join(" | ")} |`,
+    `| ${headers.map(() => "---").join(" | ")} |`,
+    ...rows.map((row) => `| ${row.map(escapeTable).join(" | ")} |`),
   ].join("\n");
 }
 

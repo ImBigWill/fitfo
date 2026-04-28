@@ -71,6 +71,8 @@ Current kickoff research sections:
 - positioning hypotheses
 - kickoff call agenda
 - detailed action report
+- proof-asset request list
+- content inventory by page type
 - keyword clusters
 - competitor/review/directory classification
 - keyword-to-page map
@@ -80,8 +82,6 @@ Next set:
 - sharper local keyword clustering
 - competitor-informed copy and sitemap pattern extraction
 - richer review/reputation summary
-- proof-asset request list
-- content inventory by page type
 - CSV/JSON exports for keyword and competitor tables
 - questions for the client to confirm, deny, or improve
 

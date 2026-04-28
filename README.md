@@ -138,6 +138,8 @@ It also generates:
 - competitor, directory, review, social, owned, and other result classification
 - keyword-to-page mapping for existing pages or suggested new pages
 - prioritized action items with owner labels for client/us follow-up
+- proof-asset requests for reviews, photos, credentials, case studies, offers, and lead-routing evidence
+- content inventory tables for crawled pages, page type, issues, and recommended action
 
 Client build plan:
 
@@ -278,9 +280,9 @@ Key sections:
 - **Site Intelligence**: when `--deep` is used, sitemap pages, headings, metadata, CTAs, forms, schema, phones, and suggested structure.
 - **Kickoff Research Brief**: when using brief mode, current site read, market snapshot, keyword/page opportunities, positioning hypotheses, and kickoff call agenda.
 - **Kickoff Research Game Plan**: when using plan mode, carries market, keyword, and positioning prompts into build planning.
-- **Detailed Action Report**: prioritized next steps, keyword clusters, competitor research, and keyword-to-page mapping for kickoff and build planning.
+- **Detailed Action Report**: prioritized next steps, proof-asset requests, content inventory, keyword clusters, competitor research, and keyword-to-page mapping for kickoff and build planning.
 
-Markdown and Obsidian exports also include YAML frontmatter, tags, client-call questions, and checklist items.
+Markdown and Obsidian exports also include YAML frontmatter, tags, client-call questions, checklist items, and table-formatted action, keyword, competitor, content, and page-map sections.
 
 ## Important Limits
 

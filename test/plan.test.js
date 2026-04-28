@@ -53,7 +53,9 @@ test("renders a Markdown plan for Obsidian", () => {
   assert.match(markdown, /## Kickoff Research Game Plan/);
   assert.match(markdown, /### Market Snapshot/);
   assert.match(markdown, /## Prioritized Action Report/);
+  assert.match(markdown, /\| Priority \| Owner \| Action \| Detail \|/);
   assert.match(markdown, /## Keyword Page Map/);
+  assert.match(markdown, /\| Priority \| Intent \| Keyword \| Page \| Status \|/);
   assert.match(markdown, /## Client Call Next Steps/);
   assert.match(markdown, /Confirm analytics\/Search Console access/);
 });

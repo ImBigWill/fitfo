@@ -129,13 +129,28 @@ function formatPlanPageMap(theme, actionReport) {
 function markdownPlanActions(actionReport) {
   const actions = actionReport?.priorityActions || [];
   if (!actions.length) return ["- Run deep/search mode or confirm client priorities to generate action items."];
-  return actions.slice(0, 10).map((item) => `- [ ] **${item.priority} - ${item.label}** (${item.owner})\n  ${item.detail}`);
+  return [
+    markdownTableWithHeaders(["Priority", "Owner", "Action", "Detail"], actions.slice(0, 10).map((item) => [
+      item.priority,
+      item.owner,
+      item.label,
+      item.detail,
+    ])),
+  ];
 }
 
 function markdownPlanPageMap(actionReport) {
   const pageMap = actionReport?.pageMap || [];
   if (!pageMap.length) return ["- No keyword-to-page map generated yet."];
-  return pageMap.slice(0, 10).map((item) => `- **${item.keyword}:** ${item.status} -> \`${item.page}\``);
+  return [
+    markdownTableWithHeaders(["Priority", "Intent", "Keyword", "Page", "Status"], pageMap.slice(0, 10).map((item) => [
+      item.priority,
+      item.intent,
+      item.keyword,
+      item.page,
+      item.status,
+    ])),
+  ];
 }
 
 function formatPlanResearch(theme, kickoffResearch) {
@@ -233,4 +248,16 @@ function buildWorkstreams(scan) {
 
 function yamlString(value) {
   return String(value ?? "").replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+}
+
+function markdownTableWithHeaders(headers, rows) {
+  return [
+    `| ${headers.map(escapeTable).join(" | ")} |`,
+    `| ${headers.map(() => "---").join(" | ")} |`,
+    ...rows.map((row) => `| ${row.map(escapeTable).join(" | ")} |`),
+  ].join("\n");
+}
+
+function escapeTable(value) {
+  return String(value ?? "").replace(/\|/g, "\\|").replace(/\n/g, "<br>");
 }
