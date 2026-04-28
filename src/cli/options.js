@@ -15,6 +15,11 @@ export function parseArgs(argv) {
     out: null,
     quiet: false,
     save: false,
+    search: false,
+    searchLimit: 5,
+    researchProvider: "firecrawl",
+    location: null,
+    country: "US",
     vault: null,
     version: false,
   };
@@ -26,6 +31,33 @@ export function parseArgs(argv) {
       options.help = true;
     } else if (arg === "--deep") {
       options.deep = true;
+    } else if (arg === "--search") {
+      options.search = true;
+    } else if (arg === "--location") {
+      const value = argv[index + 1];
+      if (!value || value.startsWith("-")) {
+        throw new Error("--location requires a location value.");
+      }
+      options.location = value;
+      index += 1;
+    } else if (arg === "--country") {
+      const value = argv[index + 1];
+      if (!value || value.startsWith("-")) {
+        throw new Error("--country requires a country code.");
+      }
+      options.country = value.toUpperCase();
+      index += 1;
+    } else if (arg === "--search-limit") {
+      const value = argv[index + 1];
+      if (!value || value.startsWith("-")) {
+        throw new Error("--search-limit requires a number.");
+      }
+      const limit = Number(value);
+      if (!Number.isInteger(limit) || limit < 1 || limit > 20) {
+        throw new Error("--search-limit must be an integer between 1 and 20.");
+      }
+      options.searchLimit = limit;
+      index += 1;
     } else if (arg === "--crawl-limit") {
       const value = argv[index + 1];
       if (!value || value.startsWith("-")) {

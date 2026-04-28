@@ -34,6 +34,14 @@ const scan = {
     ],
     recommendations: ["Write unique meta descriptions for important pages before launch."],
   },
+  research: {
+    enabled: true,
+    provider: "firecrawl",
+    available: false,
+    queries: ["Client Example Plumbing reviews", "Client Example Plumbing services"],
+    results: [],
+    errors: ["FIRECRAWL_API_KEY is not set. Add it to enable live web research."],
+  },
   analysis: {
     cms: {
       platform: "WordPress",
@@ -60,6 +68,7 @@ test("builds a first-call brief from an existing scan", () => {
   assert.ok(brief.confirmations.some((item) => item.label === "WordPress operations"));
   assert.ok(brief.researchQueue.some((item) => item.area === "SEO"));
   assert.ok(brief.siteIntelligence.some((item) => item.label === "Pages crawled"));
+  assert.ok(brief.marketResearch.some((item) => item.label === "Firecrawl"));
   assert.ok(brief.suggestedStructure.some((item) => item.path === "/services/{service}/"));
   assert.ok(brief.opportunityQueue.some((item) => item.area === "Subdomains"));
   assert.ok(brief.callQuestions.some((question) => question.includes("Google Tag Manager")));
@@ -72,6 +81,7 @@ test("renders a Markdown brief for Obsidian/client prep", () => {
   assert.match(markdown, /# FITFO Brief - client.example/);
   assert.match(markdown, /## Confirm On The Call/);
   assert.match(markdown, /## Site Intelligence/);
+  assert.match(markdown, /## Market Research/);
   assert.match(markdown, /## Suggested Site Structure/);
   assert.match(markdown, /## Research Queue/);
   assert.match(markdown, /## First-Call Questions/);

@@ -17,6 +17,7 @@ Initial private version.
 - `fitfo <domain>` scanner command.
 - `fitfo brief <domain>` first-call prep scaffold.
 - `fitfo brief <domain> --deep` crawl mode for sitemap pages, metadata, headings, CTAs, forms, schema, and suggested site structure.
+- `fitfo brief <domain> --search` optional Firecrawl-backed web research for market, review, and service SERP signals.
 - Interactive `fitfo` prompt.
 - Styled terminal report with hot pink, black, and electric blue direction.
 - Dedicated interactive startup screen with launch-frame styling and scan/map/brief flow.

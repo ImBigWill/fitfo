@@ -6,6 +6,7 @@ dist/
 coverage/
 fitfo-reports/
 reports/
+.firecrawl/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

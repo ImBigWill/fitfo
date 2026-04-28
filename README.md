@@ -102,6 +102,13 @@ Deep site intelligence brief:
 fitfo brief example.com --deep --crawl-limit 12
 ```
 
+Firecrawl-backed market research:
+
+```bash
+export FIRECRAWL_API_KEY=fc_YOUR_KEY
+fitfo brief example.com --deep --search --location "Richmond, VA"
+```
+
 Plain output:
 
 ```bash

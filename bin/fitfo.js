@@ -51,6 +51,7 @@ try {
       report: options.command,
       deep: options.deep,
       crawlLimit: options.crawlLimit,
+      search: options.search,
     }));
     console.log("");
   }
@@ -58,6 +59,11 @@ try {
   const scan = await scanDomain(domainArg, {
     deep: options.deep,
     crawlLimit: options.crawlLimit,
+    search: options.search,
+    researchProvider: options.researchProvider,
+    searchLimit: options.searchLimit,
+    location: options.location,
+    country: options.country,
   });
   const terminalOutput = renderOutput(scan, {
     color: !noColor,

@@ -3,6 +3,7 @@ import { getDnsProfile } from "./lib/dns.js";
 import { getHttpProfile } from "./lib/http.js";
 import { getRdapProfile } from "./lib/rdap.js";
 import { getSiteProfile } from "./lib/site.js";
+import { getResearchProfile } from "./lib/research.js";
 import { analyzeProfile } from "./lib/analyze.js";
 import { APP_VERSION } from "./meta.js";
 
@@ -21,6 +22,13 @@ export async function scanDomain(input, options = {}) {
     deep: options.deep,
     limit: options.crawlLimit,
   });
+  const research = await getResearchProfile(domain, http, site, {
+    search: options.search,
+    provider: options.researchProvider,
+    searchLimit: options.searchLimit,
+    location: options.location,
+    country: options.country,
+  });
 
   return {
     tool: "FITFO",
@@ -32,6 +40,7 @@ export async function scanDomain(input, options = {}) {
     dns,
     http,
     site,
+    research,
     analysis,
   };
 }

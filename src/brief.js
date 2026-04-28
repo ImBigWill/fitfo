@@ -26,6 +26,7 @@ export function buildBrief(scan) {
       ["Schema", site.enabled && siteSummary.schemaTypes?.length ? siteSummary.schemaTypes.join(", ") : "Not detected"],
     ],
     siteIntelligence: buildSiteIntelligence(scan),
+    marketResearch: buildMarketResearch(scan),
     suggestedStructure: buildSuggestedStructure(scan),
     confirmations: buildConfirmations(scan),
     researchQueue: buildResearchQueue(scan),
@@ -54,6 +55,8 @@ export function renderBriefText(scan, options = {}) {
     panel(theme, "Confirm On The Call", brief.confirmations.flatMap((item, index) => numbered(theme, index + 1, item.label, item.detail))),
     "",
     panel(theme, "Site Intelligence", brief.siteIntelligence.map((item) => `${theme.bullet("›")} ${theme.label(item.label)} ${theme.dim(item.detail)}`)),
+    "",
+    panel(theme, "Market Research", brief.marketResearch.map((item) => `${theme.bullet("›")} ${theme.label(item.label)} ${theme.dim(item.detail)}`)),
     "",
     panel(theme, "Suggested Site Structure", brief.suggestedStructure.map((item) => `${theme.bullet("›")} ${theme.label(item.path)} ${theme.dim(item.reason)}`)),
     "",
@@ -101,6 +104,10 @@ export function renderBriefMarkdown(scan, options = {}) {
     "## Site Intelligence",
     "",
     ...brief.siteIntelligence.map((item) => `- **${item.label}:** ${item.detail}`),
+    "",
+    "## Market Research",
+    "",
+    ...brief.marketResearch.map((item) => `- **${item.label}:** ${item.detail}`),
     "",
     "## Suggested Site Structure",
     "",
@@ -192,6 +199,47 @@ function buildSiteIntelligence(scan) {
     items.push({
       label: "Recommendation",
       detail: recommendation,
+    });
+  }
+
+  return items;
+}
+
+function buildMarketResearch(scan) {
+  const research = scan.research || {};
+  if (!research.enabled) {
+    return [{
+      label: "Live search",
+      detail: "Not enabled. Run with --search to use Firecrawl for market, review, and service SERP research.",
+    }];
+  }
+
+  const items = [];
+  if (!research.available) {
+    items.push({
+      label: "Firecrawl",
+      detail: research.errors?.join("; ") || "Not available.",
+    });
+  }
+
+  if (research.queries?.length) {
+    items.push({
+      label: "Queries",
+      detail: research.queries.join(" | "),
+    });
+  }
+
+  for (const result of (research.results || []).slice(0, 8)) {
+    items.push({
+      label: result.title,
+      detail: `${result.url}${result.description ? ` - ${result.description}` : ""}`,
+    });
+  }
+
+  if (items.length === 0) {
+    items.push({
+      label: "Search",
+      detail: "No results returned. Try a location or more specific client/service context.",
     });
   }
 

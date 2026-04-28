@@ -5,6 +5,7 @@ import { normalizeFormat, parseArgs } from "../src/cli/options.js";
 test("parses default scan command with a domain", () => {
   assert.deepEqual(parseArgs(["example.com"]), {
     command: "scan",
+    country: "US",
     crawlLimit: 8,
     deep: false,
     domain: "example.com",
@@ -15,7 +16,11 @@ test("parses default scan command with a domain", () => {
     obsidian: false,
     out: null,
     quiet: false,
+    researchProvider: "firecrawl",
     save: false,
+    search: false,
+    searchLimit: 5,
+    location: null,
     vault: null,
     version: false,
   });
@@ -46,6 +51,9 @@ test("parses markdown and json aliases", () => {
   assert.equal(parseArgs(["example.com", "--quiet"]).quiet, true);
   assert.equal(parseArgs(["brief", "example.com", "--deep"]).deep, true);
   assert.equal(parseArgs(["brief", "example.com", "--crawl-limit", "12"]).crawlLimit, 12);
+  assert.equal(parseArgs(["brief", "example.com", "--search"]).search, true);
+  assert.equal(parseArgs(["brief", "example.com", "--search-limit", "7"]).searchLimit, 7);
+  assert.equal(parseArgs(["brief", "example.com", "--location", "Richmond, VA"]).location, "Richmond, VA");
   assert.equal(parseArgs(["version"]).version, true);
   assert.equal(parseArgs(["help"]).help, true);
 });
@@ -54,4 +62,5 @@ test("rejects unsupported formats and unknown options", () => {
   assert.throws(() => normalizeFormat("pdf"), /Unsupported format/);
   assert.throws(() => parseArgs(["example.com", "--wat"]), /Unknown option/);
   assert.throws(() => parseArgs(["example.com", "--crawl-limit", "0"]), /between 1 and 50/);
+  assert.throws(() => parseArgs(["example.com", "--search-limit", "0"]), /between 1 and 20/);
 });
