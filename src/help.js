@@ -22,6 +22,7 @@ export function renderHelp(options = {}) {
       kv(theme, "scan", `${theme.value("fitfo lght.co")} ${theme.dim("- styled Domain Brief")}`),
       kv(theme, "brief", `${theme.value("fitfo brief lght.co")} ${theme.dim("- first-call prep")}`),
       kv(theme, "prompt", `${theme.value("fitfo")} ${theme.dim("- ask for the domain")}`),
+      kv(theme, "help", `${theme.value("fitfo help")} ${theme.dim("- show this screen")}`),
       kv(theme, "doctor", `${theme.value("fitfo doctor")} ${theme.dim("- check local setup")}`),
       kv(theme, "version", `${theme.value("fitfo --version")} ${theme.dim("- print CLI version")}`),
       kv(theme, "save", `${theme.value("fitfo lght.co --save")} ${theme.dim("- timestamped report")}`),

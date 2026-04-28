@@ -13,7 +13,13 @@ import { APP_VERSION } from "../src/meta.js";
 import { createTheme } from "../src/theme.js";
 
 const args = process.argv.slice(2);
-const options = parseArgs(args);
+let options;
+try {
+  options = parseArgs(args);
+} catch (error) {
+  console.error(`FITFO failed: ${error.message}`);
+  process.exit(1);
+}
 options.vault ||= process.env.FITFO_OBSIDIAN_DIR || null;
 const noColor = options.noColor || process.env.NO_COLOR;
 let domainArg = options.domain;

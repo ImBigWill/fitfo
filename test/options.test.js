@@ -43,6 +43,7 @@ test("parses markdown and json aliases", () => {
   assert.equal(parseArgs(["example.com", "--json"]).format, "json");
   assert.equal(parseArgs(["example.com", "--quiet"]).quiet, true);
   assert.equal(parseArgs(["version"]).version, true);
+  assert.equal(parseArgs(["help"]).help, true);
 });
 
 test("rejects unsupported formats and unknown options", () => {

@@ -23,6 +23,7 @@ Initial private version.
 - `--quiet` mode for saving reports without printing the full output.
 - `--vault` and `FITFO_OBSIDIAN_DIR` support for stable Obsidian note paths.
 - `--version`, `version`, and `doctor` commands.
+- `help` command alias and clean argument-error handling.
 - RDAP lookup with selected TLD fallback endpoints.
 - Classic WHOIS fallback for selected cases where RDAP is unavailable.
 - DNS lookup for NS, A, AAAA, CNAME, MX, TXT, CAA, and DS records.

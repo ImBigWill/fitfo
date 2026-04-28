@@ -1,4 +1,4 @@
-const COMMANDS = new Set(["scan", "brief", "doctor", "version"]);
+const COMMANDS = new Set(["scan", "brief", "doctor", "version", "help"]);
 const FORMATS = new Set(["text", "markdown", "obsidian", "json"]);
 
 export function parseArgs(argv) {
@@ -63,6 +63,8 @@ export function parseArgs(argv) {
     } else if (COMMANDS.has(arg) && !options.domain) {
       if (arg === "version") {
         options.version = true;
+      } else if (arg === "help") {
+        options.help = true;
       } else {
         options.command = arg;
       }
