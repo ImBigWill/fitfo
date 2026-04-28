@@ -10,6 +10,7 @@ export function buildClientPlan(scan) {
     priorities: buildPriorities(scan),
     structure: brief.suggestedStructure,
     workstreams: buildWorkstreams(scan),
+    clientCallIntelligence: brief.clientCallIntelligence,
     questions: brief.callQuestions,
   };
 }
@@ -37,6 +38,8 @@ export function renderPlanText(scan, options = {}) {
     panel(theme, "Recommended Structure", plan.structure.map((item) => `${theme.bullet("›")} ${theme.label(item.path)} ${theme.dim(item.reason)}`)),
     "",
     panel(theme, "Build Workstreams", plan.workstreams.map((item) => `${theme.bullet("›")} ${theme.label(item.name)} ${theme.dim(item.scope)}`)),
+    "",
+    panel(theme, "Client Call Next Steps", plan.clientCallIntelligence.map((item) => `${theme.bullet("›")} ${theme.label(item.prompt)} ${theme.dim(item.nextStep)}`)),
     "",
     panel(theme, "Confirm Before Build", plan.questions.map((question) => `${theme.bullet("›")} ${question}`)),
   ].join("\n"));
@@ -73,6 +76,10 @@ export function renderPlanMarkdown(scan, options = {}) {
     "## Build Workstreams",
     "",
     ...plan.workstreams.map((item) => `- **${item.name}:** ${item.scope}`),
+    "",
+    "## Client Call Next Steps",
+    "",
+    ...plan.clientCallIntelligence.map((item) => `- **${item.prompt}:** ${item.nextStep}`),
     "",
     "## Confirm Before Build",
     "",

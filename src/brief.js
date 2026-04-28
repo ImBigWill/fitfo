@@ -28,6 +28,7 @@ export function buildBrief(scan) {
     siteIntelligence: buildSiteIntelligence(scan),
     marketResearch: buildMarketResearch(scan),
     suggestedStructure: buildSuggestedStructure(scan),
+    clientCallIntelligence: buildClientCallIntelligence(scan),
     confirmations: buildConfirmations(scan),
     researchQueue: buildResearchQueue(scan),
     opportunityQueue: buildOpportunityQueue(scan),
@@ -59,6 +60,8 @@ export function renderBriefText(scan, options = {}) {
     panel(theme, "Market Research", brief.marketResearch.map((item) => `${theme.bullet("›")} ${theme.label(item.label)} ${theme.dim(item.detail)}`)),
     "",
     panel(theme, "Suggested Site Structure", brief.suggestedStructure.map((item) => `${theme.bullet("›")} ${theme.label(item.path)} ${theme.dim(item.reason)}`)),
+    "",
+    panel(theme, "Client Call Intelligence", brief.clientCallIntelligence.map((item) => `${theme.bullet("›")} ${theme.label(item.prompt)} ${theme.dim(item.nextStep)}`)),
     "",
     panel(theme, "Research Queue", brief.researchQueue.map((item) => `${theme.bullet("›")} ${theme.label(item.area)} ${theme.dim(item.task)}`)),
     "",
@@ -112,6 +115,10 @@ export function renderBriefMarkdown(scan, options = {}) {
     "## Suggested Site Structure",
     "",
     ...brief.suggestedStructure.map((item) => `- **${item.path}:** ${item.reason}`),
+    "",
+    "## Client Call Intelligence",
+    "",
+    ...brief.clientCallIntelligence.map((item) => `- **${item.prompt}:** ${item.nextStep}`),
     "",
     "## Research Queue",
     "",
@@ -272,6 +279,93 @@ function buildSuggestedStructure(scan) {
   );
 
   return structure;
+}
+
+function buildClientCallIntelligence(scan) {
+  const { analysis } = scan;
+  const site = scan.site || {};
+  const summary = site.summary || {};
+  const prompts = [
+    {
+      prompt: "Confirm lead flow",
+      nextStep: buildLeadFlowPrompt(scan),
+    },
+    {
+      prompt: "Confirm CRM/booking owner",
+      nextStep: buildOwnerPrompt(analysis.connectedServices || []),
+    },
+    {
+      prompt: "Confirm canonical launch host",
+      nextStep: "Decide whether apex or www is the primary launch URL, then align redirects, SSL, Search Console, analytics, and DNS records to that host.",
+    },
+    {
+      prompt: "Confirm top services/markets",
+      nextStep: site.enabled
+        ? `Use the ${summary.pagesScanned || 0} crawled page(s) as a starting inventory, then have the client rank revenue-driving services, markets, and locations.`
+        : "Ask the client to rank revenue-driving services, markets, and locations before committing to sitemap and content scope.",
+    },
+    {
+      prompt: "Confirm analytics/Search Console access",
+      nextStep: buildMeasurementPrompt(analysis.marketing?.found || []),
+    },
+    {
+      prompt: "Confirm prior developer handoff",
+      nextStep: buildHandoffPrompt(scan),
+    },
+  ];
+
+  if ((scan.dns.subdomains || []).length > 0) {
+    prompts.push({
+      prompt: "Confirm legacy tools and staging",
+      nextStep: "Review discovered subdomains with the client for staging sites, portals, booking flows, CRMs, shops, or legacy apps that need redirects or access.",
+    });
+  }
+
+  if (analysis.cms.platform === "WordPress") {
+    prompts.push({
+      prompt: "Confirm WordPress change owner",
+      nextStep: "Identify who can approve admin access, plugin updates, theme edits, backups, form changes, and launch-window freezes.",
+    });
+  }
+
+  return prompts.slice(0, 8);
+}
+
+function buildLeadFlowPrompt(scan) {
+  const summary = scan.site?.summary || {};
+  if (scan.site?.enabled) {
+    const forms = summary.formsDetected || 0;
+    const phones = summary.phonesDetected?.length || 0;
+    const ctas = summary.ctas?.length || 0;
+    return `Crawl detected ${forms} form(s), ${phones} phone number(s), and ${ctas} CTA label(s). Confirm where each lead lands, who responds, and what should be tracked.`;
+  }
+
+  return "Deep crawl was not run. Confirm whether leads arrive through forms, phone calls, booking widgets, chat, email, ads, or offline handoff.";
+}
+
+function buildOwnerPrompt(connectedServices) {
+  if (connectedServices.length > 0) {
+    return `FITFO detected ${connectedServices.join(", ")}. Confirm who owns each account, billing, notifications, and launch-critical integrations.`;
+  }
+
+  return "No CRM or booking platform was detected from public signals. Ask what receives website leads today and who can grant access.";
+}
+
+function buildMeasurementPrompt(marketingTags) {
+  if (marketingTags.length > 0) {
+    return `FITFO detected ${marketingTags.join(", ")}. Confirm GA4, Tag Manager, Search Console, ads, call tracking, and reporting ownership before changing tags.`;
+  }
+
+  return "No marketing tags were detected. Confirm whether GA4, Search Console, Tag Manager, ads, call tracking, and form attribution need to be created or recovered.";
+}
+
+function buildHandoffPrompt(scan) {
+  const hosting = scan.analysis.hosting || {};
+  if (hosting.provider === "Unknown" || hosting.provider === "Hidden behind Cloudflare") {
+    return "Hosting is not clear from public records. Ask for the previous developer, host, registrar, DNS, backups, deployment path, and emergency contact.";
+  }
+
+  return `Hosting appears to be ${hosting.provider}. Ask for previous developer contact, host access, backups, deployment notes, DNS change process, and billing owner.`;
 }
 
 function buildResearchQueue(scan) {

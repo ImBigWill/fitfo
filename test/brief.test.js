@@ -70,6 +70,9 @@ test("builds a first-call brief from an existing scan", () => {
   assert.ok(brief.siteIntelligence.some((item) => item.label === "Pages crawled"));
   assert.ok(brief.marketResearch.some((item) => item.label === "Firecrawl"));
   assert.ok(brief.suggestedStructure.some((item) => item.path === "/services/{service}/"));
+  assert.ok(brief.clientCallIntelligence.some((item) => item.prompt === "Confirm lead flow" && item.nextStep.includes("1 form(s)")));
+  assert.ok(brief.clientCallIntelligence.some((item) => item.prompt === "Confirm analytics/Search Console access" && item.nextStep.includes("Google Tag Manager")));
+  assert.ok(brief.clientCallIntelligence.some((item) => item.prompt === "Confirm prior developer handoff" && item.nextStep.includes("WP Engine")));
   assert.ok(brief.opportunityQueue.some((item) => item.area === "Subdomains"));
   assert.ok(brief.callQuestions.some((question) => question.includes("Google Tag Manager")));
 });
@@ -83,6 +86,8 @@ test("renders a Markdown brief for Obsidian/client prep", () => {
   assert.match(markdown, /## Site Intelligence/);
   assert.match(markdown, /## Market Research/);
   assert.match(markdown, /## Suggested Site Structure/);
+  assert.match(markdown, /## Client Call Intelligence/);
+  assert.match(markdown, /Confirm CRM\/booking owner/);
   assert.match(markdown, /## Research Queue/);
   assert.match(markdown, /## First-Call Questions/);
 });

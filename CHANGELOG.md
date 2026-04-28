@@ -39,6 +39,7 @@ Initial private version.
 - DNS resolver fallback across Cloudflare and Google DNS-over-HTTPS.
 - TLS certificate and HTTP/HTTPS redirect checks.
 - Registrar, DNS provider, Cloudflare/CDN, hosting, CMS, and email inference.
+- Email safety analysis for MX/SPF/DMARC status, DMARC policy, sender-platform clues, and DNS cutover risk.
 - Apex vs `www` URL structure checks with likely primary launch URL guidance.
 - Clear unresolved-domain input check for likely typos, unregistered domains, or dead DNS.
 - WordPress detection from HTML and headers.
@@ -46,6 +47,7 @@ Initial private version.
 - Analytics and marketing tag detection for common platforms.
 - CRM, booking, and field-service platform detection for common service-business tools.
 - Common subdomain checks for onboarding-relevant names.
+- Client-call intelligence prompts in `fitfo brief` and `fitfo plan` for lead flow, CRM/booking ownership, canonical launch host, service/market priorities, measurement access, and prior developer handoff.
 - Access checklist and previous developer request output.
 - Dev pre-launch checklist for canonical host, redirects, DNS, hosting, CMS, email, tracking, CRM, and QA.
 - Obsidian-ready Markdown reports with YAML frontmatter, tags, checklists, and first-call questions.

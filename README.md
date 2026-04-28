@@ -285,6 +285,8 @@ fitfo brief clientdomain.com
 
 `fitfo brief` is the first-call prep mode. Today it scaffolds public-signal observations, research queues, opportunity areas, and questions for the client to confirm or correct. Deeper crawling, keyword ideas, copy notes, and local SEO checks can build on this command.
 
+Brief and plan reports also include client-call intelligence prompts that translate scan facts into follow-up decisions: lead flow, CRM/booking ownership, canonical launch host, priority services/markets, analytics/Search Console access, and previous developer handoff.
+
 ## Development
 
 Run directly:
