@@ -1,6 +1,6 @@
 # Project State
 
-Last updated during the initial private build.
+Last updated after the first deep-brief and planning pass.
 
 ## Current State
 
@@ -10,6 +10,9 @@ It can:
 
 - scan a domain from the terminal
 - generate a `fitfo brief` first-call prep scaffold from scan signals
+- generate a `fitfo brief --deep` site intelligence report from sitemap/robots/pages
+- generate optional Firecrawl-backed market research with `fitfo brief --search`
+- generate a `fitfo plan` client build plan from scan, crawl, and research signals
 - render a styled onboarding report
 - render plain output for copying/saving
 - output JSON
@@ -24,6 +27,7 @@ It can:
 - document release readiness in [Release notes](RELEASE.md)
 - infer registrar, DNS, hosting, Cloudflare/CDN, CMS, email, analytics, and common subdomain clues
 - inspect TLS certificate metadata and HTTP/HTTPS redirect behavior
+- inspect page metadata, headings, CTAs, forms, phone/email signals, schema types, and suggested site structure when deep mode is enabled
 - generate a practical access checklist
 - generate a starter previous-developer request
 
@@ -54,6 +58,8 @@ Core should focus on fast onboarding discovery:
 - hosting/CMS/email clues
 - common passive subdomain checks
 - analytics/tag clues
+- light site intelligence for first-call prep
+- optional market/search research when a provider key is configured
 - access checklist
 - previous developer/client handoff questions
 
@@ -61,10 +67,10 @@ Core should focus on fast onboarding discovery:
 
 These may become separate commands or modules:
 
-- deeper website/content analysis
-- keyword research
-- competitor research
-- positioning strategy
+- richer multi-page crawling
+- deeper keyword research
+- competitor comparison matrices
+- positioning strategy drafts
 - crawling many pages
 - aggressive subdomain enumeration
 - vulnerability scanning
@@ -74,3 +80,5 @@ These may become separate commands or modules:
 
 - Refine Obsidian templates after a few real scans.
 - Add network fixture tests for real-world scanner edge cases without depending on live DNS during normal test runs.
+- Add `fitfo config` for default Obsidian vault, location, country, and preferred output.
+- Improve `plan` with stronger service/location sitemap heuristics after testing real client sites.

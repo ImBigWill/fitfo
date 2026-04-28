@@ -28,15 +28,21 @@ The deeper research mode starts as a separate command:
 fitfo brief clientdomain.com
 ```
 
+The build recommendation layer now starts as:
+
+```bash
+fitfo plan clientdomain.com --deep --search --location "City, ST"
+```
+
 ## Near-Term
 
-- Improve install and release documentation.
 - Improve redirect checks for `www` and apex canonical behavior.
 - Improve hosting fingerprints.
 - Improve DNS provider fingerprints.
 - Improve analytics and marketing tag detection.
-- Add package metadata for future npm publishing.
 - Improve Markdown report templates after real Obsidian use.
+- Add `fitfo config` for saved defaults.
+- Add fixture-based tests for known real-world domain/hosting patterns.
 
 ## Onboarding Scanner Ideas
 
@@ -52,7 +58,7 @@ fitfo brief clientdomain.com
 
 ## Brief Mode Ideas
 
-`fitfo brief` should prepare for the first client call. The current version scaffolds the brief from scan signals; future versions should deepen the research.
+`fitfo brief` prepares for the first client call. The current version can scaffold from scan signals, crawl a small set of sitemap pages with `--deep`, and optionally add Firecrawl-backed search research with `--search`.
 
 Possible sections:
 
@@ -67,6 +73,25 @@ Possible sections:
 - obvious copy opportunities
 - obvious conversion opportunities
 - questions for the client to confirm, deny, or improve
+
+## Plan Mode Ideas
+
+`fitfo plan` should answer what to focus on and what to build.
+
+Current sections:
+
+- focus priorities
+- recommended site structure
+- build workstreams
+- confirmation questions
+
+Next improvements:
+
+- stronger service/location page recommendations
+- competitor-informed structure suggestions
+- local SEO/service-area recommendations
+- content inventory and proof-asset requests
+- launch checklist grouped by access, content, tracking, and technical QA
 
 Important: brief mode should label findings as public signals, inferred hypotheses, and questions. It should not pretend to know the business from one scan.
 
@@ -83,6 +108,7 @@ website fingerprint
 cms clues
 marketing tags
 brief research
+client plan
 report renderers
 ```
 
