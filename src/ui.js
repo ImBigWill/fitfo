@@ -41,6 +41,39 @@ export function renderAppHeader(theme, meta = {}) {
   ].join("\n");
 }
 
+export function renderLaunchScreen(theme, meta = {}) {
+  const version = meta.version || "0.1.0";
+  const width = meta.width || TERMINAL_WIDTH;
+  const innerWidth = width - 4;
+  const logo = renderWordmark(theme).split("\n");
+  const rail = `${theme.accentBorder("━".repeat(16))}${theme.border("━".repeat(innerWidth - 32))}${theme.accentBorder("━".repeat(16))}`;
+  const pipeline = [
+    theme.hotChip("SCAN"),
+    theme.faint("domain records"),
+    theme.blue("→"),
+    theme.blueChip("MAP"),
+    theme.faint("access owners"),
+    theme.blue("→"),
+    theme.hotChip("BRIEF"),
+    theme.faint("first call"),
+  ].join(" ");
+
+  return [
+    theme.border(`╭${"─".repeat(width - 2)}╮`),
+    boxLine(theme, rail, innerWidth),
+    boxLine(theme, `${theme.hotChip("FITFO")} ${theme.dim(`v${version}`)} ${theme.faint("::")} ${theme.blue("client onboarding console")}`, innerWidth),
+    boxLine(theme, "", innerWidth),
+    ...logo.map((line) => boxLine(theme, centerVisible(line, innerWidth), innerWidth)),
+    boxLine(theme, "", innerWidth),
+    boxLine(theme, centerVisible(theme.tagline("Kickstarting onboarding."), innerWidth), innerWidth),
+    boxLine(theme, centerVisible(`${theme.dim("Figure It The Fuck Out")} ${theme.faint("/")} ${theme.dim("Find Infrastructure, Tech & Footprint Overview")}`, innerWidth), innerWidth),
+    boxLine(theme, "", innerWidth),
+    boxLine(theme, centerVisible(pipeline, innerWidth), innerWidth),
+    boxLine(theme, rail, innerWidth),
+    theme.border(`╰${"─".repeat(width - 2)}╯`),
+  ].join("\n");
+}
+
 export function renderWordmark(theme) {
   const lines = [
     "██████ █████ █████ █████ ████",
@@ -99,6 +132,10 @@ export function numbered(theme, index, title, detail) {
   ];
 }
 
+export function commandHint(theme, command, detail) {
+  return `${theme.blueChip(command)} ${theme.dim(detail)}`;
+}
+
 export function renderSurface(theme, content, options = {}) {
   if (!theme.enabled) return content;
 
@@ -125,6 +162,13 @@ function clipPlain(value, width) {
   const text = String(value || "");
   if (text.length <= width) return text;
   return `${text.slice(0, Math.max(0, width - 1))}…`;
+}
+
+function centerVisible(value, width) {
+  const length = visibleLength(value);
+  if (length >= width) return value;
+  const left = Math.floor((width - length) / 2);
+  return `${" ".repeat(left)}${value}`;
 }
 
 function boxLine(theme, value, innerWidth) {

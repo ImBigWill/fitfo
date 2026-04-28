@@ -18,6 +18,7 @@ Initial private version.
 - `fitfo brief <domain>` first-call prep scaffold.
 - Interactive `fitfo` prompt.
 - Styled terminal report with hot pink, black, and electric blue direction.
+- Dedicated interactive startup screen with launch-frame styling and scan/map/brief flow.
 - `--json`, `--no-color`, `--save`, and `--out` options.
 - `--format markdown`, `--markdown`, and `--obsidian` report exports.
 - `--quiet` mode for saving reports without printing the full output.

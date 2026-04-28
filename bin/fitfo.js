@@ -39,11 +39,11 @@ if (options.command === "doctor") {
   process.exit(0);
 }
 
-if (!domainArg) {
-  domainArg = await promptForDomain({ color: !noColor, version: APP_VERSION });
-}
-
 try {
+  if (!domainArg) {
+    domainArg = await promptForDomain({ color: !noColor, version: APP_VERSION });
+  }
+
   if (shouldRenderRunStart(options)) {
     console.log(renderRunStart(domainArg, {
       color: !noColor,
@@ -81,7 +81,7 @@ try {
     }
   }
 } catch (error) {
-  console.error(`FITFO failed: ${error.message}`);
+  console.error(`\nFITFO failed: ${error.message}`);
   process.exit(1);
 }
 
@@ -97,7 +97,7 @@ async function promptForDomain(options = {}) {
   console.log("");
 
   try {
-    const prompt = theme.surface(`${theme.prompt("› Domain to FITFO:")} `);
+    const prompt = theme.surface(`${theme.hotChip("DOMAIN")} ${theme.prompt("fitfo >")} `);
     const answer = await rl.question(prompt);
     const domain = answer.trim();
     if (!domain) {

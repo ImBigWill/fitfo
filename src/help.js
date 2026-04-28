@@ -1,5 +1,5 @@
 import { createTheme } from "./theme.js";
-import { kv, panel, renderAppHeader, renderSurface } from "./ui.js";
+import { commandHint, kv, panel, renderAppHeader, renderLaunchScreen, renderSurface } from "./ui.js";
 
 export function renderHelp(options = {}) {
   const theme = createTheme(options.color !== false);
@@ -49,14 +49,14 @@ export function renderPromptIntro(options = {}) {
   const version = options.version || "0.1.0";
 
   return renderSurface(theme, [
-    renderAppHeader(theme, { mode: "interactive intake", motto: "Kickstarting onboarding.", version }),
+    renderLaunchScreen(theme, { version }),
     "",
     panel(theme, "Kickstart Intake", [
-      `${theme.label("Paste a client domain.")}`,
+      `${theme.label("Drop in the domain. FITFO will map the handoff.")}`,
       "",
-      `${theme.bullet("›")} ${theme.value("clientdomain.com")} is best`,
-      `${theme.bullet("›")} ${theme.dim("https:// and paths are accepted, but not required")}`,
-      `${theme.bullet("›")} ${theme.dim("FITFO checks domain records, DNS, hosting, CMS, and email clues")}`,
+      commandHint(theme, "DOMAIN", "clientdomain.com is best"),
+      commandHint(theme, "URL OK", "https:// and paths are accepted"),
+      commandHint(theme, "OUTPUT", "terminal report, Markdown, JSON, or Obsidian note"),
     ]),
   ].join("\n"));
 }

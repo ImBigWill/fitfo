@@ -1,5 +1,5 @@
 import { createTheme } from "../theme.js";
-import { kv, panel, renderSurface } from "../ui.js";
+import { commandHint, kv, panel, renderSurface } from "../ui.js";
 
 export function renderRunStart(domain, options = {}) {
   const theme = createTheme(options.color !== false);
@@ -12,7 +12,9 @@ export function renderRunStart(domain, options = {}) {
       kv(theme, "Report", report),
       kv(theme, "Output", output),
       "",
-      `${theme.bullet("›")} ${theme.dim("Checking RDAP, DNS, website, TLS, redirects, email, CMS, marketing tags, and common subdomains.")}`,
+      commandHint(theme, "RDAP", "registrar and domain status"),
+      commandHint(theme, "DNS", "nameservers, email, services, subdomains"),
+      commandHint(theme, "WEB", "hosting, CMS, TLS, redirects, marketing tags"),
     ]),
   ].join("\n"));
 }
