@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { normalizeSaveFormat, shouldPromptForReportSave } from "../src/cli/post-scan.js";
+import { defaultDesktopReportPath, normalizeSaveDestination, normalizeSaveFormat, shouldPromptForReportSave } from "../src/cli/post-scan.js";
 
 test("prompts to save only for normal interactive text runs without an explicit output", () => {
   const streams = {
@@ -24,4 +24,22 @@ test("normalizes prompted save formats", () => {
   assert.equal(normalizeSaveFormat("Text"), "text");
   assert.equal(normalizeSaveFormat("obsidian"), "obsidian");
   assert.throws(() => normalizeSaveFormat("pdf"), /Unsupported save format/);
+});
+
+test("normalizes prompted save destinations", () => {
+  assert.equal(normalizeSaveDestination(""), "desktop");
+  assert.equal(normalizeSaveDestination("d"), "desktop");
+  assert.equal(normalizeSaveDestination("o"), "obsidian");
+  assert.equal(normalizeSaveDestination("vault"), "obsidian");
+  assert.equal(normalizeSaveDestination("c"), "custom");
+  assert.throws(() => normalizeSaveDestination("downloads"), /Unsupported save destination/);
+});
+
+test("builds a findable Desktop markdown path by default", () => {
+  const outputPath = defaultDesktopReportPath({
+    finishedAt: "2026-04-28T17:05:10.001Z",
+    domain: { apex: "example.com" },
+  });
+
+  assert.match(outputPath, /\/Desktop\/example\.com-2026-04-28T17-05-10-001Z\.md$/);
 });

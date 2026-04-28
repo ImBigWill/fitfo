@@ -22,7 +22,7 @@ Initial private version.
 - Authenticated Firecrawl CLI fallback when `FIRECRAWL_API_KEY` is not set.
 - Interactive `fitfo` prompt.
 - Post-scan save prompt for interactive terminal runs without an explicit output path.
-- Absolute saved-file paths in terminal output, with clearer Obsidian vault/folder prompts.
+- Destination-first post-scan save prompt with Desktop Markdown as the findable default, plus Obsidian vault/folder and custom path options.
 - Styled terminal report with hot pink, black, and electric blue direction.
 - Dedicated interactive startup screen with launch-frame styling and scan/map/brief flow.
 - `--json`, `--no-color`, `--save`, and `--out` options.

@@ -5,7 +5,7 @@ import { stdin as input, stdout as output } from "node:process";
 import { applyConfigDefaults, handleConfigCommand, loadConfig } from "../src/cli/config.js";
 import { renderOutput } from "../src/cli/output.js";
 import { parseArgs } from "../src/cli/options.js";
-import { normalizeSaveFormat, shouldPromptForReportSave } from "../src/cli/post-scan.js";
+import { defaultDesktopReportPath, normalizeSaveDestination, normalizeSaveFormat, shouldPromptForReportSave } from "../src/cli/post-scan.js";
 import { absoluteOutputPath, resolveOutputPath, writeReport } from "../src/cli/reports.js";
 import { renderRunStart, renderSavedMessage } from "../src/cli/status.js";
 import { renderDoctor } from "../src/doctor.js";
@@ -149,23 +149,31 @@ async function promptForReportSave(scan, options = {}, display = {}) {
       return;
     }
 
-    const formatAnswer = await rl.question(theme.surface(`${theme.blueChip("FORMAT")} ${theme.prompt("text, markdown, or obsidian")} ${theme.dim("[markdown]")} `));
-    const format = normalizeSaveFormat(formatAnswer || "markdown");
+    const destinationAnswer = await rl.question(theme.surface(`${theme.blueChip("WHERE")} ${theme.prompt("desktop, obsidian, or custom?")} ${theme.dim("[desktop]")} `));
+    const destination = normalizeSaveDestination(destinationAnswer || "desktop");
+
     const saveOptions = {
       ...options,
-      format,
-      obsidian: format === "obsidian",
+      format: "markdown",
+      obsidian: destination === "obsidian",
       save: true,
       out: null,
     };
+    let suggestedPath = defaultDesktopReportPath(scan);
 
-    if (format === "obsidian") {
+    if (destination === "obsidian") {
       const defaultVault = saveOptions.vault || "fitfo-reports";
       const vaultAnswer = await rl.question(theme.surface(`${theme.blueChip("OBSIDIAN")} ${theme.prompt("vault/folder?")} ${theme.dim(`[${absoluteOutputPath(defaultVault)}]`)} `));
       saveOptions.vault = vaultAnswer.trim() || defaultVault;
+      suggestedPath = absoluteOutputPath(resolveOutputPath(scan, saveOptions));
+    } else if (destination === "custom") {
+      const formatAnswer = await rl.question(theme.surface(`${theme.blueChip("FORMAT")} ${theme.prompt("text or markdown?")} ${theme.dim("[markdown]")} `));
+      const format = normalizeSaveFormat(formatAnswer || "markdown");
+      saveOptions.format = format === "obsidian" ? "markdown" : format;
+      saveOptions.obsidian = false;
+      suggestedPath = absoluteOutputPath(resolveOutputPath(scan, saveOptions));
     }
 
-    const suggestedPath = absoluteOutputPath(resolveOutputPath(scan, saveOptions));
     const pathAnswer = await rl.question(theme.surface(`${theme.hotChip("WHERE")} ${theme.prompt("save report file?")} ${theme.dim(`[${suggestedPath}]`)} `));
     const outputPath = pathAnswer.trim() || suggestedPath;
 
