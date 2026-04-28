@@ -20,7 +20,7 @@ It can:
 - output Markdown
 - save Obsidian-ready Markdown notes with frontmatter, tags, checklists, and client-call questions
 - save stable Obsidian vault notes with `--vault` or `FITFO_OBSIDIAN_DIR`
-- prompt to save findings after normal interactive terminal scans
+- prompt to save findings after normal interactive terminal scans, including Obsidian vault/folder choice
 - save safe CLI defaults with `fitfo config`
 - save reports when explicitly requested
 - print the current version

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { defaultReportPath, resolveOutputPath } from "../src/cli/reports.js";
+import { absoluteOutputPath, defaultReportPath, resolveOutputPath } from "../src/cli/reports.js";
 
 const scan = {
   finishedAt: "2026-04-27T12:34:56.789Z",
@@ -38,4 +38,9 @@ test("uses a stable Obsidian vault path when a vault directory is configured", (
   });
 
   assert.equal(outputPath, "/vault/Clients/example.com-brief.md");
+});
+
+test("expands saved report paths for clear terminal output", () => {
+  assert.equal(absoluteOutputPath("fitfo-reports/example.md").startsWith("/"), true);
+  assert.equal(absoluteOutputPath("~/fitfo-example.md").startsWith("/"), true);
 });

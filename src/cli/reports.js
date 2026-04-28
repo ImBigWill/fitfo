@@ -16,12 +16,18 @@ export function resolveOutputPath(scan, options) {
   return options.out || (options.save || options.obsidian ? defaultReportPath(scan, options.format, options.obsidian) : null);
 }
 
+export function absoluteOutputPath(outputPath) {
+  return path.resolve(expandHome(outputPath));
+}
+
 export async function writeReport(outputPath, content) {
-  const directory = path.dirname(outputPath);
+  const resolvedPath = absoluteOutputPath(outputPath);
+  const directory = path.dirname(resolvedPath);
   if (directory && directory !== ".") {
     await mkdir(directory, { recursive: true });
   }
-  await writeFile(outputPath, content, "utf8");
+  await writeFile(resolvedPath, content, "utf8");
+  return resolvedPath;
 }
 
 function obsidianFileName(scan, options) {

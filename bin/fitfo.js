@@ -6,7 +6,7 @@ import { applyConfigDefaults, handleConfigCommand, loadConfig } from "../src/cli
 import { renderOutput } from "../src/cli/output.js";
 import { parseArgs } from "../src/cli/options.js";
 import { normalizeSaveFormat, shouldPromptForReportSave } from "../src/cli/post-scan.js";
-import { resolveOutputPath, writeReport } from "../src/cli/reports.js";
+import { absoluteOutputPath, resolveOutputPath, writeReport } from "../src/cli/reports.js";
 import { renderRunStart, renderSavedMessage } from "../src/cli/status.js";
 import { renderDoctor } from "../src/doctor.js";
 import { scanDomain } from "../src/index.js";
@@ -89,8 +89,8 @@ try {
 
   const outputPath = resolveOutputPath(scan, options);
   if (outputPath) {
-    await saveReport(scan, outputPath, options);
-    console.log(options.quiet ? `Saved FITFO report to ${outputPath}` : `\n${renderSavedMessage(outputPath, { color: !noColor })}`);
+    const savedPath = await saveReport(scan, outputPath, options);
+    console.log(options.quiet ? `Saved FITFO report to ${savedPath}` : `\n${renderSavedMessage(savedPath, { color: !noColor })}`);
   } else if (shouldPromptForReportSave(options)) {
     await promptForReportSave(scan, options, { color: !noColor });
   }
@@ -106,7 +106,7 @@ async function saveReport(scan, outputPath, options) {
     obsidian: options.obsidian,
     report: options.command,
   });
-  await writeReport(outputPath, fileOutput);
+  return writeReport(outputPath, fileOutput);
 }
 
 function shouldRenderRunStart(options) {
@@ -158,12 +158,19 @@ async function promptForReportSave(scan, options = {}, display = {}) {
       save: true,
       out: null,
     };
-    const suggestedPath = resolveOutputPath(scan, saveOptions);
-    const pathAnswer = await rl.question(theme.surface(`${theme.hotChip("PATH")} ${theme.prompt("where should FITFO save it?")} ${theme.dim(`[${suggestedPath}]`)} `));
+
+    if (format === "obsidian") {
+      const defaultVault = saveOptions.vault || "fitfo-reports";
+      const vaultAnswer = await rl.question(theme.surface(`${theme.blueChip("OBSIDIAN")} ${theme.prompt("vault/folder?")} ${theme.dim(`[${absoluteOutputPath(defaultVault)}]`)} `));
+      saveOptions.vault = vaultAnswer.trim() || defaultVault;
+    }
+
+    const suggestedPath = absoluteOutputPath(resolveOutputPath(scan, saveOptions));
+    const pathAnswer = await rl.question(theme.surface(`${theme.hotChip("WHERE")} ${theme.prompt("save report file?")} ${theme.dim(`[${suggestedPath}]`)} `));
     const outputPath = pathAnswer.trim() || suggestedPath;
 
-    await saveReport(scan, outputPath, saveOptions);
-    console.log(`\n${renderSavedMessage(outputPath, { color: display.color !== false })}`);
+    const savedPath = await saveReport(scan, outputPath, saveOptions);
+    console.log(`\n${renderSavedMessage(savedPath, { color: display.color !== false })}`);
   } catch (error) {
     if (error.code === "ABORT_ERR") {
       console.log(`\n${theme.dim("FITFO save prompt cancelled.")}`);
