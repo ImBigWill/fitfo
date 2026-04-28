@@ -11,6 +11,7 @@ export function buildClientPlan(scan) {
     structure: brief.suggestedStructure,
     workstreams: buildWorkstreams(scan),
     kickoffResearch: brief.kickoffResearch,
+    actionReport: brief.actionReport,
     clientCallIntelligence: brief.clientCallIntelligence,
     questions: brief.callQuestions,
   };
@@ -41,6 +42,10 @@ export function renderPlanText(scan, options = {}) {
     panel(theme, "Build Workstreams", plan.workstreams.map((item) => `${theme.bullet("›")} ${theme.label(item.name)} ${theme.dim(item.scope)}`)),
     "",
     panel(theme, "Kickoff Research Game Plan", formatPlanResearch(theme, plan.kickoffResearch)),
+    "",
+    panel(theme, "Prioritized Action Report", formatPlanActions(theme, plan.actionReport)),
+    "",
+    panel(theme, "Keyword Page Map", formatPlanPageMap(theme, plan.actionReport)),
     "",
     panel(theme, "Client Call Next Steps", plan.clientCallIntelligence.map((item) => `${theme.bullet("›")} ${theme.label(item.prompt)} ${theme.dim(item.nextStep)}`)),
     "",
@@ -84,6 +89,14 @@ export function renderPlanMarkdown(scan, options = {}) {
     "",
     ...markdownPlanResearch(plan.kickoffResearch),
     "",
+    "## Prioritized Action Report",
+    "",
+    ...markdownPlanActions(plan.actionReport),
+    "",
+    "## Keyword Page Map",
+    "",
+    ...markdownPlanPageMap(plan.actionReport),
+    "",
     "## Client Call Next Steps",
     "",
     ...plan.clientCallIntelligence.map((item) => `- **${item.prompt}:** ${item.nextStep}`),
@@ -93,6 +106,36 @@ export function renderPlanMarkdown(scan, options = {}) {
     ...plan.questions.map((question) => `- ${question}`),
     "",
   ].join("\n")}\n`;
+}
+
+function formatPlanActions(theme, actionReport) {
+  const actions = actionReport?.priorityActions || [];
+  if (!actions.length) {
+    return [`${theme.bullet("›")} ${theme.label("Actions")} ${theme.dim("Run deep/search mode or confirm client priorities to generate action items.")}`];
+  }
+
+  return actions.slice(0, 8).map((item) => `${theme.bullet("›")} ${theme.label(item.label)} ${theme.chip(`[${item.priority}]`)} ${theme.dim(`${item.owner}: ${item.detail}`)}`);
+}
+
+function formatPlanPageMap(theme, actionReport) {
+  const pageMap = actionReport?.pageMap || [];
+  if (!pageMap.length) {
+    return [`${theme.bullet("›")} ${theme.label("Page map")} ${theme.dim("No keyword-to-page map generated yet.")}`];
+  }
+
+  return pageMap.slice(0, 8).map((item) => `${theme.bullet("›")} ${theme.label(item.keyword)} ${theme.dim(`${item.status}: ${item.page}`)}`);
+}
+
+function markdownPlanActions(actionReport) {
+  const actions = actionReport?.priorityActions || [];
+  if (!actions.length) return ["- Run deep/search mode or confirm client priorities to generate action items."];
+  return actions.slice(0, 10).map((item) => `- [ ] **${item.priority} - ${item.label}** (${item.owner})\n  ${item.detail}`);
+}
+
+function markdownPlanPageMap(actionReport) {
+  const pageMap = actionReport?.pageMap || [];
+  if (!pageMap.length) return ["- No keyword-to-page map generated yet."];
+  return pageMap.slice(0, 10).map((item) => `- **${item.keyword}:** ${item.status} -> \`${item.page}\``);
 }
 
 function formatPlanResearch(theme, kickoffResearch) {

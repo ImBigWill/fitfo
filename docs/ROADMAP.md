@@ -70,19 +70,19 @@ Current kickoff research sections:
 - keyword and page opportunities
 - positioning hypotheses
 - kickoff call agenda
+- detailed action report
+- keyword clusters
+- competitor/review/directory classification
+- keyword-to-page map
 
-Possible sections:
+Next set:
 
-- website summary
-- homepage title/meta/H1
-- visible CTAs
-- navigation and page structure
-- local SEO signals
-- schema markup
 - sharper local keyword clustering
-- competitor-informed copy patterns
+- competitor-informed copy and sitemap pattern extraction
 - richer review/reputation summary
 - proof-asset request list
+- content inventory by page type
+- CSV/JSON exports for keyword and competitor tables
 - questions for the client to confirm, deny, or improve
 
 ## Plan Mode Ideas
@@ -95,6 +95,8 @@ Current sections:
 - recommended site structure
 - build workstreams
 - kickoff research game plan
+- prioritized action report
+- keyword page map
 - confirmation questions
 
 Next improvements:

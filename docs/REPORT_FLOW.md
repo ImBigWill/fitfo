@@ -27,6 +27,11 @@ domain input
       -> keyword/page opportunities
       -> positioning hypotheses
       -> kickoff call agenda
+    -> detailed action report
+      -> priority actions
+      -> keyword clusters
+      -> competitor research
+      -> keyword-to-page map
     -> research queue
     -> opportunities to inspect
     -> client questions
@@ -35,6 +40,8 @@ domain input
     -> recommended structure
     -> build workstreams
     -> kickoff research game plan
+    -> prioritized action report
+    -> keyword page map
     -> confirmation questions
 ```
 

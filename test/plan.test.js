@@ -38,6 +38,8 @@ test("builds a client plan from scan, crawl, and research signals", () => {
   assert.ok(plan.workstreams.some((item) => item.name === "Tracking and conversion"));
   assert.ok(plan.kickoffResearch.marketSnapshot.some((item) => item.label === "Competitor and market SERP"));
   assert.ok(plan.kickoffResearch.keywordPageOpportunities.some((item) => item.label === "Priority keyword candidates"));
+  assert.ok(plan.actionReport.priorityActions.some((item) => item.label === "Map keywords to pages"));
+  assert.ok(plan.actionReport.pageMap.some((item) => item.keyword.includes("drain cleaning")));
   assert.ok(plan.clientCallIntelligence.some((item) => item.prompt === "Confirm top services/markets"));
 });
 
@@ -50,6 +52,8 @@ test("renders a Markdown plan for Obsidian", () => {
   assert.match(markdown, /## Build Workstreams/);
   assert.match(markdown, /## Kickoff Research Game Plan/);
   assert.match(markdown, /### Market Snapshot/);
+  assert.match(markdown, /## Prioritized Action Report/);
+  assert.match(markdown, /## Keyword Page Map/);
   assert.match(markdown, /## Client Call Next Steps/);
   assert.match(markdown, /Confirm analytics\/Search Console access/);
 });

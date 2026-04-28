@@ -28,6 +28,7 @@ export function buildBrief(scan) {
     siteIntelligence: buildSiteIntelligence(scan),
     marketResearch: buildMarketResearch(scan),
     kickoffResearch: buildKickoffResearch(scan),
+    actionReport: buildActionReport(scan),
     suggestedStructure: buildSuggestedStructure(scan),
     clientCallIntelligence: buildClientCallIntelligence(scan),
     confirmations: buildConfirmations(scan),
@@ -69,6 +70,14 @@ export function renderBriefText(scan, options = {}) {
     panel(theme, "Positioning Hypotheses", formatResearchItems(theme, brief.kickoffResearch.positioningHypotheses)),
     "",
     panel(theme, "Kickoff Call Agenda", formatResearchItems(theme, brief.kickoffResearch.kickoffCallAgenda)),
+    "",
+    panel(theme, "Detailed Action Report", formatActionReport(theme, brief.actionReport)),
+    "",
+    panel(theme, "Keyword Research", formatKeywordClusters(theme, brief.actionReport.keywordClusters)),
+    "",
+    panel(theme, "Competitor Research", formatCompetitorResearch(theme, brief.actionReport.competitorResearch)),
+    "",
+    panel(theme, "Keyword To Page Map", formatPageMap(theme, brief.actionReport.pageMap)),
     "",
     panel(theme, "Suggested Site Structure", brief.suggestedStructure.map((item) => `${theme.bullet("›")} ${theme.label(item.path)} ${theme.dim(item.reason)}`)),
     "",
@@ -144,6 +153,22 @@ export function renderBriefMarkdown(scan, options = {}) {
     "### Kickoff Call Agenda",
     "",
     ...markdownResearchItems(brief.kickoffResearch.kickoffCallAgenda),
+    "",
+    "## Detailed Action Report",
+    "",
+    ...markdownActionReport(brief.actionReport),
+    "",
+    "## Keyword Research",
+    "",
+    ...markdownKeywordClusters(brief.actionReport.keywordClusters),
+    "",
+    "## Competitor Research",
+    "",
+    ...markdownCompetitorResearch(brief.actionReport.competitorResearch),
+    "",
+    "## Keyword To Page Map",
+    "",
+    ...markdownPageMap(brief.actionReport.pageMap),
     "",
     "## Suggested Site Structure",
     "",
@@ -533,6 +558,135 @@ function buildKickoffCallAgenda(scan) {
   return agenda;
 }
 
+function buildActionReport(scan) {
+  const keywordClusters = buildKeywordClusters(scan);
+  const competitorResearch = buildCompetitorResearch(scan);
+  const pageMap = buildKeywordPageMap(scan, keywordClusters);
+
+  return {
+    priorityActions: buildPriorityActions(scan, keywordClusters, competitorResearch, pageMap),
+    keywordClusters,
+    competitorResearch,
+    pageMap,
+  };
+}
+
+function buildPriorityActions(scan, keywordClusters, competitorResearch, pageMap) {
+  const site = scan.site || {};
+  const summary = site.summary || {};
+  const actions = [];
+  const add = (priority, owner, label, detail) => actions.push({ priority, owner, label, detail });
+
+  add("High", "Client", "Confirm priority services and markets", "Use detected service and location themes as prompts, then have the client rank the revenue-driving services, cities, lead types, and bad-fit work.");
+  add("High", "Us", "Map keywords to pages", pageMap.length
+    ? "Use the keyword-to-page map to decide which existing pages should be improved and which new service/location pages should be scoped."
+    : "No keyword map was generated. Run deep/search mode or gather service/location priorities manually.");
+  add("High", "Client", "Collect proof assets", "Request reviews, project photos, credentials, guarantees, process notes, FAQs, team notes, and before/after examples for priority services.");
+  add("High", "Us", "Confirm lead routing and tracking", "Verify forms, phone numbers, booking widgets, CRM, call tracking, GA4, Tag Manager, Search Console, and thank-you/lead attribution before launch.");
+
+  if (summary.pagesScanned && summary.pagesWithMetaDescription < summary.pagesScanned) {
+    add("Medium", "Us", "Rewrite missing metadata", `${summary.pagesScanned - summary.pagesWithMetaDescription} crawled page(s) appear to need stronger meta descriptions.`);
+  }
+
+  if ((summary.pagesMissingH1 || 0) > 0 || (summary.pagesWithMultipleH1 || 0) > 0) {
+    add("Medium", "Us", "Clean page heading structure", `${summary.pagesMissingH1 || 0} page(s) missing H1 and ${summary.pagesWithMultipleH1 || 0} page(s) with multiple H1s should be reviewed before content migration.`);
+  }
+
+  if (competitorResearch.competitors.length > 0) {
+    add("Medium", "Us", "Review competitor positioning", `${competitorResearch.competitors.length} likely competitor result(s) surfaced. Use them for language and page-pattern comparison, not as final strategy proof.`);
+  }
+
+  if (keywordClusters.emergency.length > 0) {
+    add("Medium", "Client", "Validate emergency-service intent", "Emergency/high-intent keywords surfaced. Confirm whether these jobs are profitable, staffed, and worth emphasizing.");
+  }
+
+  if (!scan.research?.enabled) {
+    add("Medium", "Us", "Run market research", "Run with --search --location before finalizing keyword, competitor, and positioning recommendations.");
+  }
+
+  return actions;
+}
+
+function buildKeywordClusters(scan) {
+  const candidates = extractKeywordCandidates(scan);
+  const location = scan.research?.location || "";
+  const clusters = {
+    coreServices: [],
+    emergency: [],
+    local: [],
+    informational: [],
+    proofTrust: [],
+  };
+
+  for (const keyword of candidates) {
+    if (/\bemergency|24 7|24\/7|same day|urgent\b/i.test(keyword)) clusters.emergency.push(keyword);
+    if (/\breview|testimonial|best|top|near me\b/i.test(keyword)) clusters.proofTrust.push(keyword);
+    if (/\bhow|cost|price|faq|what|why|when|guide\b/i.test(keyword)) clusters.informational.push(keyword);
+    if (location && keyword.toLowerCase().includes(location.toLowerCase().split(",")[0].trim())) clusters.local.push(keyword);
+    if (/\b(clean|drain|electric|emergency|hvac|install|plumb|repair|roof|service|sewer|water)\b/i.test(keyword)) clusters.coreServices.push(keyword);
+  }
+
+  if (location) {
+    for (const keyword of clusters.coreServices.slice(0, 4)) {
+      clusters.local.push(`${keyword} ${location}`);
+    }
+  }
+
+  return {
+    coreServices: uniqueValues(clusters.coreServices).slice(0, 10),
+    emergency: uniqueValues(clusters.emergency).slice(0, 8),
+    local: uniqueValues(clusters.local).slice(0, 8),
+    informational: uniqueValues(clusters.informational).slice(0, 8),
+    proofTrust: uniqueValues(clusters.proofTrust).slice(0, 8),
+  };
+}
+
+function buildCompetitorResearch(scan) {
+  const results = scan.research?.results || [];
+  const classified = results.map((result) => ({
+    ...result,
+    type: classifyResearchResult(result, scan.domain.apex),
+    patterns: detectCompetitorPatterns(result),
+  }));
+
+  return {
+    owned: classified.filter((result) => result.type === "owned"),
+    competitors: classified.filter((result) => result.type === "competitor"),
+    directories: classified.filter((result) => result.type === "directory"),
+    reviewProfiles: classified.filter((result) => result.type === "review"),
+    socialProfiles: classified.filter((result) => result.type === "social"),
+    other: classified.filter((result) => result.type === "other"),
+    patterns: summarizeCompetitorPatterns(classified),
+  };
+}
+
+function buildKeywordPageMap(scan, keywordClusters) {
+  const pages = scan.site?.pages || [];
+  const location = scan.research?.location || "";
+  const keywords = uniqueValues([
+    ...keywordClusters.coreServices,
+    ...keywordClusters.emergency,
+    ...keywordClusters.local,
+    ...keywordClusters.informational,
+    ...keywordClusters.proofTrust,
+  ]).slice(0, 14);
+
+  return keywords.map((keyword) => {
+    const existingPage = findMatchingPage(keyword, pages);
+    const intent = classifyKeywordIntent(keyword, location);
+    return {
+      keyword,
+      intent,
+      priority: intent === "emergency" || intent === "service" ? "High" : "Medium",
+      page: existingPage?.path || suggestedPathForKeyword(keyword, intent),
+      status: existingPage ? "Improve existing" : "Consider new page",
+      note: existingPage
+        ? `Existing page found: ${existingPage.path}. Review title, H1, copy depth, proof, CTA, schema, and internal links.`
+        : "No obvious existing page found in the crawl. Confirm business value before building.",
+    };
+  });
+}
+
 function buildSuggestedStructure(scan) {
   const pages = scan.site?.pages || [];
   const hasContact = hasPath(pages, "contact");
@@ -726,8 +880,81 @@ function formatResearchItems(theme, items) {
   return items.map((item) => `${theme.bullet("›")} ${theme.label(item.label)} ${theme.chip(`[${item.source}]`)} ${theme.dim(item.detail)}`);
 }
 
+function formatActionReport(theme, report) {
+  return report.priorityActions.map((item) => (
+    `${theme.bullet("›")} ${theme.label(item.label)} ${theme.chip(`[${item.priority}]`)} ${theme.dim(`${item.owner}: ${item.detail}`)}`
+  ));
+}
+
+function formatKeywordClusters(theme, clusters) {
+  return [
+    formatCluster(theme, "Core services", clusters.coreServices),
+    formatCluster(theme, "Emergency / high intent", clusters.emergency),
+    formatCluster(theme, "Local modifiers", clusters.local),
+    formatCluster(theme, "Informational", clusters.informational),
+    formatCluster(theme, "Proof / trust", clusters.proofTrust),
+  ];
+}
+
+function formatCluster(theme, label, values) {
+  return `${theme.bullet("›")} ${theme.label(label)} ${theme.dim(values.length ? values.join(", ") : "No strong signals yet")}`;
+}
+
+function formatCompetitorResearch(theme, research) {
+  return [
+    `${theme.bullet("›")} ${theme.label("Likely competitors")} ${theme.dim(formatResultTitles(research.competitors))}`,
+    `${theme.bullet("›")} ${theme.label("Directories")} ${theme.dim(formatResultTitles(research.directories))}`,
+    `${theme.bullet("›")} ${theme.label("Review profiles")} ${theme.dim(formatResultTitles(research.reviewProfiles))}`,
+    `${theme.bullet("›")} ${theme.label("Owned footprint")} ${theme.dim(formatResultTitles(research.owned))}`,
+    `${theme.bullet("›")} ${theme.label("Observed patterns")} ${theme.dim(research.patterns.length ? research.patterns.join(", ") : "No repeated competitor patterns detected")}`,
+  ];
+}
+
+function formatPageMap(theme, pageMap) {
+  if (!pageMap.length) {
+    return [`${theme.bullet("›")} ${theme.label("No map yet")} ${theme.dim("Run --deep --search or confirm service priorities manually.")}`];
+  }
+
+  return pageMap.slice(0, 10).map((item) => (
+    `${theme.bullet("›")} ${theme.label(item.keyword)} ${theme.chip(`[${item.priority}]`)} ${theme.dim(`${item.status}: ${item.page} (${item.intent})`)}`
+  ));
+}
+
 function markdownResearchItems(items) {
   return items.map((item) => `- **${item.label}** _${item.source}_: ${item.detail}`);
+}
+
+function markdownActionReport(report) {
+  return report.priorityActions.map((item) => `- [ ] **${item.priority} - ${item.label}** (${item.owner})\n  ${item.detail}`);
+}
+
+function markdownKeywordClusters(clusters) {
+  return [
+    markdownCluster("Core services", clusters.coreServices),
+    markdownCluster("Emergency / high intent", clusters.emergency),
+    markdownCluster("Local modifiers", clusters.local),
+    markdownCluster("Informational", clusters.informational),
+    markdownCluster("Proof / trust", clusters.proofTrust),
+  ];
+}
+
+function markdownCluster(label, values) {
+  return `- **${label}:** ${values.length ? values.join(", ") : "No strong signals yet"}`;
+}
+
+function markdownCompetitorResearch(research) {
+  return [
+    `- **Likely competitors:** ${formatResultTitles(research.competitors)}`,
+    `- **Directories:** ${formatResultTitles(research.directories)}`,
+    `- **Review profiles:** ${formatResultTitles(research.reviewProfiles)}`,
+    `- **Owned footprint:** ${formatResultTitles(research.owned)}`,
+    `- **Observed patterns:** ${research.patterns.length ? research.patterns.join(", ") : "No repeated competitor patterns detected"}`,
+  ];
+}
+
+function markdownPageMap(pageMap) {
+  if (!pageMap.length) return ["- No keyword page map yet. Run `--deep --search` or confirm service priorities manually."];
+  return pageMap.slice(0, 14).map((item) => `- **${item.keyword}** (${item.intent}, ${item.priority}): ${item.status} -> \`${item.page}\`\n  ${item.note}`);
 }
 
 function extractKeywordCandidates(scan) {
@@ -786,6 +1013,117 @@ function buildResearchHaystack(scan) {
     ]),
     ...results.flatMap((result) => [result.title || "", result.description || "", result.query || ""]),
   ].join("\n");
+}
+
+function classifyResearchResult(result, apex) {
+  const text = `${result.title || ""} ${result.description || ""} ${result.url || ""}`.toLowerCase();
+  const hostname = safeHostname(result.url);
+  if (isSameDomain(result.url, apex)) return "owned";
+  if (/\b(facebook|instagram|linkedin|youtube|x\.com|twitter|tiktok)\b/i.test(hostname)) return "social";
+  if (/\b(yelp|angi|angieslist|homeadvisor|bbb|thumbtack|houzz|nextdoor|yellowpages|mapquest|porch)\b/i.test(hostname)) {
+    return /\breview|rating|stars?\b/i.test(text) ? "review" : "directory";
+  }
+  if (/\breview|rating|testimonial|complaints?\b/i.test(text)) return "review";
+  if (/\b(service|repair|install|emergency|commercial|residential|plumb|hvac|roof|electric)\b/i.test(text)) return "competitor";
+  return "other";
+}
+
+function detectCompetitorPatterns(result) {
+  const text = `${result.title || ""} ${result.description || ""} ${result.query || ""}`.toLowerCase();
+  const patterns = [];
+  const checks = [
+    ["emergency service", /\bemergency|24\/?7|same day|urgent\b/i],
+    ["review proof", /\breview|rating|stars?|testimonial\b/i],
+    ["local ownership", /\blocal|family owned|locally owned|community\b/i],
+    ["licensed/insured", /\blicensed|insured|certified|bonded\b/i],
+    ["free estimates", /\bfree estimate|estimate|quote\b/i],
+    ["financing", /\bfinancing|payment plan\b/i],
+  ];
+
+  for (const [label, pattern] of checks) {
+    if (pattern.test(text)) patterns.push(label);
+  }
+
+  return patterns;
+}
+
+function summarizeCompetitorPatterns(results) {
+  const counts = new Map();
+  for (const pattern of results.flatMap((result) => result.patterns || [])) {
+    counts.set(pattern, (counts.get(pattern) || 0) + 1);
+  }
+
+  return [...counts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .map(([pattern, count]) => `${pattern} (${count})`)
+    .slice(0, 8);
+}
+
+function findMatchingPage(keyword, pages) {
+  const tokens = keywordTokens(keyword);
+  if (!tokens.length) return null;
+
+  return pages.find((page) => {
+    const haystack = [
+      page.path || "",
+      page.title || "",
+      page.metaDescription || "",
+      ...(page.headings?.h1 || []),
+      ...(page.headings?.h2 || []),
+    ].join(" ").toLowerCase();
+
+    return tokens.some((token) => haystack.includes(token));
+  }) || null;
+}
+
+function classifyKeywordIntent(keyword, location = "") {
+  if (/\bemergency|24 7|24\/7|same day|urgent\b/i.test(keyword)) return "emergency";
+  if (/\breview|testimonial|best|top\b/i.test(keyword)) return "proof";
+  if (/\bhow|cost|price|faq|what|why|when|guide\b/i.test(keyword)) return "informational";
+  const locationRoot = String(location || "").split(",")[0].trim();
+  if (/\bnear me|city|county\b/i.test(keyword) || (locationRoot && keyword.toLowerCase().includes(locationRoot.toLowerCase()))) return "local";
+  return "service";
+}
+
+function suggestedPathForKeyword(keyword, intent) {
+  const slug = slugifyKeyword(keyword);
+  if (intent === "local") return `/locations/${slug}/`;
+  if (intent === "informational") return `/faq/${slug}/`;
+  if (intent === "proof") return "/reviews/";
+  return `/services/${slug}/`;
+}
+
+function keywordTokens(keyword) {
+  return String(keyword || "")
+    .toLowerCase()
+    .split(/\s+/)
+    .map((token) => token.trim())
+    .filter((token) => token.length > 3)
+    .filter((token) => !["best", "near", "service", "services"].includes(token));
+}
+
+function slugifyKeyword(keyword) {
+  return String(keyword || "service")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 60) || "service";
+}
+
+function formatResultTitles(results) {
+  return results.length ? results.slice(0, 5).map((result) => result.title || result.url).join(", ") : "None detected";
+}
+
+function uniqueValues(values) {
+  return [...new Set(values.map((value) => String(value || "").trim()).filter(Boolean))];
+}
+
+function safeHostname(url) {
+  try {
+    return new URL(url).hostname.toLowerCase();
+  } catch {
+    return "";
+  }
 }
 
 function isSameDomain(url, apex) {

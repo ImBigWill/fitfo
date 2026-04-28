@@ -132,6 +132,13 @@ The research brief separates:
 - **Inferred**: a reasonable hypothesis to validate
 - **Ask Client**: something FITFO should not pretend to know
 
+It also generates:
+
+- keyword clusters by service, emergency/high-intent, local, informational, and proof/trust themes
+- competitor, directory, review, social, owned, and other result classification
+- keyword-to-page mapping for existing pages or suggested new pages
+- prioritized action items with owner labels for client/us follow-up
+
 Client build plan:
 
 ```bash
@@ -271,6 +278,7 @@ Key sections:
 - **Site Intelligence**: when `--deep` is used, sitemap pages, headings, metadata, CTAs, forms, schema, phones, and suggested structure.
 - **Kickoff Research Brief**: when using brief mode, current site read, market snapshot, keyword/page opportunities, positioning hypotheses, and kickoff call agenda.
 - **Kickoff Research Game Plan**: when using plan mode, carries market, keyword, and positioning prompts into build planning.
+- **Detailed Action Report**: prioritized next steps, keyword clusters, competitor research, and keyword-to-page mapping for kickoff and build planning.
 
 Markdown and Obsidian exports also include YAML frontmatter, tags, client-call questions, and checklist items.
 

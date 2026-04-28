@@ -21,6 +21,7 @@ Initial private version.
 - `fitfo brief <domain> --search` optional Firecrawl-backed web research for market, review, and service SERP signals.
 - Kickoff research brief sections for current site read, market snapshot, keyword/page opportunities, positioning hypotheses, and first-call agenda.
 - `fitfo plan` kickoff research game plan that carries market, keyword, and positioning prompts into build planning.
+- Keyword and competitor intelligence v1 with keyword clusters, competitor/directory/review classification, keyword-to-page mapping, and prioritized action items.
 - Authenticated Firecrawl CLI fallback when `FIRECRAWL_API_KEY` is not set.
 - Interactive `fitfo` prompt.
 - Guided interactive wizard for quick scan, client handoff, kickoff research brief, and client build plan presets.
