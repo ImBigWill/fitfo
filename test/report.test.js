@@ -90,6 +90,33 @@ test("renders an Obsidian-ready Markdown report with frontmatter, checklists, an
       email: {
         provider: "Google Workspace",
       },
+      emailSafety: {
+        provider: "Google Workspace",
+        riskLevel: "Medium",
+        hasMx: true,
+        spf: {
+          present: true,
+          value: "v=spf1 include:_spf.google.com ~all",
+          summary: "Detected",
+        },
+        dmarc: {
+          present: true,
+          value: "v=DMARC1; p=none",
+          policy: "none",
+          summary: "Detected (none)",
+        },
+        dkim: {
+          summary: "Confirm selectors manually",
+        },
+        senderServices: ["Google Workspace"],
+        warnings: ["DMARC policy is p=none, which is monitoring only."],
+        summary: "Google Workspace has MX, SPF, and DMARC records. Preserve MX, SPF, DKIM, and DMARC during DNS changes. DMARC policy is none. Sender clues: Google Workspace.",
+        checklist: [
+          "Export current MX records before changing nameservers or DNS.",
+          "Preserve the current SPF record exactly unless sender platforms change.",
+          "Preserve the current DMARC record with p=none.",
+        ],
+      },
       connectedServices: ["Google verification"],
       marketing: {
         found: ["Google Tag Manager"],
@@ -138,6 +165,9 @@ test("renders an Obsidian-ready Markdown report with frontmatter, checklists, an
   assert.match(markdown, /- \[ \] \*\*Track down GoDaddy\*\*/);
   assert.match(markdown, /## Questions For The Client Call/);
   assert.match(markdown, /Who owns the GoDaddy account/);
+  assert.match(markdown, /email_risk: "Medium"/);
+  assert.match(markdown, /## Email Safety/);
+  assert.match(markdown, /Google Workspace has MX, SPF, and DMARC records/);
   assert.match(markdown, /### Redirects/);
   assert.match(markdown, /### URL Structure/);
   assert.match(markdown, /## CRM \/ Operations Access/);

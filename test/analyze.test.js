@@ -16,7 +16,9 @@ test("infers registrar, DNS, hosting, CMS, email, and marketing clues from mocke
       nameservers: ["ns01.domaincontrol.com", "ns02.domaincontrol.com"],
       cnames: ["client.wpengine.com"],
       mx: [{ priority: 1, exchange: "aspmx.l.google.com" }],
-      txt: ["google-site-verification=abc123"],
+      txt: ["google-site-verification=abc123", "v=spf1 include:_spf.google.com ~all"],
+      spf: "v=spf1 include:_spf.google.com ~all",
+      dmarc: "v=DMARC1; p=reject; rua=mailto:dmarc@client.example",
       caa: [],
     },
     http: {
@@ -43,6 +45,9 @@ test("infers registrar, DNS, hosting, CMS, email, and marketing clues from mocke
   assert.equal(analysis.hosting.provider, "WP Engine");
   assert.equal(analysis.cms.platform, "WordPress");
   assert.equal(analysis.email.provider, "Google Workspace");
+  assert.equal(analysis.emailSafety.riskLevel, "Low");
+  assert.equal(analysis.emailSafety.dmarc.policy, "reject");
+  assert.ok(analysis.emailSafety.senderServices.includes("Google Workspace"));
   assert.equal(analysis.urlStructure.canonicalStyle, "www");
   assert.ok(analysis.connectedServices.includes("Google verification"));
   assert.ok(analysis.marketing.found.includes("Google Tag Manager"));
@@ -52,6 +57,93 @@ test("infers registrar, DNS, hosting, CMS, email, and marketing clues from mocke
   assert.ok(analysis.accessNeeded.some((item) => item.item === "CRM / booking / field-service access"));
   assert.ok(analysis.actionPlan.some((item) => item.label === "Confirm www launch URL"));
   assert.ok(analysis.launchChecklist.some((item) => item.item === "Canonical host"));
+});
+
+test("flags high email safety risk when MX exists without SPF or DMARC", () => {
+  const analysis = analyzeProfile({
+    domain: {
+      apex: "client.example",
+      hostname: "client.example",
+    },
+    rdap: {
+      registrar: { name: "GoDaddy" },
+      nameservers: ["ns01.domaincontrol.com"],
+    },
+    dns: {
+      nameservers: ["ns01.domaincontrol.com"],
+      cnames: [],
+      addresses: ["192.0.2.10"],
+      ipv6Addresses: [],
+      mx: [{ priority: 10, exchange: "mail.client.example" }],
+      txt: [],
+      caa: [],
+    },
+    http: {
+      reachable: true,
+      finalUrl: "https://client.example/",
+      headers: {},
+      htmlSample: "",
+      wordpress: {
+        likely: false,
+        signals: [],
+      },
+    },
+  });
+
+  assert.equal(analysis.email.provider, "Unknown");
+  assert.equal(analysis.emailSafety.riskLevel, "High");
+  assert.ok(analysis.emailSafety.warnings.some((warning) => warning.includes("no SPF")));
+  assert.ok(analysis.emailSafety.warnings.some((warning) => warning.includes("no DMARC")));
+  assert.ok(analysis.accessNeeded.some((item) => item.item === "Email/DNS safety review"));
+  assert.ok(analysis.risks.some((risk) => risk.includes("MX records exist but no SPF")));
+});
+
+test("detects sender platforms from SPF and TXT records", () => {
+  const analysis = analyzeProfile({
+    domain: {
+      apex: "client.example",
+      hostname: "client.example",
+    },
+    rdap: {
+      registrar: { name: "Namecheap" },
+      nameservers: ["dns1.registrar-servers.com"],
+    },
+    dns: {
+      nameservers: ["dns1.registrar-servers.com"],
+      cnames: [],
+      addresses: ["192.0.2.10"],
+      ipv6Addresses: [],
+      mx: [{ priority: 0, exchange: "client-example.mail.protection.outlook.com" }],
+      txt: [
+        "v=spf1 include:spf.protection.outlook.com include:sendgrid.net include:spf.mtasv.net include:servers.mcsv.net ~all",
+        "amazonses=abc123",
+      ],
+      spf: "v=spf1 include:spf.protection.outlook.com include:sendgrid.net include:spf.mtasv.net include:servers.mcsv.net ~all",
+      dmarc: "v=DMARC1; p=none",
+      caa: [],
+    },
+    http: {
+      reachable: true,
+      finalUrl: "https://client.example/",
+      headers: {},
+      htmlSample: "",
+      wordpress: {
+        likely: false,
+        signals: [],
+      },
+    },
+  });
+
+  assert.equal(analysis.email.provider, "Microsoft 365");
+  assert.equal(analysis.emailSafety.riskLevel, "Medium");
+  assert.equal(analysis.emailSafety.dmarc.policy, "none");
+  assert.deepEqual(analysis.emailSafety.senderServices, [
+    "Amazon SES",
+    "Mailchimp",
+    "Microsoft 365",
+    "Postmark",
+    "SendGrid",
+  ]);
 });
 
 test("treats Cloudflare nameservers as DNS ownership and hides origin hosting", () => {

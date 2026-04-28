@@ -221,7 +221,8 @@ fitfo brief example.com --obsidian --out ~/Obsidian/Clients/example.com-brief.md
 - DNS provider hints
 - A / AAAA / CNAME records
 - MX records and email provider hints
-- SPF, DMARC, DNSSEC, and CAA
+- SPF, DMARC, DMARC policy, DNSSEC, and CAA
+- email safety risk from missing SPF/DMARC and sender-platform clues
 - TLS certificate trust, issuer, and expiration
 - HTTP/HTTPS redirect behavior
 - Cloudflare or Cloudflare-like CDN signals
@@ -239,6 +240,7 @@ Key sections:
 - **Verdict**: registrar, DNS provider, Cloudflare status, hosting, CMS, email, and services.
 - **Track This Down**: the practical access errands for the client or previous developer.
 - **DNS Records**: nameservers, IPs, email records, and safety records.
+- **Email Safety**: mail provider, SPF/DMARC status, sender clues, and DNS cutover checklist.
 - **Common Subdomains**: likely hidden properties to verify before DNS or hosting changes.
 - **Website Fingerprint**: reachability, final URL, redirects, TLS certificate, title, generator, and selected headers.
 - **Access Needed**: registrar, DNS, hosting, WordPress, email, analytics, and previous developer access.

@@ -30,6 +30,7 @@ It can:
 - run GitHub Actions checks on `master` and pull requests
 - document release readiness in [Release notes](RELEASE.md)
 - infer registrar, DNS, hosting, Cloudflare/CDN, CMS, email, analytics, and common subdomain clues
+- analyze email safety from MX, SPF, DMARC, DMARC policy, and sender-platform clues before DNS cutover
 - inspect TLS certificate metadata and HTTP/HTTPS redirect behavior
 - inspect apex vs `www` URL structure and recommend the likely primary launch host
 - inspect page metadata, headings, CTAs, forms, phone/email signals, schema types, and suggested site structure when deep mode is enabled
@@ -63,6 +64,7 @@ Core should focus on fast onboarding discovery:
 - domain records
 - DNS records
 - hosting/CMS/email clues
+- email safety and DNS cutover risk
 - apex vs `www` launch URL guidance
 - unresolved-domain checks for typos, unregistered domains, or dead DNS
 - common passive subdomain checks

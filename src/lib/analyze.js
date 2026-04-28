@@ -80,6 +80,27 @@ const EMAIL_HINTS = [
   ["ppe-hosted.com", "Proofpoint"],
 ];
 
+const EMAIL_SENDER_HINTS = [
+  ["_spf.google.com", "Google Workspace"],
+  ["spf.protection.outlook.com", "Microsoft 365"],
+  ["mailgun.org", "Mailgun"],
+  ["mailgun", "Mailgun"],
+  ["sendgrid.net", "SendGrid"],
+  ["sendgrid", "SendGrid"],
+  ["spf.mtasv.net", "Postmark"],
+  ["postmarkapp", "Postmark"],
+  ["amazonses.com", "Amazon SES"],
+  ["amazonses", "Amazon SES"],
+  ["servers.mcsv.net", "Mailchimp"],
+  ["spf.mandrillapp.com", "Mandrill/Mailchimp Transactional"],
+  ["klaviyo", "Klaviyo"],
+  ["hubspotemail.net", "HubSpot"],
+  ["helpscoutemail.com", "Help Scout"],
+  ["zoho", "Zoho"],
+  ["secureserver.net", "GoDaddy Email"],
+  ["spf.em.secureserver.net", "GoDaddy Email"],
+];
+
 const CONNECTED_SERVICE_HINTS = [
   ["google-site-verification", "Google verification"],
   ["MS=", "Microsoft verification"],
@@ -127,19 +148,21 @@ export function analyzeProfile({ domain, rdap, dns, http }) {
   const dnsProvider = detectDnsProvider({ rdap, dns, cloudflare });
   const hosting = detectHosting({ dns, http, cloudflare });
   const email = detectEmail(dns);
+  const emailSafety = analyzeEmailSafety(dns, email);
   const connectedServices = detectConnectedServices(dns);
   const cms = detectCms(http);
   const marketing = detectMarketingStack(http);
   const operations = detectOperationsStack({ dns, http });
   const urlStructure = analyzeUrlStructure({ domain, http });
   const previousDeveloper = detectPreviousDeveloper();
-  const accessNeeded = buildAccessChecklist({ cloudflare, hosting, cms, email, dnsProvider, registrar: rdap.registrar?.name, marketing, operations });
+  const accessNeeded = buildAccessChecklist({ cloudflare, hosting, cms, email, emailSafety, dnsProvider, registrar: rdap.registrar?.name, marketing, operations });
   const actionPlan = buildActionPlan({
     registrar: rdap.registrar?.name,
     cloudflare,
     hosting,
     cms,
     email,
+    emailSafety,
     connectedServices,
     marketing,
     dnsProvider,
@@ -147,8 +170,8 @@ export function analyzeProfile({ domain, rdap, dns, http }) {
     inputStatus,
     previousDeveloper,
   });
-  const risks = buildRisks({ rdap, dns, http, cloudflare, hosting, email, urlStructure, inputStatus });
-  const launchChecklist = buildLaunchChecklist({ urlStructure, hosting, cms, email, marketing, operations, dnsProvider, cloudflare });
+  const risks = buildRisks({ rdap, dns, http, cloudflare, hosting, email, emailSafety, urlStructure, inputStatus });
+  const launchChecklist = buildLaunchChecklist({ urlStructure, hosting, cms, email, emailSafety, marketing, operations, dnsProvider, cloudflare });
 
   return {
     subject: domain.apex,
@@ -159,6 +182,7 @@ export function analyzeProfile({ domain, rdap, dns, http }) {
     hosting,
     cms,
     email,
+    emailSafety,
     connectedServices,
     marketing,
     operations,
@@ -317,6 +341,134 @@ function detectEmail(dns) {
   };
 }
 
+function analyzeEmailSafety(dns, email) {
+  const hasMx = (dns.mx || []).length > 0 && email.provider !== "No mail configured";
+  const spf = dns.spf || (dns.txt || []).find((value) => /^v=spf1\b/i.test(value)) || null;
+  const dmarc = dns.dmarc || null;
+  const dmarcPolicy = parseDmarcPolicy(dmarc);
+  const senderServices = detectEmailSenderServices(dns);
+
+  let riskLevel = "Manual";
+  const warnings = [];
+
+  if (email.provider === "No mail configured") {
+    riskLevel = "Low";
+  } else if (!hasMx) {
+    riskLevel = "Manual";
+    warnings.push("No MX records were detected. Confirm whether the domain should receive email before DNS changes.");
+  } else if (!spf || !dmarc) {
+    riskLevel = "High";
+    if (!spf) warnings.push("MX records exist but no SPF record was detected.");
+    if (!dmarc) warnings.push("MX records exist but no DMARC record was detected.");
+  } else if (dmarcPolicy === "none") {
+    riskLevel = "Medium";
+    warnings.push("DMARC policy is p=none, which is monitoring only.");
+  } else {
+    riskLevel = "Low";
+  }
+
+  return {
+    provider: email.provider,
+    riskLevel,
+    hasMx,
+    spf: {
+      present: Boolean(spf),
+      value: spf,
+      summary: spf ? "Detected" : "Not detected",
+    },
+    dmarc: {
+      present: Boolean(dmarc),
+      value: dmarc,
+      policy: dmarcPolicy || "Unknown",
+      summary: dmarc ? `Detected${dmarcPolicy ? ` (${dmarcPolicy})` : ""}` : "Not detected",
+    },
+    dkim: {
+      summary: "Confirm selectors manually",
+      note: "DKIM selectors are usually not publicly enumerable without knowing the sender platform.",
+    },
+    senderServices,
+    warnings,
+    summary: buildEmailSafetySummary({ email, hasMx, spf, dmarc, dmarcPolicy, senderServices }),
+    checklist: buildEmailSafetyChecklist({ email, hasMx, spf, dmarc, dmarcPolicy, senderServices }),
+  };
+}
+
+function parseDmarcPolicy(dmarc) {
+  if (!dmarc) return null;
+  const match = dmarc.match(/(?:^|;)\s*p\s*=\s*(none|quarantine|reject)\b/i);
+  return match ? match[1].toLowerCase() : null;
+}
+
+function detectEmailSenderServices(dns) {
+  const records = [
+    dns.spf || "",
+    dns.dmarc || "",
+    ...(dns.txt || []),
+    ...(dns.mx || []).map((record) => record.exchange),
+    ...(dns.cnames || []),
+  ].join("\n").toLowerCase();
+
+  const services = EMAIL_SENDER_HINTS
+    .filter(([needle]) => records.includes(needle.toLowerCase()))
+    .map(([, service]) => service);
+
+  return [...new Set(services)].sort();
+}
+
+function buildEmailSafetySummary({ email, hasMx, spf, dmarc, dmarcPolicy, senderServices }) {
+  if (email.provider === "No mail configured") {
+    return "MX records indicate mail is intentionally not configured. Confirm this before changing DNS.";
+  }
+
+  if (!hasMx) {
+    return "No MX records were detected. Confirm whether this domain should receive email.";
+  }
+
+  const provider = email.provider === "Unknown" ? "email" : email.provider;
+  const senders = senderServices.length ? ` Sender clues: ${senderServices.join(", ")}.` : "";
+  const dmarcNote = dmarc && dmarcPolicy ? ` DMARC policy is ${dmarcPolicy}.` : "";
+  const missing = [
+    spf ? null : "SPF",
+    dmarc ? null : "DMARC",
+  ].filter(Boolean);
+
+  if (missing.length) {
+    return `${provider} has MX records, but ${missing.join(" and ")} ${missing.length === 1 ? "was" : "were"} not detected. Preserve existing mail records and confirm sender platforms before launch.${senders}`;
+  }
+
+  return `${provider} has MX, SPF, and DMARC records. Preserve MX, SPF, DKIM, and DMARC during DNS changes.${dmarcNote}${senders}`;
+}
+
+function buildEmailSafetyChecklist({ email, hasMx, spf, dmarc, dmarcPolicy, senderServices }) {
+  const checklist = [];
+
+  if (email.provider === "No mail configured") {
+    return [
+      "Confirm the domain is not supposed to receive or send email.",
+      "Preserve any intentional Null MX record during DNS changes.",
+    ];
+  }
+
+  if (!hasMx) {
+    checklist.push("Confirm whether this domain should receive email.");
+  } else {
+    checklist.push("Export current MX records before changing nameservers or DNS.");
+  }
+
+  checklist.push(spf ? "Preserve the current SPF record exactly unless sender platforms change." : "Ask which platforms send email for this domain, then create or preserve SPF.");
+  checklist.push(dmarc ? `Preserve the current DMARC record${dmarcPolicy ? ` with p=${dmarcPolicy}` : ""}.` : "Ask whether DMARC should be added before or after launch.");
+  checklist.push("Confirm DKIM selectors for Google/Microsoft, CRM, form, email marketing, and transactional senders.");
+
+  if (senderServices.length) {
+    checklist.push(`Confirm access or owner for sender platforms: ${senderServices.join(", ")}.`);
+  } else {
+    checklist.push("Ask whether forms, CRM, newsletters, invoices, or booking tools send email from this domain.");
+  }
+
+  checklist.push("Do not change nameservers until email ownership and rollback path are clear.");
+  return checklist;
+}
+
 function detectConnectedServices(dns) {
   const records = [
     ...(dns.mx || []).map((record) => record.exchange),
@@ -469,7 +621,7 @@ function detectCms(http) {
   };
 }
 
-function buildAccessChecklist({ cloudflare, hosting, cms, email, dnsProvider, registrar, marketing, operations }) {
+function buildAccessChecklist({ cloudflare, hosting, cms, email, emailSafety, dnsProvider, registrar, marketing, operations }) {
   const items = [];
   const registrarName = knownOrFallback(registrar, "domain registrar");
 
@@ -520,6 +672,11 @@ function buildAccessChecklist({ cloudflare, hosting, cms, email, dnsProvider, re
       item: `${email.provider} admin access or DNS coordination`,
       reason: "Needed before changing DNS records that could affect email delivery.",
     });
+  } else if (emailSafety?.hasMx || emailSafety?.riskLevel === "High") {
+    items.push({
+      item: "Email/DNS safety review",
+      reason: "Needed because email records exist but ownership or SPF/DMARC status needs confirmation before DNS changes.",
+    });
   }
 
   items.push({
@@ -540,7 +697,7 @@ function buildAccessChecklist({ cloudflare, hosting, cms, email, dnsProvider, re
   return items;
 }
 
-function buildActionPlan({ registrar, cloudflare, hosting, cms, email, dnsProvider, urlStructure, inputStatus }) {
+function buildActionPlan({ registrar, cloudflare, hosting, cms, email, emailSafety, dnsProvider, urlStructure, inputStatus }) {
   const actions = [];
   const registrarName = knownOrFallback(registrar, "domain registrar");
 
@@ -612,7 +769,7 @@ function buildActionPlan({ registrar, cloudflare, hosting, cms, email, dnsProvid
   } else if (email.provider !== "No mail configured") {
     actions.push({
       label: `Protect ${email.provider} email`,
-      detail: `DNS records indicate ${email.provider}. Document MX, SPF, DKIM, and DMARC before changing nameservers or DNS.`,
+      detail: emailSafety?.summary || `DNS records indicate ${email.provider}. Document MX, SPF, DKIM, and DMARC before changing nameservers or DNS.`,
     });
   }
 
@@ -636,7 +793,7 @@ function buildActionPlan({ registrar, cloudflare, hosting, cms, email, dnsProvid
   return actions;
 }
 
-function buildRisks({ rdap, dns, http, cloudflare, hosting, email, urlStructure, inputStatus }) {
+function buildRisks({ rdap, dns, http, cloudflare, hosting, email, emailSafety, urlStructure, inputStatus }) {
   const risks = [];
 
   if (inputStatus?.status === "Unresolved") {
@@ -647,12 +804,8 @@ function buildRisks({ rdap, dns, http, cloudflare, hosting, email, urlStructure,
     risks.push("RDAP lookup failed, so registrar details need manual verification.");
   }
 
-  if (email.provider !== "No mail configured" && !dns.dmarc) {
-    risks.push("No DMARC record detected for the scanned hostname.");
-  }
-
-  if (email.provider !== "No mail configured" && !dns.spf) {
-    risks.push("No SPF record detected for the scanned hostname.");
+  for (const warning of emailSafety?.warnings || []) {
+    risks.push(warning);
   }
 
   if (dns.nameservers.length === 0) {
@@ -693,7 +846,7 @@ function buildRisks({ rdap, dns, http, cloudflare, hosting, email, urlStructure,
   return risks;
 }
 
-function buildLaunchChecklist({ urlStructure, hosting, cms, email, marketing, operations, dnsProvider, cloudflare }) {
+function buildLaunchChecklist({ urlStructure, hosting, cms, email, emailSafety, marketing, operations, dnsProvider, cloudflare }) {
   return [
     {
       item: "Canonical host",
@@ -721,7 +874,7 @@ function buildLaunchChecklist({ urlStructure, hosting, cms, email, marketing, op
       item: "Email safety",
       detail: email.provider === "No mail configured"
         ? "Confirm the domain truly does not send or receive mail before DNS changes."
-        : `Preserve ${email.provider === "Unknown" ? "email" : email.provider} MX, SPF, DKIM, and DMARC records during DNS changes.`,
+        : emailSafety?.summary || `Preserve ${email.provider === "Unknown" ? "email" : email.provider} MX, SPF, DKIM, and DMARC records during DNS changes.`,
     },
     {
       item: "Tracking and CRM",

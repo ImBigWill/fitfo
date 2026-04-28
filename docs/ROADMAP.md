@@ -55,7 +55,7 @@ fitfo plan clientdomain.com --deep --search --location "City, ST"
 - `robots.txt` and `sitemap.xml` presence.
 - Known WordPress plugin/theme/page builder clues.
 - Better form and lead-routing detection.
-- Better email service detection from SPF/DKIM/TXT records.
+- Deeper DKIM selector guidance once sender platforms are known.
 - Known call tracking and CRM clues.
 - Common field-service tools such as ServiceTitan, Housecall Pro, Jobber, FieldEdge, Service Fusion, ServiceM8, Workiz, Podium, and Birdeye.
 

@@ -30,6 +30,7 @@ export function renderTextReport(scan, options = {}) {
       verdictRow(theme, "Prev Dev", confidenceChip(theme, "MANUAL"), analysis.previousDeveloper.contact),
       verdictRow(theme, "CMS", confidenceChip(theme, analysis.cms.confidence.toUpperCase()), analysis.cms.platform),
       verdictRow(theme, "Email", confidenceChip(theme, analysis.email.provider === "Unknown" ? "MANUAL" : "FOUND"), analysis.email.provider),
+      analysis.emailSafety ? verdictRow(theme, "Mail Risk", riskChip(theme, analysis.emailSafety.riskLevel), analysis.emailSafety.riskLevel) : null,
       verdictRow(
         theme,
         "Services",
@@ -44,6 +45,7 @@ export function renderTextReport(scan, options = {}) {
       `${theme.bullet("›")} Hosting is ${theme.label(analysis.hosting.provider)}. ${analysis.hosting.note}`,
       `${theme.bullet("›")} Launch URL guidance: ${theme.label(analysis.urlStructure?.canonicalStyle || "Unknown")}. ${analysis.urlStructure?.recommendation || "Confirm canonical host manually."}`,
       plainEmailLine(theme, analysis),
+      analysis.emailSafety?.summary ? `${theme.bullet("›")} Mail safety: ${analysis.emailSafety.summary}` : null,
       `${theme.bullet("›")} Previous developer contact is ${theme.label("not discoverable from public records")}. Ask the client who last managed the site, DNS, hosting, or WordPress account.`,
     ]),
     "",
@@ -67,6 +69,8 @@ export function renderTextReport(scan, options = {}) {
       kv(theme, "DNSSEC", dns.dnssec ? theme.ok("DS record detected") : theme.warn("No DS record detected")),
       formatList(theme, "Services", connectedServices),
     ]),
+    "",
+    panel(theme, "Email Safety", formatEmailSafety(theme, analysis.emailSafety, analysis.email)),
     "",
     panel(theme, "Common Subdomains", formatSubdomains(theme, dns.subdomains || [])),
     "",
@@ -138,6 +142,7 @@ export function renderMarkdownReport(scan, options = {}) {
     `input_status: "${yamlString(analysis.inputStatus?.status || "Unknown")}"`,
     `cms: "${yamlString(analysis.cms.platform)}"`,
     `email_provider: "${yamlString(analysis.email.provider)}"`,
+    `email_risk: "${yamlString(analysis.emailSafety?.riskLevel || "Unknown")}"`,
     `cloudflare: "${yamlString(analysis.cloudflare.status)}"`,
     "tags:",
     "  - fitfo",
@@ -163,6 +168,7 @@ export function renderMarkdownReport(scan, options = {}) {
       ["Launch URL", analysis.urlStructure ? formatLaunchUrl(analysis.urlStructure) : "Unknown"],
       ["CMS", `${analysis.cms.platform} (${analysis.cms.confidence})`],
       ["Email", analysis.email.provider],
+      ["Email Safety", analysis.emailSafety ? `${analysis.emailSafety.riskLevel}: ${analysis.emailSafety.summary}` : "Unknown"],
       ["Connected Services", connectedServices.length ? connectedServices.join(", ") : "None detected"],
     ]),
     "",
@@ -173,6 +179,7 @@ export function renderMarkdownReport(scan, options = {}) {
     `- Hosting is **${analysis.hosting.provider}**. ${analysis.hosting.note}`,
     `- Launch URL guidance: **${analysis.urlStructure?.canonicalStyle || "Unknown"}**. ${analysis.urlStructure?.recommendation || "Confirm canonical host manually."}`,
     markdownEmailLine(analysis),
+    ...(analysis.emailSafety?.summary ? [`- Mail safety: **${analysis.emailSafety.riskLevel} risk.** ${analysis.emailSafety.summary}`] : []),
     "- Previous developer contact is **not discoverable from public records**. Ask the client who last managed the site, DNS, hosting, or WordPress account.",
     "",
     "## Track This Down",
@@ -213,6 +220,10 @@ export function renderMarkdownReport(scan, options = {}) {
     `- **DMARC:** ${dns.dmarc || "Not detected"}`,
     `- **DNSSEC:** ${dns.dnssec ? "DS record detected" : "No DS record detected"}`,
     markdownListSection("Services", connectedServices),
+    "",
+    "## Email Safety",
+    "",
+    markdownEmailSafety(analysis.emailSafety, analysis.email),
     "",
     "## Common Subdomains",
     "",
@@ -331,6 +342,14 @@ function confidenceChip(theme, value) {
   return theme.chip(`[${value}]`);
 }
 
+function riskChip(theme, value) {
+  const normalized = String(value || "Manual").toUpperCase();
+  if (normalized === "HIGH") return theme.bad(`[${normalized}]`);
+  if (normalized === "MEDIUM") return theme.warn(`[${normalized}]`);
+  if (normalized === "LOW") return theme.ok(`[${normalized}]`);
+  return theme.dim(`[${normalized}]`);
+}
+
 function formatList(theme, label, values) {
   if (!values || values.length === 0) return kv(theme, label, theme.dim("None detected"));
   return [kv(theme, label, ""), ...values.map((value) => `  ${theme.bullet("›")} ${value}`)].join("\n");
@@ -339,6 +358,36 @@ function formatList(theme, label, values) {
 function formatMx(theme, records) {
   if (!records || records.length === 0) return kv(theme, "MX records", theme.dim("None detected"));
   return [kv(theme, "MX records", ""), ...records.map((record) => `  ${theme.bullet("›")} ${record.priority} ${record.exchange}`)].join("\n");
+}
+
+function formatEmailSafety(theme, safety, email) {
+  if (!safety) {
+    return [
+      kv(theme, "Provider", email?.provider || "Unknown"),
+      kv(theme, "Risk", theme.dim("Unknown")),
+      kv(theme, "Checklist", theme.dim("Run a fresh scan to generate email safety guidance.")),
+    ];
+  }
+
+  const risk = safety.riskLevel === "High"
+    ? theme.bad(safety.riskLevel)
+    : safety.riskLevel === "Medium"
+      ? theme.warn(safety.riskLevel)
+      : safety.riskLevel === "Low"
+        ? theme.ok(safety.riskLevel)
+        : theme.dim(safety.riskLevel);
+
+  return [
+    kv(theme, "Provider", safety.provider || email?.provider || "Unknown"),
+    kv(theme, "Risk", risk),
+    kv(theme, "SPF", safety.spf?.summary || theme.dim("Unknown")),
+    kv(theme, "DMARC", safety.dmarc?.summary || theme.dim("Unknown")),
+    kv(theme, "DKIM", safety.dkim?.summary || theme.dim("Confirm manually")),
+    formatList(theme, "Senders", safety.senderServices || []),
+    safety.summary ? kv(theme, "Summary", safety.summary) : null,
+    "",
+    ...((safety.checklist || []).map((item) => `${theme.bullet("›")} ${item}`)),
+  ].filter(Boolean);
 }
 
 function formatObject(theme, label, values) {
@@ -437,6 +486,30 @@ function markdownObjectList(values) {
   const entries = Object.entries(values || {});
   if (!entries.length) return "- None captured";
   return entries.map(([key, value]) => `- **${key}:** ${value}`).join("\n");
+}
+
+function markdownEmailSafety(safety, email) {
+  if (!safety) {
+    return markdownTable([
+      ["Provider", email?.provider || "Unknown"],
+      ["Risk", "Unknown"],
+      ["Checklist", "Run a fresh scan to generate email safety guidance."],
+    ]);
+  }
+
+  return [
+    markdownTable([
+      ["Provider", safety.provider || email?.provider || "Unknown"],
+      ["Risk", safety.riskLevel],
+      ["SPF", safety.spf?.summary || "Unknown"],
+      ["DMARC", safety.dmarc?.summary || "Unknown"],
+      ["DKIM", safety.dkim?.summary || "Confirm manually"],
+      ["Sender Services", safety.senderServices?.length ? safety.senderServices.join(", ") : "None detected"],
+      ["Summary", safety.summary || "Unknown"],
+    ]),
+    "",
+    ...(safety.checklist || []).map((item) => `- [ ] ${item}`),
+  ].join("\n");
 }
 
 function markdownSslSummary(ssl) {
