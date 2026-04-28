@@ -26,3 +26,16 @@ test("prefers explicit output path over generated save path", () => {
 
   assert.equal(outputPath, "notes/example.md");
 });
+
+test("uses a stable Obsidian vault path when a vault directory is configured", () => {
+  const outputPath = resolveOutputPath(scan, {
+    command: "brief",
+    out: null,
+    save: false,
+    obsidian: true,
+    format: "obsidian",
+    vault: "/vault/Clients",
+  });
+
+  assert.equal(outputPath, "/vault/Clients/example.com-brief.md");
+});

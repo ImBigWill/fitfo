@@ -15,7 +15,7 @@ export function renderHelp(options = {}) {
       "",
       kv(theme, "Usage", `${theme.value("fitfo <domain>")} ${theme.dim("[options]")}`),
       kv(theme, "Options", theme.dim("--json  --markdown  --obsidian")),
-      kv(theme, "", theme.dim("--no-color  --save  --quiet  --out file")),
+      kv(theme, "", theme.dim("--no-color  --save  --quiet  --vault dir  --out file")),
     ]),
     "",
     panel(theme, "Commands", [
@@ -27,6 +27,7 @@ export function renderHelp(options = {}) {
       kv(theme, "save", `${theme.value("fitfo lght.co --save")} ${theme.dim("- timestamped report")}`),
       kv(theme, "out", `${theme.value("fitfo lght.co -o report.txt")} ${theme.dim("- specific file")}`),
       kv(theme, "quiet", `${theme.value("fitfo lght.co --out report.md --quiet")} ${theme.dim("- save only")}`),
+      kv(theme, "vault", `${theme.value("fitfo brief lght.co --vault ~/Notes")} ${theme.dim("- vault note")}`),
       kv(theme, "markdown", `${theme.value("fitfo lght.co --markdown")} ${theme.dim("- Markdown report")}`),
       kv(theme, "obsidian", `${theme.value("fitfo lght.co --obsidian")} ${theme.dim("- Obsidian note")}`),
       kv(theme, "json", `${theme.value("fitfo lght.co --json")} ${theme.dim("- machine-readable data")}`),

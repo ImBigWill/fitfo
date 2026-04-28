@@ -14,6 +14,7 @@ test("parses default scan command with a domain", () => {
     out: null,
     quiet: false,
     save: false,
+    vault: null,
     version: false,
   });
 });
@@ -26,6 +27,15 @@ test("parses brief command with Obsidian output path", () => {
   assert.equal(options.format, "obsidian");
   assert.equal(options.obsidian, true);
   assert.equal(options.out, "notes/example.md");
+});
+
+test("parses vault as an Obsidian output target", () => {
+  const options = parseArgs(["brief", "example.com", "--vault", "~/Obsidian/Clients"]);
+
+  assert.equal(options.command, "brief");
+  assert.equal(options.format, "obsidian");
+  assert.equal(options.obsidian, true);
+  assert.equal(options.vault, "~/Obsidian/Clients");
 });
 
 test("parses markdown and json aliases", () => {

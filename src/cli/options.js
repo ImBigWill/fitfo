@@ -13,6 +13,7 @@ export function parseArgs(argv) {
     out: null,
     quiet: false,
     save: false,
+    vault: null,
     version: false,
   };
 
@@ -43,6 +44,15 @@ export function parseArgs(argv) {
       options.save = true;
     } else if (arg === "--quiet" || arg === "-q") {
       options.quiet = true;
+    } else if (arg === "--vault") {
+      const value = argv[index + 1];
+      if (!value || value.startsWith("-")) {
+        throw new Error("--vault requires a directory path.");
+      }
+      options.vault = value;
+      options.obsidian = true;
+      options.format = "obsidian";
+      index += 1;
     } else if (arg === "--out" || arg === "-o") {
       const value = argv[index + 1];
       if (!value || value.startsWith("-")) {

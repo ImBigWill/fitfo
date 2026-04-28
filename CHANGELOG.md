@@ -21,6 +21,7 @@ Initial private version.
 - `--json`, `--no-color`, `--save`, and `--out` options.
 - `--format markdown`, `--markdown`, and `--obsidian` report exports.
 - `--quiet` mode for saving reports without printing the full output.
+- `--vault` and `FITFO_OBSIDIAN_DIR` support for stable Obsidian note paths.
 - `--version`, `version`, and `doctor` commands.
 - RDAP lookup with selected TLD fallback endpoints.
 - Classic WHOIS fallback for selected cases where RDAP is unavailable.

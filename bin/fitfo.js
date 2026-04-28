@@ -14,6 +14,7 @@ import { createTheme } from "../src/theme.js";
 
 const args = process.argv.slice(2);
 const options = parseArgs(args);
+options.vault ||= process.env.FITFO_OBSIDIAN_DIR || null;
 const noColor = options.noColor || process.env.NO_COLOR;
 let domainArg = options.domain;
 

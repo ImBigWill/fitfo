@@ -15,6 +15,7 @@ It can:
 - output JSON
 - output Markdown
 - save Obsidian-ready Markdown notes with frontmatter, tags, checklists, and client-call questions
+- save stable Obsidian vault notes with `--vault` or `FITFO_OBSIDIAN_DIR`
 - save reports when explicitly requested
 - print the current version
 - run a local `doctor` environment check

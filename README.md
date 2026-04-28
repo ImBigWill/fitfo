@@ -156,6 +156,19 @@ Save a first-call brief:
 fitfo brief example.com --obsidian --out ~/Obsidian/Clients/example.com-brief.md
 ```
 
+Save into an Obsidian vault folder with a stable filename:
+
+```bash
+fitfo brief example.com --obsidian --vault ~/Obsidian/Clients
+```
+
+Or set a default vault folder:
+
+```bash
+export FITFO_OBSIDIAN_DIR=~/Obsidian/Clients
+fitfo brief example.com --obsidian
+```
+
 Save without printing the full report:
 
 ```bash
