@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { defaultDesktopReportPath, normalizeSaveDestination, normalizeSaveFormat, promptedReportFileName, shouldPromptForReportSave } from "../src/cli/post-scan.js";
+import { defaultDesktopReportPath, normalizeSaveDestination, normalizeSaveFormat, promptedReportFileName, resolvePromptedOutputPath, shouldPromptForReportSave } from "../src/cli/post-scan.js";
 
 test("prompts to save only for normal interactive text runs without an explicit output", () => {
   const streams = {
@@ -52,4 +52,13 @@ test("uses simple domain filenames for prompted saves", () => {
   assert.equal(promptedReportFileName(scan, "markdown"), "example.com.md");
   assert.equal(promptedReportFileName(scan, "obsidian"), "example.com.md");
   assert.equal(promptedReportFileName(scan, "text"), "example.com.txt");
+});
+
+test("treats final save prompt yes as accepting the suggested path", () => {
+  assert.equal(resolvePromptedOutputPath("", "/tmp/example.com.md"), "/tmp/example.com.md");
+  assert.equal(resolvePromptedOutputPath("y", "/tmp/example.com.md"), "/tmp/example.com.md");
+  assert.equal(resolvePromptedOutputPath("yes", "/tmp/example.com.md"), "/tmp/example.com.md");
+  assert.equal(resolvePromptedOutputPath("n", "/tmp/example.com.md"), null);
+  assert.equal(resolvePromptedOutputPath("no", "/tmp/example.com.md"), null);
+  assert.equal(resolvePromptedOutputPath("/tmp/custom.md", "/tmp/example.com.md"), "/tmp/custom.md");
 });

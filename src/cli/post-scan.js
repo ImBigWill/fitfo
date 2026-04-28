@@ -41,6 +41,13 @@ export function promptedReportFileName(scan, format = "markdown") {
   return reportFileName(scan, format);
 }
 
+export function resolvePromptedOutputPath(answer, suggestedPath) {
+  const value = String(answer || "").trim();
+  if (!value || /^y(es)?$/i.test(value)) return suggestedPath;
+  if (/^n(o)?$/i.test(value)) return null;
+  return value;
+}
+
 function reportFileName(scan, format) {
   const extension = format === "text" ? "txt" : "md";
   return `${scan.domain.apex}.${extension}`;
