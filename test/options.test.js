@@ -44,6 +44,13 @@ test("parses plan command", () => {
   assert.equal(options.deep, true);
 });
 
+test("parses config command arguments", () => {
+  const options = parseArgs(["config", "set", "vault", "~/Obsidian/Clients"]);
+
+  assert.equal(options.command, "config");
+  assert.deepEqual(options.configArgs, ["set", "vault", "~/Obsidian/Clients"]);
+});
+
 test("parses vault as an Obsidian output target", () => {
   const options = parseArgs(["brief", "example.com", "--vault", "~/Obsidian/Clients"]);
 

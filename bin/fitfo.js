@@ -2,6 +2,7 @@
 
 import readline from "node:readline/promises";
 import { stdin as input, stdout as output } from "node:process";
+import { applyConfigDefaults, handleConfigCommand, loadConfig } from "../src/cli/config.js";
 import { renderOutput } from "../src/cli/output.js";
 import { parseArgs } from "../src/cli/options.js";
 import { resolveOutputPath, writeReport } from "../src/cli/reports.js";
@@ -40,6 +41,15 @@ if (options.command === "doctor") {
 }
 
 try {
+  if (options.command === "config") {
+    process.stdout.write(await handleConfigCommand(options.configArgs));
+    process.exit(0);
+  }
+
+  options = applyConfigDefaults(options, await loadConfig());
+  options.vault ||= process.env.FITFO_OBSIDIAN_DIR || null;
+  domainArg = options.domain;
+
   if (!domainArg) {
     domainArg = await promptForDomain({ color: !noColor, version: APP_VERSION });
   }

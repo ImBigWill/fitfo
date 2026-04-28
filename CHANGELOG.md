@@ -26,6 +26,7 @@ Initial private version.
 - `--format markdown`, `--markdown`, and `--obsidian` report exports.
 - `--quiet` mode for saving reports without printing the full output.
 - `--vault` and `FITFO_OBSIDIAN_DIR` support for stable Obsidian note paths.
+- `fitfo config` command for safe defaults like vault, location, country, format, deep/search, and crawl/search limits.
 - `--version`, `version`, and `doctor` commands.
 - `help` command alias and clean argument-error handling.
 - RDAP lookup with selected TLD fallback endpoints.

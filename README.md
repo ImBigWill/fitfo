@@ -115,6 +115,22 @@ Client build plan:
 fitfo plan example.com --deep --search --location "Richmond, VA"
 ```
 
+Save defaults:
+
+```bash
+fitfo config set vault ~/Obsidian/Clients
+fitfo config set location "Richmond, VA"
+fitfo config set format obsidian
+fitfo config set deep true
+fitfo config set search true
+```
+
+Show defaults:
+
+```bash
+fitfo config
+```
+
 Plain output:
 
 ```bash

@@ -19,6 +19,7 @@ It can:
 - output Markdown
 - save Obsidian-ready Markdown notes with frontmatter, tags, checklists, and client-call questions
 - save stable Obsidian vault notes with `--vault` or `FITFO_OBSIDIAN_DIR`
+- save safe CLI defaults with `fitfo config`
 - save reports when explicitly requested
 - print the current version
 - run a local `doctor` environment check
@@ -80,5 +81,4 @@ These may become separate commands or modules:
 
 - Refine Obsidian templates after a few real scans.
 - Add network fixture tests for real-world scanner edge cases without depending on live DNS during normal test runs.
-- Add `fitfo config` for default Obsidian vault, location, country, and preferred output.
 - Improve `plan` with stronger service/location sitemap heuristics after testing real client sites.
