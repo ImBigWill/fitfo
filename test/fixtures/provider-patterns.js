@@ -290,6 +290,65 @@ export const providerPatternFixtures = [
       email: "Titan Email",
     },
   },
+  {
+    name: "DreamHost WordPress site with Birdeye",
+    profile: providerProfile({
+      registrar: "DreamHost",
+      nameservers: ["ns1.dreamhost.com", "ns2.dreamhost.com", "ns3.dreamhost.com"],
+      cnames: ["www.client.example.dreamhosters.com"],
+      mx: [{ priority: 0, exchange: "client-example.mail.protection.outlook.com" }],
+      finalUrl: "https://client.example/",
+      headers: { server: "Apache" },
+      htmlSample: "<meta name=\"generator\" content=\"WordPress\"><script src=\"https://birdeye.com/embed/v7/widget.js\"></script>",
+      wordpress: true,
+    }),
+    expected: {
+      registrar: "DreamHost",
+      dnsProvider: "DreamHost",
+      hosting: "DreamHost",
+      email: "Microsoft 365",
+      cms: "WordPress",
+      operations: ["Birdeye"],
+    },
+  },
+  {
+    name: "Flywheel WordPress site with NiceJob",
+    profile: providerProfile({
+      registrar: "GoDaddy",
+      nameservers: ["ns01.domaincontrol.com", "ns02.domaincontrol.com"],
+      cnames: ["client.flywheelsites.com"],
+      finalUrl: "https://www.client.example/",
+      headers: { server: "nginx", "x-fw-server": "Flywheel" },
+      htmlSample: "<meta name=\"generator\" content=\"WordPress\"><script src=\"https://cdn.nicejob.co/js/sdk.min.js\"></script>",
+      wordpress: true,
+      urlStructure: wwwUrlStructure(),
+    }),
+    expected: {
+      dnsProvider: "GoDaddy",
+      hosting: "Flywheel",
+      cms: "WordPress",
+      operations: ["NiceJob"],
+      canonicalStyle: "www",
+    },
+  },
+  {
+    name: "Liquid Web host with Service Fusion",
+    profile: providerProfile({
+      registrar: "Tucows",
+      nameservers: ["ns.liquidweb.com", "ns1.liquidweb.com"],
+      cnames: ["www.client.example.liquidwebsites.com"],
+      mx: [{ priority: 10, exchange: "mx1.emailsrvr.com" }],
+      finalUrl: "https://client.example/",
+      headers: { server: "nginx", "x-hosted-by": "Liquid Web" },
+      htmlSample: "<a href=\"https://www.servicefusion.com/client-booking\">Book service</a>",
+    }),
+    expected: {
+      dnsProvider: "Liquid Web",
+      hosting: "Liquid Web",
+      email: "Rackspace Email",
+      operations: ["Service Fusion"],
+    },
+  },
 ];
 
 function providerProfile(options) {
