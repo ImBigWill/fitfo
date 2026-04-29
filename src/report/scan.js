@@ -1,4 +1,5 @@
 import { createTheme } from "../theme.js";
+import { plainCloudflareStatus } from "../handoff.js";
 import { kv, numbered, panel, renderAppHeader, renderSurface } from "../ui.js";
 
 export function renderTextReport(scan, options = {}) {
@@ -24,7 +25,7 @@ export function renderTextReport(scan, options = {}) {
       analysis.inputStatus ? verdictRow(theme, "Input", confidenceChip(theme, analysis.inputStatus.status === "Unresolved" ? "MANUAL" : "FOUND"), analysis.inputStatus.status) : null,
       verdictRow(theme, "Registrar", confidenceChip(theme, rdap.registrar?.name ? "FOUND" : "MANUAL"), analysis.registrar),
       verdictRow(theme, "DNS", confidenceChip(theme, analysis.dnsProvider === "Unknown" ? "MANUAL" : "FOUND"), analysis.dnsProvider),
-      verdictRow(theme, "Cloudflare", confidenceChip(theme, analysis.cloudflare.confidence.toUpperCase()), analysis.cloudflare.status),
+      verdictRow(theme, "Cloudflare", confidenceChip(theme, analysis.cloudflare.confidence.toUpperCase()), plainCloudflareStatus(scan)),
       verdictRow(theme, "Hosting", confidenceChip(theme, analysis.hosting.confidence.toUpperCase()), analysis.hosting.provider),
       verdictRow(theme, "Launch URL", confidenceChip(theme, analysis.urlStructure?.canonicalStyle === "Unknown" ? "MANUAL" : "FOUND"), analysis.urlStructure?.canonicalStyle || "Unknown"),
       verdictRow(theme, "Prev Dev", confidenceChip(theme, "MANUAL"), analysis.previousDeveloper.contact),
@@ -167,7 +168,7 @@ export function renderMarkdownReport(scan, options = {}) {
       ["Input Check", analysis.inputStatus ? `${analysis.inputStatus.status} (${analysis.inputStatus.confidence})` : "Unknown"],
       ["Registrar", analysis.registrar],
       ["DNS Provider", analysis.dnsProvider],
-      ["Cloudflare", `${analysis.cloudflare.status} (${analysis.cloudflare.confidence})`],
+      ["Cloudflare", `${plainCloudflareStatus(scan)} (${analysis.cloudflare.confidence})`],
       ["Hosting", `${analysis.hosting.provider} (${analysis.hosting.confidence})`],
       ["Launch URL", analysis.urlStructure ? formatLaunchUrl(analysis.urlStructure) : "Unknown"],
       ["CMS", `${analysis.cms.platform} (${analysis.cms.confidence})`],

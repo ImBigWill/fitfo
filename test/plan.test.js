@@ -5,7 +5,7 @@ import { buildClientPlan, renderPlanMarkdown } from "../src/plan.js";
 const scan = {
   finishedAt: "2026-04-27T00:01:00.000Z",
   domain: { apex: "client.example" },
-  dns: { subdomains: [] },
+  dns: { nameservers: ["ns1.domaincontrol.com", "ns2.domaincontrol.com"], subdomains: [] },
   http: { reachable: true, title: "Client Plumbing" },
   site: {
     enabled: true,
@@ -20,6 +20,10 @@ const scan = {
     results: [{ query: "Client Plumbing services Richmond VA", title: "Competitor Plumbing Services", description: "Drain repair and emergency plumbing", url: "https://competitor.example" }],
   },
   analysis: {
+    registrar: "GoDaddy",
+    registrarDetails: { confidence: "High" },
+    dnsProvider: "GoDaddy DNS",
+    cloudflare: { status: "No obvious Cloudflare", confidence: "Low" },
     cms: { platform: "WordPress", confidence: "Medium" },
     hosting: { provider: "WP Engine", confidence: "Medium" },
     email: { provider: "Google Workspace" },
@@ -42,6 +46,9 @@ test("builds a client plan from scan, crawl, and research signals", () => {
   assert.ok(plan.competitorStructure.some((item) => item.path.startsWith("/services/")));
   assert.ok(plan.reputationSummary.some((item) => item.channel === "Market patterns"));
   assert.ok(plan.serviceLocationRecommendations.some((item) => item.page === "/services/drain-cleaning/"));
+  assert.ok(plan.infrastructureSnapshot.some((item) => item.area === "Registrar / Domain Provider" && item.finding === "GoDaddy"));
+  assert.ok(plan.loginChecklist.some((item) => item.access === "Cloudflare" && item.status === "No - no obvious Cloudflare"));
+  assert.ok(plan.topLocalCompetitors.some((item) => item.name === "Competitor Plumbing Services"));
   assert.ok(plan.workstreams.some((item) => item.name === "Tracking and conversion"));
   assert.ok(plan.launchChecklist.some((item) => item.item === "DNS cutover" && item.phase === "Launch"));
   assert.ok(plan.kickoffResearch.marketSnapshot.some((item) => item.label === "Competitor and market SERP"));
@@ -56,11 +63,18 @@ test("renders a Markdown plan for Obsidian", () => {
   const markdown = renderPlanMarkdown(scan, { obsidian: true });
 
   assert.match(markdown, /report_type: "obsidian-plan"/);
+  assert.match(markdown, /## Infrastructure Snapshot/);
+  assert.match(markdown, /\| Registrar \/ Domain Provider \| GoDaddy \| High \|/);
+  assert.match(markdown, /\| Cloudflare \| No - no obvious Cloudflare \| Low \|/);
+  assert.match(markdown, /## Login \/ Access Checklist/);
+  assert.match(markdown, /\| Domain registrar \| GoDaddy \|/);
   assert.match(markdown, /## Evidence Labels/);
   assert.match(markdown, /## Focus First/);
   assert.match(markdown, /## Recommended Structure/);
   assert.match(markdown, /## Competitor-Informed Structure/);
   assert.match(markdown, /\| Priority \| Path \| Trigger \| Rationale \|/);
+  assert.match(markdown, /## Top Local Competitors To Review/);
+  assert.match(markdown, /Competitor Plumbing Services/);
   assert.match(markdown, /## Review \+ Reputation Summary/);
   assert.match(markdown, /## Service \+ Location Recommendations/);
   assert.match(markdown, /## Build Workstreams/);

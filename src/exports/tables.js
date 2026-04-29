@@ -28,6 +28,8 @@ export function buildTableExportBundle(scan, options = {}) {
       searchAvailable: Boolean(scan.research?.available),
       searchQueries: scan.research?.queries || [],
     },
+    infrastructureSnapshot: normalizeInfrastructureSnapshot(report.infrastructureSnapshot || []),
+    loginChecklist: normalizeLoginChecklist(report.loginChecklist || []),
     actionItems: normalizeActionItems(actionReport.priorityActions || []),
     proofAssets: normalizeProofAssets(actionReport.proofAssets || []),
     contentInventory: normalizeContentInventory(actionReport.contentInventory || []),
@@ -37,6 +39,7 @@ export function buildTableExportBundle(scan, options = {}) {
     launchChecklist: normalizeLaunchChecklist(report.launchChecklist || []),
     confirmationScript: normalizeConfirmationScript(report.confirmationScript || []),
     keywordClusters: normalizeKeywordClusters(actionReport.keywordClusters || {}),
+    topLocalCompetitors: normalizeTopLocalCompetitors(competitorResearch.topLocalCompetitors || []),
     competitors: normalizeCompetitors(competitorResearch),
     keywordPageMap: normalizePageMap(actionReport.pageMap || []),
     researchResults: normalizeResearchResults(scan.research?.results || []),
@@ -51,6 +54,8 @@ export async function writeTableExports(scan, options = {}) {
 
   const files = {
     actionItems: path.join(directory, `${domain}-action-items.csv`),
+    infrastructureSnapshot: path.join(directory, `${domain}-infrastructure-snapshot.csv`),
+    loginChecklist: path.join(directory, `${domain}-login-checklist.csv`),
     proofAssets: path.join(directory, `${domain}-proof-assets.csv`),
     contentInventory: path.join(directory, `${domain}-content-inventory.csv`),
     competitorStructure: path.join(directory, `${domain}-competitor-structure.csv`),
@@ -59,6 +64,7 @@ export async function writeTableExports(scan, options = {}) {
     launchChecklist: path.join(directory, `${domain}-launch-checklist.csv`),
     confirmationScript: path.join(directory, `${domain}-confirmation-script.csv`),
     keywordClusters: path.join(directory, `${domain}-keyword-clusters.csv`),
+    topLocalCompetitors: path.join(directory, `${domain}-top-local-competitors.csv`),
     competitors: path.join(directory, `${domain}-competitors.csv`),
     keywordPageMap: path.join(directory, `${domain}-keyword-page-map.csv`),
     researchResults: path.join(directory, `${domain}-research-results.csv`),
@@ -72,6 +78,17 @@ export async function writeTableExports(scan, options = {}) {
       ["owner", "Owner"],
       ["action", "Action"],
       ["detail", "Detail"],
+    ]), "utf8"),
+    writeFile(files.infrastructureSnapshot, toCsv(bundle.infrastructureSnapshot, [
+      ["area", "Area"],
+      ["finding", "Public Finding"],
+      ["confidence", "Confidence"],
+      ["clientNeed", "Client Needs"],
+    ]), "utf8"),
+    writeFile(files.loginChecklist, toCsv(bundle.loginChecklist, [
+      ["access", "Access"],
+      ["status", "Public Status"],
+      ["needed", "Needed From Client"],
     ]), "utf8"),
     writeFile(files.proofAssets, toCsv(bundle.proofAssets, [
       ["priority", "Priority"],
@@ -118,6 +135,12 @@ export async function writeTableExports(scan, options = {}) {
       ["cluster", "Cluster"],
       ["keyword", "Keyword"],
     ]), "utf8"),
+    writeFile(files.topLocalCompetitors, toCsv(bundle.topLocalCompetitors, [
+      ["name", "Competitor"],
+      ["reason", "Why It Surfaced"],
+      ["source", "Source Query"],
+      ["url", "URL"],
+    ]), "utf8"),
     writeFile(files.competitors, toCsv(bundle.competitors, [
       ["type", "Type"],
       ["title", "Title"],
@@ -163,6 +186,23 @@ function normalizeActionItems(items) {
     owner: item.owner || "",
     action: item.label || item.action || "",
     detail: item.detail || "",
+  }));
+}
+
+function normalizeInfrastructureSnapshot(items) {
+  return items.map((item) => ({
+    area: item.area || "",
+    finding: item.finding || "",
+    confidence: item.confidence || "",
+    clientNeed: item.clientNeed || "",
+  }));
+}
+
+function normalizeLoginChecklist(items) {
+  return items.map((item) => ({
+    access: item.access || "",
+    status: item.status || "",
+    needed: item.needed || "",
   }));
 }
 
@@ -246,6 +286,15 @@ function normalizeCompetitors(research) {
     ...typedResults("owned", research.owned || []),
     ...typedResults("other", research.other || []),
   ];
+}
+
+function normalizeTopLocalCompetitors(items) {
+  return items.map((item) => ({
+    name: item.name || "",
+    reason: item.reason || "",
+    source: item.source || "",
+    url: item.url || "",
+  }));
 }
 
 function typedResults(type, results) {

@@ -1,4 +1,5 @@
 import { createTheme } from "./theme.js";
+import { buildInfrastructureSnapshot, buildLoginChecklist, plainCloudflareStatus } from "./handoff.js";
 import { kv, numbered, panel, renderAppHeader, renderSurface } from "./ui.js";
 
 export function buildBrief(scan) {
@@ -16,7 +17,12 @@ export function buildBrief(scan) {
   return {
     subject: domain.apex,
     generatedAt: scan.finishedAt,
+    infrastructureSnapshot: buildInfrastructureSnapshot(scan),
+    loginChecklist: buildLoginChecklist(scan),
     snapshot: [
+      ["Registrar", `${analysis.registrar || "Unknown"} (${analysis.registrarDetails?.confidence || "Manual"})`],
+      ["DNS", `${analysis.dnsProvider || "Unknown"}`],
+      ["Cloudflare", plainCloudflareStatus(scan)],
       ["Website", http.reachable ? "Reachable" : "Not reachable during scan"],
       ["Title", http.title || "Unknown"],
       ["CMS", `${analysis.cms.platform} (${analysis.cms.confidence})`],
@@ -63,6 +69,10 @@ export function renderBriefText(scan, options = {}) {
       ...brief.snapshot.map(([label, value]) => kv(theme, label, value)),
     ]),
     "",
+    panel(theme, "Infrastructure Snapshot", formatInfrastructureSnapshot(theme, brief.infrastructureSnapshot)),
+    "",
+    panel(theme, "Login / Access Checklist", formatLoginChecklist(theme, brief.loginChecklist)),
+    "",
     panel(theme, "Confirm On The Call", brief.confirmations.flatMap((item, index) => numbered(theme, index + 1, item.label, item.detail))),
     "",
     panel(theme, "Site Intelligence", brief.siteIntelligence.map((item) => `${theme.bullet("›")} ${theme.label(item.label)} ${theme.dim(item.detail)}`)),
@@ -88,6 +98,8 @@ export function renderBriefText(scan, options = {}) {
     panel(theme, "Keyword Research", formatKeywordClusters(theme, brief.actionReport.keywordClusters)),
     "",
     panel(theme, "Competitor Research", formatCompetitorResearch(theme, brief.actionReport.competitorResearch)),
+    "",
+    panel(theme, "Top Local Competitors To Review", formatTopLocalCompetitors(theme, brief.actionReport.competitorResearch.topLocalCompetitors)),
     "",
     panel(theme, "Review + Reputation Summary", formatReputationSummary(theme, brief.reputationSummary)),
     "",
@@ -137,6 +149,14 @@ export function renderBriefMarkdown(scan, options = {}) {
     "",
     markdownTable(brief.snapshot),
     "",
+    "## Infrastructure Snapshot",
+    "",
+    markdownInfrastructureSnapshot(brief.infrastructureSnapshot),
+    "",
+    "## Login / Access Checklist",
+    "",
+    markdownLoginChecklist(brief.loginChecklist),
+    "",
     "## Detailed Action Report",
     "",
     ...markdownActionReport(brief.actionReport),
@@ -156,6 +176,10 @@ export function renderBriefMarkdown(scan, options = {}) {
     "## Competitor Research",
     "",
     ...markdownCompetitorResearch(brief.actionReport.competitorResearch),
+    "",
+    "## Top Local Competitors To Review",
+    "",
+    markdownTopLocalCompetitors(brief.actionReport.competitorResearch.topLocalCompetitors),
     "",
     "## Review + Reputation Summary",
     "",
@@ -709,6 +733,7 @@ function buildCompetitorResearch(scan) {
     reviewProfiles: classified.filter((result) => result.type === "review"),
     socialProfiles: classified.filter((result) => result.type === "social"),
     other: classified.filter((result) => result.type === "other"),
+    topLocalCompetitors: selectTopLocalCompetitors(classified, scan),
     patterns: summarizeCompetitorPatterns(classified),
   };
 }
@@ -1241,6 +1266,7 @@ function formatCluster(theme, label, values) {
 function formatCompetitorResearch(theme, research) {
   return [
     `${theme.bullet("›")} ${theme.label("Likely competitors")} ${theme.dim(formatResultTitles(research.competitors))}`,
+    `${theme.bullet("›")} ${theme.label("Top local review set")} ${theme.dim(formatTopLocalNames(research.topLocalCompetitors))}`,
     `${theme.bullet("›")} ${theme.label("Directories")} ${theme.dim(formatResultTitles(research.directories))}`,
     `${theme.bullet("›")} ${theme.label("Review profiles")} ${theme.dim(formatResultTitles(research.reviewProfiles))}`,
     `${theme.bullet("›")} ${theme.label("Owned footprint")} ${theme.dim(formatResultTitles(research.owned))}`,
@@ -1248,8 +1274,24 @@ function formatCompetitorResearch(theme, research) {
   ];
 }
 
+function formatTopLocalCompetitors(theme, competitors) {
+  if (!competitors?.length) {
+    return [`${theme.bullet("›")} ${theme.label("No local set yet")} ${theme.dim("Run with --search --location or confirm the real competitors on the client call.")}`];
+  }
+
+  return competitors.map((item) => `${theme.bullet("›")} ${theme.label(item.name)} ${theme.chip(`[${item.source}]`)} ${theme.dim(`${item.reason} ${item.url}`)}`);
+}
+
 function formatReputationSummary(theme, reputationSummary) {
   return reputationSummary.map((item) => `${theme.bullet("›")} ${theme.label(item.channel)} ${theme.dim(`${item.signal} | ${item.action}`)}`);
+}
+
+function formatInfrastructureSnapshot(theme, rows) {
+  return rows.map((item) => `${theme.bullet("›")} ${theme.label(item.area)} ${theme.chip(`[${item.confidence}]`)} ${theme.dim(`${item.finding} | ${item.clientNeed}`)}`);
+}
+
+function formatLoginChecklist(theme, rows) {
+  return rows.map((item) => `${theme.bullet("›")} ${theme.label(item.access)} ${theme.dim(`${item.status}: ${item.needed}`)}`);
 }
 
 function formatCompetitorStructure(theme, structure) {
@@ -1325,12 +1367,40 @@ function markdownCompetitorResearch(research) {
   return [
     markdownTableWithHeaders(["Type", "Results"], [
       ["Likely competitors", formatResultTitles(research.competitors)],
+      ["Top local review set", formatTopLocalNames(research.topLocalCompetitors)],
       ["Directories", formatResultTitles(research.directories)],
       ["Review profiles", formatResultTitles(research.reviewProfiles)],
       ["Owned footprint", formatResultTitles(research.owned)],
       ["Observed patterns", research.patterns.length ? research.patterns.join(", ") : "No repeated competitor patterns detected"],
     ]),
   ];
+}
+
+function markdownTopLocalCompetitors(competitors) {
+  if (!competitors?.length) return "- No top local competitor set yet. Run with `--search --location` or confirm the real competitors on the client call.";
+  return markdownTableWithHeaders(["Competitor", "Why It Surfaced", "Source Query", "URL"], competitors.map((item) => [
+    item.name,
+    item.reason,
+    item.source,
+    item.url,
+  ]));
+}
+
+function markdownInfrastructureSnapshot(rows) {
+  return markdownTableWithHeaders(["Area", "Public Finding", "Confidence", "Client Needs"], rows.map((item) => [
+    item.area,
+    item.finding,
+    item.confidence,
+    item.clientNeed,
+  ]));
+}
+
+function markdownLoginChecklist(rows) {
+  return markdownTableWithHeaders(["Access", "Public Status", "Needed From Client"], rows.map((item) => [
+    item.access,
+    item.status,
+    item.needed,
+  ]));
 }
 
 function markdownReputationSummary(reputationSummary) {
@@ -1517,6 +1587,64 @@ function summarizeCompetitorPatterns(results) {
     .slice(0, 8);
 }
 
+function selectTopLocalCompetitors(results, scan) {
+  const location = scan.research?.location || "";
+  const locationRoot = location.split(",")[0]?.trim().toLowerCase() || "";
+  const state = location.split(",")[1]?.trim().toLowerCase() || "";
+  const seenHosts = new Set();
+
+  return results
+    .filter((result) => result.type === "competitor" || result.type === "other")
+    .map((result) => {
+      const text = `${result.title || ""} ${result.description || ""} ${result.query || ""} ${result.url || ""}`.toLowerCase();
+      const hostname = safeHostname(result.url).replace(/^www\./, "");
+      let score = result.type === "competitor" ? 6 : 1;
+      const reasons = [];
+
+      if (locationRoot && text.includes(locationRoot)) {
+        score += 4;
+        reasons.push(`mentions ${locationRoot}`);
+      }
+
+      if (state && new RegExp(`\\b${escapeRegExp(state)}\\b`, "i").test(text)) {
+        score += 2;
+      }
+
+      if (/\b(google business|google maps|maps|near me|local|reviews?|ratings?|best|top)\b/i.test(text)) {
+        score += 3;
+        reasons.push("surfaced in local/review-style research");
+      }
+
+      if ((result.patterns || []).includes("review proof")) {
+        score += 2;
+        reasons.push("review proof");
+      }
+
+      if ((result.patterns || []).includes("local ownership")) {
+        score += 1;
+        reasons.push("local positioning");
+      }
+
+      return {
+        name: cleanCompetitorName(result.title || hostname || result.url),
+        url: result.url || "",
+        source: result.query || "Research result",
+        reason: uniqueValues(reasons).join(", ") || "service competitor result from local search research",
+        hostname,
+        score,
+      };
+    })
+    .sort((a, b) => b.score - a.score)
+    .filter((result) => {
+      if (!result.hostname) return true;
+      if (seenHosts.has(result.hostname)) return false;
+      seenHosts.add(result.hostname);
+      return true;
+    })
+    .slice(0, 3)
+    .map(({ hostname, score, ...result }) => result);
+}
+
 function findMatchingPage(keyword, pages, intent = "service") {
   const tokens = keywordTokens(keyword);
   if (!tokens.length) return null;
@@ -1624,6 +1752,18 @@ function slugifyKeyword(keyword) {
 
 function formatResultTitles(results) {
   return results.length ? results.slice(0, 5).map((result) => result.title || result.url).join(", ") : "None detected";
+}
+
+function formatTopLocalNames(results) {
+  return results?.length ? results.map((result) => result.name).join(", ") : "None detected";
+}
+
+function cleanCompetitorName(value) {
+  return String(value || "Competitor")
+    .replace(/\s*[-|]\s*(Official Site|Home|Reviews?|Google Business Profile|Yelp|Angi).*$/i, "")
+    .replace(/\b(best|top)\s+\d+\s+/i, "")
+    .replace(/\s+/g, " ")
+    .trim() || "Competitor";
 }
 
 function uniqueValues(values) {

@@ -99,7 +99,7 @@ fitfo onboard example.com
 - Obsidian-ready action-plan note
 - CSV/JSON table exports for planning workflows
 
-The exported report leads with a client handoff summary: where FITFO thinks the domain, DNS, hosting, CMS, email, services, and subdomains live, how confident that finding is, and what the client needs to provide or confirm.
+The exported report leads with an infrastructure snapshot and login checklist: registrar/domain provider, DNS/nameservers, very plain Cloudflare status, hosting, CMS, email, and exactly what the client needs to provide or confirm from day one.
 
 When run in an interactive terminal, `fitfo onboard` asks for missing full-intake details before scanning:
 
@@ -195,6 +195,7 @@ It also generates:
 
 - keyword clusters by service, emergency/high-intent, local, informational, and proof/trust themes
 - competitor, directory, review, social, owned, and other result classification
+- top-three local competitor prompts from search/local/review-style research results
 - keyword-to-page mapping for existing pages or suggested new pages
 - prioritized action items with owner labels for client/us follow-up
 - proof-asset requests for reviews, photos, credentials, case studies, offers, and lead-routing evidence
@@ -211,7 +212,7 @@ Export the kickoff tables as CSV files plus a JSON bundle:
 fitfo brief example.com --deep --search --location "Richmond, VA" --export-tables fitfo-exports
 ```
 
-This writes sidecar files for action items, proof assets, content inventory, competitor structure, service/location recommendations, reputation summary, launch checklist, confirmation script, keyword clusters, competitors, keyword-to-page maps, raw research results, and a combined `example.com-research-tables.json` bundle.
+This writes sidecar files for infrastructure snapshot, login checklist, action items, proof assets, content inventory, competitor structure, top local competitors, service/location recommendations, reputation summary, launch checklist, confirmation script, keyword clusters, competitors, keyword-to-page maps, raw research results, and a combined `example.com-research-tables.json` bundle.
 
 Client build plan:
 
@@ -339,6 +340,8 @@ The report is designed for onboarding, not just technical trivia.
 Key sections:
 
 - **Verdict**: registrar, DNS provider, Cloudflare status, hosting, CMS, email, and services.
+- **Infrastructure Snapshot**: registrar/domain provider, DNS, very plain Cloudflare status, hosting, CMS, email, confidence, and client needs.
+- **Login / Access Checklist**: day-one accounts to track down, including registrar, DNS, Cloudflare if indicated, hosting, CMS, email, analytics, CRM, and previous developer contact.
 - **Track This Down**: the practical access errands for the client or previous developer.
 - **Client Handoff Summary**: a client-facing table of public findings, confidence, and what access or confirmation is needed.
 - **DNS Records**: nameservers, IPs, email records, and safety records.
@@ -351,11 +354,11 @@ Key sections:
 - **Site Intelligence**: when `--deep` is used, sitemap pages, headings, metadata, CTAs, forms, schema, phones, and suggested structure.
 - **Kickoff Research Brief**: when using brief mode, current site read, market snapshot, keyword/page opportunities, positioning hypotheses, and kickoff call agenda.
 - **Kickoff Research Game Plan**: when using plan mode, carries market, keyword, and positioning prompts into build planning.
-- **Detailed Action Report**: prioritized next steps, proof-asset requests, content inventory, keyword clusters, competitor research, reputation summary, competitor-informed structure, service/location recommendations, confirmation script, and keyword-to-page mapping for kickoff and build planning.
+- **Detailed Action Report**: prioritized next steps, proof-asset requests, content inventory, keyword clusters, competitor research, top local competitors, reputation summary, competitor-informed structure, service/location recommendations, confirmation script, and keyword-to-page mapping for kickoff and build planning.
 - **Launch Checklist**: in plan mode, grouped launch checks for canonical host, redirects, DNS, hosting, CMS, email, tracking/CRM, and QA.
 - **Table Exports**: with `--export-tables <dir>`, CSV/JSON sidecars for moving research into Sheets, Obsidian, or client planning docs.
 
-Markdown and Obsidian exports also include YAML frontmatter, tags, client-call questions, checklist items, and table-formatted action, keyword, competitor, reputation, structure, content, and page-map sections.
+Markdown and Obsidian exports also include YAML frontmatter, tags, client-call questions, checklist items, and table-formatted infrastructure, login, action, keyword, competitor, reputation, structure, content, and page-map sections.
 
 ## Important Limits
 

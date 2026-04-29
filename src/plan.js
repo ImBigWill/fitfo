@@ -7,11 +7,14 @@ export function buildClientPlan(scan) {
   return {
     subject: scan.domain.apex,
     generatedAt: scan.finishedAt,
+    infrastructureSnapshot: brief.infrastructureSnapshot,
+    loginChecklist: brief.loginChecklist,
     priorities: buildPriorities(scan),
     structure: brief.suggestedStructure,
     competitorStructure: brief.competitorStructure,
     reputationSummary: brief.reputationSummary,
     serviceLocationRecommendations: brief.serviceLocationRecommendations,
+    topLocalCompetitors: brief.actionReport.competitorResearch?.topLocalCompetitors || [],
     workstreams: buildWorkstreams(scan),
     launchChecklist: buildPlanLaunchChecklist(scan),
     kickoffResearch: brief.kickoffResearch,
@@ -40,6 +43,10 @@ export function renderPlanText(scan, options = {}) {
       kv(theme, "Research", scan.research?.enabled ? "Search enabled" : "Search not enabled"),
     ]),
     "",
+    panel(theme, "Infrastructure Snapshot", formatInfrastructureSnapshot(theme, plan.infrastructureSnapshot)),
+    "",
+    panel(theme, "Login / Access Checklist", formatLoginChecklist(theme, plan.loginChecklist)),
+    "",
     panel(theme, "Evidence Labels", [
       `${theme.bullet("›")} ${theme.label("Observed")} ${theme.dim("Found in DNS, HTTP, sitemap/page crawl, or visible site signals.")}`,
       `${theme.bullet("›")} ${theme.label("Research")} ${theme.dim("Found through Firecrawl-backed web/search results.")}`,
@@ -52,6 +59,8 @@ export function renderPlanText(scan, options = {}) {
     panel(theme, "Recommended Structure", plan.structure.map((item) => `${theme.bullet("›")} ${theme.label(item.path)} ${theme.dim(item.reason)}`)),
     "",
     panel(theme, "Competitor-Informed Structure", plan.competitorStructure.map((item) => `${theme.bullet("›")} ${theme.label(item.path)} ${theme.chip(`[${item.priority}]`)} ${theme.dim(`${item.trigger}: ${item.rationale}`)}`)),
+    "",
+    panel(theme, "Top Local Competitors To Review", formatTopLocalCompetitors(theme, plan.topLocalCompetitors)),
     "",
     panel(theme, "Review + Reputation Summary", plan.reputationSummary.map((item) => `${theme.bullet("›")} ${theme.label(item.channel)} ${theme.dim(`${item.signal} | ${item.action}`)}`)),
     "",
@@ -95,6 +104,14 @@ export function renderPlanMarkdown(scan, options = {}) {
     "",
     "**Kickstarting onboarding.**",
     "",
+    "## Infrastructure Snapshot",
+    "",
+    markdownInfrastructureSnapshot(plan.infrastructureSnapshot),
+    "",
+    "## Login / Access Checklist",
+    "",
+    markdownLoginChecklist(plan.loginChecklist),
+    "",
     "## Evidence Labels",
     "",
     "- **Observed:** Found in DNS, HTTP, sitemap/page crawl, or visible site signals.",
@@ -118,6 +135,10 @@ export function renderPlanMarkdown(scan, options = {}) {
       item.trigger,
       item.rationale,
     ])),
+    "",
+    "## Top Local Competitors To Review",
+    "",
+    markdownTopLocalCompetitors(plan.topLocalCompetitors),
     "",
     "## Review + Reputation Summary",
     "",
@@ -224,6 +245,53 @@ function markdownPlanPageMap(actionReport) {
       item.status,
     ])),
   ];
+}
+
+function formatInfrastructureSnapshot(theme, rows = []) {
+  if (!rows.length) return [`${theme.bullet("›")} ${theme.label("Snapshot")} ${theme.dim("Run a scan to identify registrar, DNS, Cloudflare, hosting, CMS, and email ownership.")}`];
+  return rows.map((item) => `${theme.bullet("›")} ${theme.label(item.area)} ${theme.chip(`[${item.confidence}]`)} ${theme.dim(`${item.finding} | ${item.clientNeed}`)}`);
+}
+
+function formatLoginChecklist(theme, rows = []) {
+  if (!rows.length) return [`${theme.bullet("›")} ${theme.label("Access")} ${theme.dim("Run a scan to generate the day-one login checklist.")}`];
+  return rows.map((item) => `${theme.bullet("›")} ${theme.label(item.access)} ${theme.dim(`${item.status}: ${item.needed}`)}`);
+}
+
+function formatTopLocalCompetitors(theme, competitors = []) {
+  if (!competitors.length) {
+    return [`${theme.bullet("›")} ${theme.label("No local set yet")} ${theme.dim("Run with --search --location or confirm the real competitors on the client call.")}`];
+  }
+
+  return competitors.map((item) => `${theme.bullet("›")} ${theme.label(item.name)} ${theme.chip(`[${item.source}]`)} ${theme.dim(`${item.reason} ${item.url}`)}`);
+}
+
+function markdownInfrastructureSnapshot(rows = []) {
+  if (!rows.length) return "- Run a scan to identify registrar, DNS, Cloudflare, hosting, CMS, and email ownership.";
+  return markdownTableWithHeaders(["Area", "Public Finding", "Confidence", "Client Needs"], rows.map((item) => [
+    item.area,
+    item.finding,
+    item.confidence,
+    item.clientNeed,
+  ]));
+}
+
+function markdownLoginChecklist(rows = []) {
+  if (!rows.length) return "- Run a scan to generate the day-one login checklist.";
+  return markdownTableWithHeaders(["Access", "Public Status", "Needed From Client"], rows.map((item) => [
+    item.access,
+    item.status,
+    item.needed,
+  ]));
+}
+
+function markdownTopLocalCompetitors(competitors = []) {
+  if (!competitors.length) return "- No top local competitor set yet. Run with `--search --location` or confirm the real competitors on the client call.";
+  return markdownTableWithHeaders(["Competitor", "Why It Surfaced", "Source Query", "URL"], competitors.map((item) => [
+    item.name,
+    item.reason,
+    item.source,
+    item.url,
+  ]));
 }
 
 function formatPlanResearch(theme, kickoffResearch) {

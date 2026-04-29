@@ -9,6 +9,7 @@ const scan = {
     hostname: "www.client.example",
   },
   dns: {
+    nameservers: ["ns1.domaincontrol.com", "ns2.domaincontrol.com"],
     subdomains: [{ name: "staging.client.example" }],
   },
   http: {
@@ -64,6 +65,10 @@ const scan = {
     errors: [],
   },
   analysis: {
+    registrar: "GoDaddy",
+    registrarDetails: { confidence: "High" },
+    dnsProvider: "GoDaddy DNS",
+    cloudflare: { status: "No obvious Cloudflare", confidence: "Low" },
     cms: {
       platform: "WordPress",
       confidence: "Medium",
@@ -102,7 +107,10 @@ test("builds a first-call brief from an existing scan", () => {
   assert.ok(brief.actionReport.keywordClusters.coreServices.includes("drain cleaning"));
   assert.ok(brief.actionReport.keywordClusters.emergency.some((keyword) => keyword.includes("emergency plumbing repair")));
   assert.ok(brief.actionReport.competitorResearch.competitors.some((result) => result.title === "Emergency Plumbing Repair Richmond VA"));
+  assert.ok(brief.actionReport.competitorResearch.topLocalCompetitors.some((result) => result.name === "Emergency Plumbing Repair Richmond VA"));
   assert.ok(brief.actionReport.competitorResearch.reviewProfiles.some((result) => result.title.includes("Yelp")));
+  assert.ok(brief.infrastructureSnapshot.some((item) => item.area === "Registrar / Domain Provider" && item.finding === "GoDaddy"));
+  assert.ok(brief.loginChecklist.some((item) => item.access === "Cloudflare" && item.status === "No - no obvious Cloudflare"));
   assert.ok(brief.actionReport.pageMap.some((item) => item.keyword === "drain cleaning" && item.status === "Improve existing"));
   assert.ok(brief.actionReport.proofAssets.some((item) => item.asset === "Reviews and testimonials" && item.priority === "High"));
   assert.ok(brief.actionReport.contentInventory.some((item) => item.path === "/services/drain-cleaning/" && item.type === "Service"));
@@ -123,6 +131,11 @@ test("renders a Markdown brief for Obsidian/client prep", () => {
 
   assert.match(markdown, /report_type: "obsidian-brief"/);
   assert.match(markdown, /# FITFO Brief - client.example/);
+  assert.match(markdown, /## Infrastructure Snapshot/);
+  assert.match(markdown, /\| Registrar \/ Domain Provider \| GoDaddy \| High \|/);
+  assert.match(markdown, /\| Cloudflare \| No - no obvious Cloudflare \| Low \|/);
+  assert.match(markdown, /## Login \/ Access Checklist/);
+  assert.match(markdown, /\| Domain registrar \| GoDaddy \|/);
   assert.match(markdown, /## Confirm On The Call/);
   assert.match(markdown, /## Site Intelligence/);
   assert.match(markdown, /## Market Research/);
@@ -137,6 +150,8 @@ test("renders a Markdown brief for Obsidian/client prep", () => {
   assert.match(markdown, /## Keyword Research/);
   assert.match(markdown, /\| Cluster \| Keywords \|/);
   assert.match(markdown, /## Competitor Research/);
+  assert.match(markdown, /## Top Local Competitors To Review/);
+  assert.match(markdown, /Emergency Plumbing Repair Richmond VA/);
   assert.match(markdown, /## Review \+ Reputation Summary/);
   assert.match(markdown, /\| Channel \| Signal \| Action \|/);
   assert.match(markdown, /## Competitor-Informed Structure/);
