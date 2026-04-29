@@ -34,6 +34,12 @@ The build recommendation layer now starts as:
 fitfo plan clientdomain.com --deep --search --location "City, ST"
 ```
 
+The full-intake path is:
+
+```bash
+fitfo onboard clientdomain.com
+```
+
 ## Near-Term
 
 - Improve redirect checks for `www` and apex canonical behavior.
@@ -43,6 +49,7 @@ fitfo plan clientdomain.com --deep --search --location "City, ST"
 - Improve Markdown report templates after real Obsidian use.
 - Expand fixture coverage as real-world misses show up.
 - Improve save-flow wording after more Desktop and Obsidian usage.
+- Keep GitHub repo metadata current while the project is private.
 
 ## Onboarding Scanner Ideas
 
@@ -133,3 +140,16 @@ report renderers
 ```
 
 A public plugin architecture is premature until we know which extension points are actually useful.
+
+## Website / Docs Site
+
+No project website is needed while FITFO is private.
+
+When the project is closer to public release, consider a small docs site or landing page that explains:
+
+- what `fitfo onboard` does
+- what FITFO can and cannot detect
+- install and configuration steps
+- example Obsidian/report output using fake data
+- provider fixture contribution flow
+- public release and npm package status
