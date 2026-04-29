@@ -27,7 +27,9 @@ Do not commit:
 Generated report folders are ignored by default:
 
 - `fitfo-reports/`
+- `fitfo-exports/`
 - `reports/`
+- `.firecrawl/`
 
 ## Scanner Boundaries
 

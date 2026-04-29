@@ -31,28 +31,22 @@ Items here are not commitments. They need shaping before implementation.
 
 ## Brief Mode
 
-- Add `fitfo brief <domain>`.
 - Pull homepage copy into a short summary.
-- Extract title, meta description, H1s, and visible CTAs.
-- Check sitemap and robots.
-- Generate first-call questions.
-- Generate keyword hypotheses.
-- Generate market-positioning hypotheses.
 - Generate copy/UX improvement notes.
+- Improve service and location recommendations with more real-client passes.
+- Add richer competitor-informed copy patterns.
+- Add client-ready agenda templates by vertical.
 
 ## CLI / UX
 
-- Improve help output.
 - Add compact report mode.
-- Add quiet mode.
 - Improve Obsidian note templates after real client use.
 - Add JSON schema for `--json`.
 - Improve terminal styling without sacrificing copy/paste quality.
 
 ## Packaging
 
-- Add npm package metadata.
-- Add release checklist.
-- Add GitHub Actions checks.
 - Publish pre-release package when ready.
 - Add issue templates before public release.
+- Add public-facing examples without exposing client data.
+- Add `npm create` or one-command install notes after package publishing.

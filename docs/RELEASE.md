@@ -21,6 +21,7 @@ FITFO is private today and intended to become public later.
 ```bash
 npm run check
 npm test
+npm run pack:dry-run
 git status
 ```
 
@@ -33,6 +34,13 @@ git status
   - `README.md`
   - `LICENSE`
   - `CHANGELOG.md`
+- Run:
+
+```bash
+npm run pack:dry-run
+npm whoami
+```
+
 - Add a package access decision:
 
 ```bash
