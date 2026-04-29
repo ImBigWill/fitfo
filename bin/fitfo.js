@@ -3,6 +3,7 @@
 import readline from "node:readline/promises";
 import { stdin as input, stdout as output } from "node:process";
 import { applyConfigDefaults, handleConfigCommand, loadConfig } from "../src/cli/config.js";
+import { applyOnboardPromptAnswers, defaultOnboardVault, shouldAskForOnboardLocation, shouldAskForOnboardVault, shouldPromptForOnboardDetails } from "../src/cli/onboard.js";
 import { renderOutput } from "../src/cli/output.js";
 import { hasProvidedOption, parseArgs } from "../src/cli/options.js";
 import { defaultDesktopReportPath, normalizeSaveDestination, normalizeSaveFormat, promptedReportFileName, resolvePromptedOutputPath, shouldPromptForReportSave } from "../src/cli/post-scan.js";
@@ -58,6 +59,10 @@ try {
     const wizard = await promptForWizard(options, { color: !noColor, version: APP_VERSION });
     domainArg = wizard.domain;
     options = wizard.options;
+  }
+
+  if (shouldPromptForOnboardDetails(options, { inputIsTTY: input.isTTY, outputIsTTY: output.isTTY })) {
+    options = await promptForOnboardDetails(options, { color: !noColor });
   }
 
   if (shouldRenderRunStart(options)) {
@@ -224,6 +229,34 @@ async function promptForWizard(baseOptions = {}, display = {}) {
   } catch (error) {
     if (error.code === "ABORT_ERR") {
       console.log(`\n${themed.dim("FITFO cancelled.")}`);
+      process.exit(130);
+    }
+    throw error;
+  } finally {
+    rl.close();
+  }
+}
+
+async function promptForOnboardDetails(baseOptions = {}, display = {}) {
+  const theme = createTheme(display.color !== false);
+  const rl = readline.createInterface({ input, output });
+  const answers = {};
+
+  try {
+    if (shouldAskForOnboardLocation(baseOptions)) {
+      answers.location = await rl.question(theme.surface(`${theme.blueChip("LOCAL")} ${theme.prompt("market/location?")} ${theme.dim("[skip]")} `));
+    }
+
+    if (shouldAskForOnboardVault(baseOptions)) {
+      const defaultVault = defaultOnboardVault(baseOptions);
+      answers.vault = await rl.question(theme.surface(`${theme.hotChip("VAULT")} ${theme.prompt("Obsidian vault/folder?")} ${theme.dim(`[${absoluteOutputPath(defaultVault)}]`)} `));
+      answers.vault = answers.vault.trim() || defaultVault;
+    }
+
+    return applyOnboardPromptAnswers(baseOptions, answers);
+  } catch (error) {
+    if (error.code === "ABORT_ERR") {
+      console.log(`\n${theme.dim("FITFO onboard prompt cancelled.")}`);
       process.exit(130);
     }
     throw error;

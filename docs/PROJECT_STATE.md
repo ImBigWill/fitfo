@@ -17,6 +17,7 @@ It can:
 - use either `FIRECRAWL_API_KEY` or an authenticated local Firecrawl CLI for market research
 - generate a `fitfo plan` client build plan from scan, crawl, and research signals
 - run `fitfo onboard` as a one-command full-intake preset that deep-scans, searches, saves an Obsidian action-plan note, and exports CSV/JSON planning tables
+- prompt for missing `fitfo onboard` location and vault/folder details when running interactively
 - render a styled onboarding report
 - render plain output for copying/saving
 - output JSON

@@ -173,6 +173,13 @@ fitfo onboard example.com
 
 `fitfo onboard` runs the full intake path: plan mode, deep crawl, Firecrawl-backed search, an Obsidian-ready action-plan note, and CSV/JSON table exports. If a vault is configured, the note is saved there as `example.com-onboard.md`. Otherwise it saves to `fitfo-reports/example.com-onboard.md`.
 
+When run in an interactive terminal, `fitfo onboard` asks for missing full-intake details before scanning:
+
+- market/location, if no location is configured or passed
+- Obsidian vault/folder, if no vault or output path is configured
+
+Press Enter to skip location or accept the default report folder.
+
 Save defaults:
 
 ```bash

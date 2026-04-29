@@ -70,6 +70,13 @@ This runs the complete action-plan path:
 - Obsidian-ready action-plan note
 - CSV/JSON sidecar table exports in `fitfo-exports/`
 
+When run in a normal terminal, `onboard` asks for missing details before the scan starts:
+
+- `LOCAL`: market/location for local keyword and competitor research
+- `VAULT`: Obsidian vault or folder where the action-plan note should go
+
+If the location is unknown, press Enter to skip it. If you press Enter at the vault prompt, FITFO uses `fitfo-reports/`.
+
 If a vault is configured, FITFO saves:
 
 ```text
