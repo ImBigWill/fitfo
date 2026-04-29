@@ -46,7 +46,7 @@ test("builds a client plan from scan, crawl, and research signals", () => {
   assert.ok(plan.launchChecklist.some((item) => item.item === "DNS cutover" && item.phase === "Launch"));
   assert.ok(plan.kickoffResearch.marketSnapshot.some((item) => item.label === "Competitor and market SERP"));
   assert.ok(plan.kickoffResearch.keywordPageOpportunities.some((item) => item.label === "Priority keyword candidates"));
-  assert.ok(plan.actionReport.priorityActions.some((item) => item.label === "Map keywords to pages"));
+  assert.ok(plan.actionReport.priorityActions.some((item) => item.label === "Map keywords to pages" && item.source === "Inferred"));
   assert.ok(plan.actionReport.pageMap.some((item) => item.keyword.includes("drain cleaning")));
   assert.ok(plan.clientCallIntelligence.some((item) => item.prompt === "Confirm top services/markets"));
   assert.ok(plan.confirmationScript.some((item) => item.topic === "Structure approval"));
@@ -56,6 +56,7 @@ test("renders a Markdown plan for Obsidian", () => {
   const markdown = renderPlanMarkdown(scan, { obsidian: true });
 
   assert.match(markdown, /report_type: "obsidian-plan"/);
+  assert.match(markdown, /## Evidence Labels/);
   assert.match(markdown, /## Focus First/);
   assert.match(markdown, /## Recommended Structure/);
   assert.match(markdown, /## Competitor-Informed Structure/);
@@ -68,7 +69,7 @@ test("renders a Markdown plan for Obsidian", () => {
   assert.match(markdown, /## Kickoff Research Game Plan/);
   assert.match(markdown, /### Market Snapshot/);
   assert.match(markdown, /## Prioritized Action Report/);
-  assert.match(markdown, /\| Priority \| Owner \| Action \| Detail \|/);
+  assert.match(markdown, /\| Priority \| Source \| Owner \| Action \| Detail \|/);
   assert.match(markdown, /## Keyword Page Map/);
   assert.match(markdown, /\| Priority \| Intent \| Keyword \| Page \| Status \|/);
   assert.match(markdown, /## Client Call Next Steps/);

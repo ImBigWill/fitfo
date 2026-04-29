@@ -70,6 +70,8 @@ This runs the complete action-plan path:
 - Obsidian-ready action-plan note
 - CSV/JSON sidecar table exports in `fitfo-exports/`
 
+The saved action plan labels recommendations as `Observed`, `Research`, `Inferred`, or `Ask Client` so the kickoff call does not blur facts and assumptions.
+
 When run in a normal terminal, `onboard` asks for missing details before the scan starts:
 
 - `LOCAL`: market/location for local keyword and competitor research

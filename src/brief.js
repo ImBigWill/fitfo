@@ -623,33 +623,33 @@ function buildPriorityActions(scan, keywordClusters, competitorResearch, pageMap
   const site = scan.site || {};
   const summary = site.summary || {};
   const actions = [];
-  const add = (priority, owner, label, detail) => actions.push({ priority, owner, label, detail });
+  const add = (priority, owner, source, label, detail) => actions.push({ priority, owner, source, label, detail });
 
-  add("High", "Client", "Confirm priority services and markets", "Use detected service and location themes as prompts, then have the client rank the revenue-driving services, cities, lead types, and bad-fit work.");
-  add("High", "Us", "Map keywords to pages", pageMap.length
+  add("High", "Client", "Ask Client", "Confirm priority services and markets", "Use detected service and location themes as prompts, then have the client rank the revenue-driving services, cities, lead types, and bad-fit work.");
+  add("High", "Us", pageMap.length ? "Inferred" : "Ask Client", "Map keywords to pages", pageMap.length
     ? "Use the keyword-to-page map to decide which existing pages should be improved and which new service/location pages should be scoped."
     : "No keyword map was generated. Run deep/search mode or gather service/location priorities manually.");
-  add("High", "Client", "Collect proof assets", "Request reviews, project photos, credentials, guarantees, process notes, FAQs, team notes, and before/after examples for priority services.");
-  add("High", "Us", "Confirm lead routing and tracking", "Verify forms, phone numbers, booking widgets, CRM, call tracking, GA4, Tag Manager, Search Console, and thank-you/lead attribution before launch.");
+  add("High", "Client", "Ask Client", "Collect proof assets", "Request reviews, project photos, credentials, guarantees, process notes, FAQs, team notes, and before/after examples for priority services.");
+  add("High", "Us", "Ask Client", "Confirm lead routing and tracking", "Verify forms, phone numbers, booking widgets, CRM, call tracking, GA4, Tag Manager, Search Console, and thank-you/lead attribution before launch.");
 
   if (summary.pagesScanned && summary.pagesWithMetaDescription < summary.pagesScanned) {
-    add("Medium", "Us", "Rewrite missing metadata", `${summary.pagesScanned - summary.pagesWithMetaDescription} crawled page(s) appear to need stronger meta descriptions.`);
+    add("Medium", "Us", "Observed", "Rewrite missing metadata", `${summary.pagesScanned - summary.pagesWithMetaDescription} crawled page(s) appear to need stronger meta descriptions.`);
   }
 
   if ((summary.pagesMissingH1 || 0) > 0 || (summary.pagesWithMultipleH1 || 0) > 0) {
-    add("Medium", "Us", "Clean page heading structure", `${summary.pagesMissingH1 || 0} page(s) missing H1 and ${summary.pagesWithMultipleH1 || 0} page(s) with multiple H1s should be reviewed before content migration.`);
+    add("Medium", "Us", "Observed", "Clean page heading structure", `${summary.pagesMissingH1 || 0} page(s) missing H1 and ${summary.pagesWithMultipleH1 || 0} page(s) with multiple H1s should be reviewed before content migration.`);
   }
 
   if (competitorResearch.competitors.length > 0) {
-    add("Medium", "Us", "Review competitor positioning", `${competitorResearch.competitors.length} likely competitor result(s) surfaced. Use them for language and page-pattern comparison, not as final strategy proof.`);
+    add("Medium", "Us", "Research", "Review competitor positioning", `${competitorResearch.competitors.length} likely competitor result(s) surfaced. Use them for language and page-pattern comparison, not as final strategy proof.`);
   }
 
   if (keywordClusters.emergency.length > 0) {
-    add("Medium", "Client", "Validate emergency-service intent", "Emergency/high-intent keywords surfaced. Confirm whether these jobs are profitable, staffed, and worth emphasizing.");
+    add("Medium", "Client", "Ask Client", "Validate emergency-service intent", "Emergency/high-intent keywords surfaced. Confirm whether these jobs are profitable, staffed, and worth emphasizing.");
   }
 
   if (!scan.research?.enabled) {
-    add("Medium", "Us", "Run market research", "Run with --search --location before finalizing keyword, competitor, and positioning recommendations.");
+    add("Medium", "Us", "Ask Client", "Run market research", "Run with --search --location before finalizing keyword, competitor, and positioning recommendations.");
   }
 
   return actions;
@@ -1212,7 +1212,7 @@ function formatResearchItems(theme, items) {
 
 function formatActionReport(theme, report) {
   return report.priorityActions.map((item) => (
-    `${theme.bullet("›")} ${theme.label(item.label)} ${theme.chip(`[${item.priority}]`)} ${theme.dim(`${item.owner}: ${item.detail}`)}`
+    `${theme.bullet("›")} ${theme.label(item.label)} ${theme.chip(`[${item.priority}]`)} ${theme.chip(`[${item.source || "Inferred"}]`)} ${theme.dim(`${item.owner}: ${item.detail}`)}`
   ));
 }
 
@@ -1280,8 +1280,9 @@ function markdownResearchItems(items) {
 
 function markdownActionReport(report) {
   return [
-    markdownTableWithHeaders(["Priority", "Owner", "Action", "Detail"], report.priorityActions.map((item) => [
+    markdownTableWithHeaders(["Priority", "Source", "Owner", "Action", "Detail"], report.priorityActions.map((item) => [
       item.priority,
+      item.source || "Inferred",
       item.owner,
       item.label,
       item.detail,

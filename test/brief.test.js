@@ -98,7 +98,7 @@ test("builds a first-call brief from an existing scan", () => {
   assert.ok(brief.kickoffResearch.keywordPageOpportunities.some((item) => item.label === "Priority keyword candidates" && item.detail.includes("drain cleaning")));
   assert.ok(brief.kickoffResearch.positioningHypotheses.some((item) => item.label === "Differentiators to validate"));
   assert.ok(brief.kickoffResearch.kickoffCallAgenda.some((item) => item.label === "Market and SEO assumptions"));
-  assert.ok(brief.actionReport.priorityActions.some((item) => item.label === "Map keywords to pages"));
+  assert.ok(brief.actionReport.priorityActions.some((item) => item.label === "Map keywords to pages" && item.source === "Inferred"));
   assert.ok(brief.actionReport.keywordClusters.coreServices.includes("drain cleaning"));
   assert.ok(brief.actionReport.keywordClusters.emergency.some((keyword) => keyword.includes("emergency plumbing repair")));
   assert.ok(brief.actionReport.competitorResearch.competitors.some((result) => result.title === "Emergency Plumbing Repair Richmond VA"));
@@ -131,7 +131,7 @@ test("renders a Markdown brief for Obsidian/client prep", () => {
   assert.match(markdown, /### Keyword \+ Page Opportunities/);
   assert.match(markdown, /_Research_:/);
   assert.match(markdown, /## Detailed Action Report/);
-  assert.match(markdown, /\| Priority \| Owner \| Action \| Detail \|/);
+  assert.match(markdown, /\| Priority \| Source \| Owner \| Action \| Detail \|/);
   assert.match(markdown, /## Proof Assets Needed/);
   assert.match(markdown, /## Content Inventory/);
   assert.match(markdown, /## Keyword Research/);

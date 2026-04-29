@@ -68,6 +68,7 @@ export async function writeTableExports(scan, options = {}) {
   await Promise.all([
     writeFile(files.actionItems, toCsv(bundle.actionItems, [
       ["priority", "Priority"],
+      ["source", "Source"],
       ["owner", "Owner"],
       ["action", "Action"],
       ["detail", "Detail"],
@@ -158,6 +159,7 @@ export function toCsv(rows, columns) {
 function normalizeActionItems(items) {
   return items.map((item) => ({
     priority: item.priority || "",
+    source: item.source || "Inferred",
     owner: item.owner || "",
     action: item.label || item.action || "",
     detail: item.detail || "",

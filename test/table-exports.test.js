@@ -50,7 +50,7 @@ test("builds table export rows for research sidecars", () => {
   const bundle = buildTableExportBundle(scan, { report: "brief" });
 
   assert.equal(bundle.metadata.domain, "client.example");
-  assert.ok(bundle.actionItems.some((item) => item.action === "Map keywords to pages"));
+  assert.ok(bundle.actionItems.some((item) => item.action === "Map keywords to pages" && item.source === "Inferred"));
   assert.ok(bundle.contentInventory.some((item) => item.path === "/services/drain-cleaning/"));
   assert.ok(bundle.competitorStructure.some((item) => item.path.startsWith("/services/")));
   assert.ok(bundle.reputationSummary.some((item) => item.channel === "Market patterns"));

@@ -43,6 +43,7 @@ domain input
     -> opportunities to inspect
     -> client questions
   -> plan report
+    -> evidence labels
     -> focus priorities
     -> recommended structure
     -> service/location recommendations
@@ -64,6 +65,17 @@ domain input
 - `src/lib/research.js` handles optional Firecrawl-backed market/search research.
 
 Markdown and Obsidian brief exports put the action report, proof assets, content inventory, keyword clusters, competitor research, reputation summary, competitor-informed structure, service/location recommendations, confirmation script, and keyword-to-page map into tables so they can be scanned quickly or moved into a client workspace.
+
+## Evidence Labels
+
+FITFO should make the source of each recommendation obvious:
+
+- **Observed**: found in DNS, HTTP, sitemap/page crawl, headers, visible markup, or other public site signals.
+- **Research**: found through Firecrawl-backed web/search results.
+- **Inferred**: a reasonable planning hypothesis from public signals that still needs validation.
+- **Ask Client**: something FITFO should not pretend to know; confirm with the client or previous developer.
+
+Action-plan items and kickoff research sections should use these labels consistently so the first call separates facts from assumptions.
 
 `--export-tables <dir>` writes those same planning tables as CSV sidecars plus a combined JSON bundle. This is intentionally a sidecar export so the terminal report, Obsidian note, and spreadsheet workflow do not compete with each other.
 

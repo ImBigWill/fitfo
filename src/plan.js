@@ -40,6 +40,13 @@ export function renderPlanText(scan, options = {}) {
       kv(theme, "Research", scan.research?.enabled ? "Search enabled" : "Search not enabled"),
     ]),
     "",
+    panel(theme, "Evidence Labels", [
+      `${theme.bullet("›")} ${theme.label("Observed")} ${theme.dim("Found in DNS, HTTP, sitemap/page crawl, or visible site signals.")}`,
+      `${theme.bullet("›")} ${theme.label("Research")} ${theme.dim("Found through Firecrawl-backed web/search results.")}`,
+      `${theme.bullet("›")} ${theme.label("Inferred")} ${theme.dim("Reasonable planning hypothesis that needs validation.")}`,
+      `${theme.bullet("›")} ${theme.label("Ask Client")} ${theme.dim("Do not assume; confirm with client or previous developer.")}`,
+    ]),
+    "",
     panel(theme, "Focus First", plan.priorities.map((item) => `${theme.bullet("›")} ${theme.label(item.label)} ${theme.dim(item.reason)}`)),
     "",
     panel(theme, "Recommended Structure", plan.structure.map((item) => `${theme.bullet("›")} ${theme.label(item.path)} ${theme.dim(item.reason)}`)),
@@ -87,6 +94,13 @@ export function renderPlanMarkdown(scan, options = {}) {
     `# FITFO Plan - ${plan.subject}`,
     "",
     "**Kickstarting onboarding.**",
+    "",
+    "## Evidence Labels",
+    "",
+    "- **Observed:** Found in DNS, HTTP, sitemap/page crawl, or visible site signals.",
+    "- **Research:** Found through Firecrawl-backed web/search results.",
+    "- **Inferred:** Reasonable planning hypothesis that needs validation.",
+    "- **Ask Client:** Do not assume; confirm with client or previous developer.",
     "",
     "## Focus First",
     "",
@@ -172,7 +186,7 @@ function formatPlanActions(theme, actionReport) {
     return [`${theme.bullet("›")} ${theme.label("Actions")} ${theme.dim("Run deep/search mode or confirm client priorities to generate action items.")}`];
   }
 
-  return actions.slice(0, 8).map((item) => `${theme.bullet("›")} ${theme.label(item.label)} ${theme.chip(`[${item.priority}]`)} ${theme.dim(`${item.owner}: ${item.detail}`)}`);
+  return actions.slice(0, 8).map((item) => `${theme.bullet("›")} ${theme.label(item.label)} ${theme.chip(`[${item.priority}]`)} ${theme.chip(`[${item.source || "Inferred"}]`)} ${theme.dim(`${item.owner}: ${item.detail}`)}`);
 }
 
 function formatPlanPageMap(theme, actionReport) {
@@ -188,8 +202,9 @@ function markdownPlanActions(actionReport) {
   const actions = actionReport?.priorityActions || [];
   if (!actions.length) return ["- Run deep/search mode or confirm client priorities to generate action items."];
   return [
-    markdownTableWithHeaders(["Priority", "Owner", "Action", "Detail"], actions.slice(0, 10).map((item) => [
+    markdownTableWithHeaders(["Priority", "Source", "Owner", "Action", "Detail"], actions.slice(0, 10).map((item) => [
       item.priority,
+      item.source || "Inferred",
       item.owner,
       item.label,
       item.detail,
