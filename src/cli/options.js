@@ -12,8 +12,10 @@ export function parseArgs(argv) {
     json: false,
     format: "text",
     noColor: false,
+    noSave: false,
     obsidian: false,
     out: null,
+    preview: false,
     quiet: false,
     save: false,
     search: false,
@@ -95,6 +97,13 @@ export function parseArgs(argv) {
       options.provided.add("format");
     } else if (arg === "--no-color") {
       options.noColor = true;
+    } else if (arg === "--no-save") {
+      options.noSave = true;
+      options.save = false;
+      options.provided.add("save");
+    } else if (arg === "--preview" || arg === "--dry-run") {
+      options.preview = true;
+      options.provided.add("preview");
     } else if (arg === "--format" || arg === "-f") {
       const value = argv[index + 1];
       if (!value || value.startsWith("-")) {

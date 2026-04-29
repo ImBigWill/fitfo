@@ -19,6 +19,7 @@ Initial private version.
 - `fitfo plan <domain>` client build plan command for priorities, site structure, workstreams, and confirmation questions.
 - `fitfo onboard <domain>` one-command full-intake preset for deep scan, search-backed client planning, Obsidian action-plan export, and CSV/JSON table exports.
 - Interactive `fitfo onboard <domain>` prompts for missing location and Obsidian vault/folder before scanning.
+- `fitfo onboard <domain> --preview` dry run summary and `--no-save` terminal-only mode.
 - `fitfo brief <domain> --deep` crawl mode for sitemap pages, metadata, headings, CTAs, forms, schema, and suggested site structure.
 - `fitfo brief <domain> --search` optional Firecrawl-backed web research for market, review, and service SERP signals.
 - Kickoff research brief sections for current site read, market snapshot, keyword/page opportunities, positioning hypotheses, and first-call agenda.

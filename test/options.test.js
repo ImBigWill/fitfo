@@ -14,8 +14,10 @@ test("parses default scan command with a domain", () => {
     json: false,
     format: "text",
     noColor: false,
+    noSave: false,
     obsidian: false,
     out: null,
+    preview: false,
     quiet: false,
     researchProvider: "firecrawl",
     save: false,
@@ -51,6 +53,15 @@ test("parses onboard command", () => {
   assert.equal(options.command, "onboard");
   assert.equal(options.domain, "example.com");
   assert.equal(options.location, "Richmond, VA");
+});
+
+test("parses preview and no-save options", () => {
+  const options = parseArgs(["onboard", "example.com", "--preview", "--no-save"]);
+
+  assert.equal(options.command, "onboard");
+  assert.equal(options.preview, true);
+  assert.equal(options.noSave, true);
+  assert.equal(options.save, false);
 });
 
 test("parses config command arguments", () => {

@@ -180,6 +180,18 @@ When run in an interactive terminal, `fitfo onboard` asks for missing full-intak
 
 Press Enter to skip location or accept the default report folder.
 
+Preview the run without scanning:
+
+```bash
+fitfo onboard example.com --preview
+```
+
+Run the full intake in the terminal only, without saving the Obsidian note or table exports:
+
+```bash
+fitfo onboard example.com --no-save
+```
+
 Save defaults:
 
 ```bash

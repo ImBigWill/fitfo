@@ -96,6 +96,18 @@ fitfo config set vault ~/Obsidian/Clients
 fitfo config set location "City, ST"
 ```
 
+Preview the full run before scanning:
+
+```bash
+fitfo onboard clientdomain.com --preview
+```
+
+Run terminal-only without writing the Obsidian note or CSV/JSON table exports:
+
+```bash
+fitfo onboard clientdomain.com --no-save
+```
+
 ## End-Of-Run Save Prompt
 
 When a normal interactive text report finishes and no output file was already requested, FITFO asks whether to save the findings.

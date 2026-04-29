@@ -3,7 +3,7 @@
 import readline from "node:readline/promises";
 import { stdin as input, stdout as output } from "node:process";
 import { applyConfigDefaults, handleConfigCommand, loadConfig } from "../src/cli/config.js";
-import { applyOnboardPromptAnswers, defaultOnboardVault, shouldAskForOnboardLocation, shouldAskForOnboardVault, shouldPromptForOnboardDetails } from "../src/cli/onboard.js";
+import { applyOnboardPromptAnswers, applyOnboardRuntimeDefaults, defaultOnboardVault, renderOnboardSummary, shouldAskForOnboardLocation, shouldAskForOnboardVault, shouldPromptForOnboardDetails } from "../src/cli/onboard.js";
 import { renderOutput } from "../src/cli/output.js";
 import { hasProvidedOption, parseArgs } from "../src/cli/options.js";
 import { defaultDesktopReportPath, normalizeSaveDestination, normalizeSaveFormat, promptedReportFileName, resolvePromptedOutputPath, shouldPromptForReportSave } from "../src/cli/post-scan.js";
@@ -52,7 +52,7 @@ try {
 
   options = applyConfigDefaults(options, await loadConfig());
   options.vault ||= process.env.FITFO_OBSIDIAN_DIR || null;
-  options = applyOnboardDefaults(options);
+  options = applyOnboardRuntimeDefaults(options);
   domainArg = options.domain;
 
   if (!domainArg) {
@@ -63,6 +63,15 @@ try {
 
   if (shouldPromptForOnboardDetails(options, { inputIsTTY: input.isTTY, outputIsTTY: output.isTTY })) {
     options = await promptForOnboardDetails(options, { color: !noColor });
+  }
+
+  if (options.command === "onboard" && !options.quiet) {
+    console.log(renderOnboardSummary(domainArg, options, { color: !noColor }));
+    console.log("");
+  }
+
+  if (options.preview) {
+    process.exit(0);
   }
 
   if (shouldRenderRunStart(options)) {
@@ -139,29 +148,6 @@ function terminalRenderOptions(options, color) {
   };
 }
 
-function applyOnboardDefaults(options) {
-  if (options.command !== "onboard") {
-    return options;
-  }
-
-  const explicitFormat = hasProvidedOption(options, "format");
-  const next = {
-    ...options,
-    deep: true,
-    search: true,
-    save: true,
-    onboard: true,
-    onboardFileFormat: explicitFormat ? options.format : "obsidian",
-  };
-  preserveProvided(options, next);
-
-  if (!next.exportTables) {
-    next.exportTables = "fitfo-exports";
-  }
-
-  return next;
-}
-
 async function saveReport(scan, outputPath, options) {
   const onboardFileFormat = options.command === "onboard" ? options.onboardFileFormat : null;
   const fileOptions = onboardFileFormat
@@ -174,15 +160,6 @@ async function saveReport(scan, outputPath, options) {
     report: fileOptions.command,
   });
   return writeReport(outputPath, fileOutput);
-}
-
-function preserveProvided(source, target) {
-  if (source.provided instanceof Set) {
-    Object.defineProperty(target, "provided", {
-      value: new Set(source.provided),
-      enumerable: false,
-    });
-  }
 }
 
 function shouldRenderRunStart(options) {
