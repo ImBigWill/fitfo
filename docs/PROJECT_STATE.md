@@ -33,6 +33,7 @@ It can:
 - run a local `doctor` environment check
 - run fast dependency-free tests with `npm test`
 - run fixture coverage for common registrar, DNS, hosting, hosted-builder, email, and CRM/service-business patterns
+- document fixture-driven provider improvements in [Provider fixtures](PROVIDER_FIXTURES.md)
 - run GitHub Actions checks on `master` and pull requests
 - document release readiness in [Release notes](RELEASE.md)
 - infer registrar, DNS, hosting, Cloudflare/CDN, CMS, email, analytics, and common subdomain clues

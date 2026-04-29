@@ -22,6 +22,7 @@
   "type": "module",
   "files": [
     "bin",
+    "docs",
     "src",
     "README.md",
     "LICENSE",
