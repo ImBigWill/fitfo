@@ -233,6 +233,63 @@ export const providerPatternFixtures = [
       marketing: ["CallRail", "HubSpot"],
     },
   },
+  {
+    name: "Porkbun DNS with Kinsta and Podium",
+    profile: providerProfile({
+      registrar: "Porkbun LLC",
+      nameservers: ["curitiba.ns.porkbun.com", "fortaleza.ns.porkbun.com"],
+      cnames: ["client.kinsta.cloud"],
+      mx: [{ priority: 1, exchange: "aspmx.l.google.com" }],
+      finalUrl: "https://client.example/",
+      headers: { server: "nginx", "x-kinsta-cache": "HIT" },
+      htmlSample: "<script src=\"https://connect.podium.com/widget.js\"></script>",
+      wordpress: true,
+    }),
+    expected: {
+      registrar: "Porkbun LLC",
+      dnsProvider: "Porkbun",
+      hosting: "Kinsta",
+      email: "Google Workspace",
+      cms: "WordPress",
+      operations: ["Podium"],
+    },
+  },
+  {
+    name: "Name.com DNS with Cloudways and Workiz",
+    profile: providerProfile({
+      registrar: "Name.com, Inc.",
+      nameservers: ["ns1.name.com", "ns2.name.com"],
+      cnames: ["client.cloudwaysapps.com"],
+      mx: [{ priority: 0, exchange: "client-example.mail.protection.outlook.com" }],
+      finalUrl: "https://client.example/",
+      headers: { server: "nginx", "x-hosted-by": "Cloudways" },
+      htmlSample: "<a href=\"https://app.workiz.com/online-booking/client\">Schedule now</a>",
+    }),
+    expected: {
+      registrar: "Name.com, Inc.",
+      dnsProvider: "Name.com",
+      hosting: "Cloudways",
+      email: "Microsoft 365",
+      operations: ["Workiz"],
+    },
+  },
+  {
+    name: "A2 Hosting DNS and hosting with Titan Email",
+    profile: providerProfile({
+      registrar: "eNom",
+      nameservers: ["ns1.a2hosting.com", "ns2.a2hosting.com"],
+      cnames: ["www.client.example.a2hosted.com"],
+      mx: [{ priority: 10, exchange: "mx1.titan.email" }],
+      finalUrl: "https://client.example/",
+      headers: { server: "LiteSpeed", "x-powered-by": "A2 Hosting" },
+    }),
+    expected: {
+      registrar: "eNom",
+      dnsProvider: "A2 Hosting",
+      hosting: "A2 Hosting",
+      email: "Titan Email",
+    },
+  },
 ];
 
 function providerProfile(options) {

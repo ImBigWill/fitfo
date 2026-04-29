@@ -13,6 +13,7 @@ const HOSTING_HINTS = [
   ["dreamhost", "DreamHost"],
   ["bluehost", "Bluehost"],
   ["hostgator", "HostGator"],
+  ["a2hosting", "A2 Hosting"],
   ["hostinger", "Hostinger"],
   ["digitalocean", "DigitalOcean"],
   ["linode", "Akamai/Linode"],
@@ -25,6 +26,8 @@ const HOSTING_HINTS = [
   ["godaddy", "GoDaddy"],
   ["secureserver", "GoDaddy"],
   ["namecheap", "Namecheap"],
+  ["porkbun", "Porkbun"],
+  ["name.com", "Name.com"],
   ["squarespace", "Squarespace"],
   ["shopify", "Shopify"],
   ["myshopify", "Shopify"],
@@ -47,6 +50,7 @@ const DNS_PROVIDER_HINTS = [
   ["kinsta.cloud", "Kinsta"],
   ["bluehost.com", "Bluehost"],
   ["hostgator.com", "HostGator"],
+  ["a2hosting.com", "A2 Hosting"],
   ["dreamhost.com", "DreamHost"],
   ["digitalocean.com", "DigitalOcean"],
   ["linode.com", "Akamai/Linode"],
@@ -66,6 +70,8 @@ const DNS_PROVIDER_HINTS = [
   ["route53", "AWS Route 53"],
   ["awsdns", "AWS Route 53"],
   ["googledomains.com", "Google Domains"],
+  ["porkbun.com", "Porkbun"],
+  ["name.com", "Name.com"],
 ];
 
 const EMAIL_HINTS = [
@@ -79,6 +85,7 @@ const EMAIL_HINTS = [
   ["sendgrid", "SendGrid"],
   ["rackspace", "Rackspace Email"],
   ["secureserver.net", "GoDaddy Email"],
+  ["titan.email", "Titan Email"],
   ["ppe-hosted.com", "Proofpoint"],
 ];
 
