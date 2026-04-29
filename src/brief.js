@@ -1302,6 +1302,7 @@ function markdownConfirmationScript(script) {
 
 function extractKeywordCandidates(scan) {
   const values = [];
+  const location = scan.research?.location || "";
   for (const page of scan.site?.pages || []) {
     values.push(...pathParts(page.path));
     values.push(...(page.headings?.h1 || []));
@@ -1327,11 +1328,44 @@ function extractKeywordCandidates(scan) {
   ]);
 
   return [...new Set(values
-    .map((value) => String(value).toLowerCase().replace(/[^a-z0-9\s-]/g, " ").replace(/-/g, " ").replace(/\s+/g, " ").trim())
+    .map((value) => cleanKeywordCandidate(value, location))
     .filter((value) => value.length >= 5 && value.length <= 48)
     .filter((value) => !stop.has(value))
     .filter((value) => /\b(clean|drain|electric|emergency|hvac|install|plumb(?:er|ing)?|repair|roof|service|sewer|water)\b/i.test(value)))]
     .slice(0, 12);
+}
+
+function cleanKeywordCandidate(value, location = "") {
+  let text = String(value || "")
+    .toLowerCase()
+    .replace(/["'`]/g, "")
+    .replace(/[^a-z0-9\s-]/g, " ")
+    .replace(/-/g, " ")
+    .replace(/\b(the\s+best\s+10|top\s+10\s+best|updated\s+\d{4})\b/g, " ")
+    .replace(/\b(reviews?|ratings?|services?)\b$/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  const locationRoot = String(location || "").split(",")[0].toLowerCase().replace(/[^a-z0-9\s]/g, " ").trim();
+  const state = String(location || "").split(",")[1]?.toLowerCase().replace(/[^a-z]/g, "").trim();
+  if (locationRoot) {
+    text = collapseRepeatedLocation(text, locationRoot, state);
+  }
+
+  return text.replace(/\s+/g, " ").trim();
+}
+
+function collapseRepeatedLocation(text, locationRoot, state) {
+  const rootPattern = escapeRegExp(locationRoot).replace(/\s+/g, "\\s+");
+  const statePattern = state ? `\\s+${escapeRegExp(state)}` : "";
+  const duplicatedLocation = new RegExp(`\\b(${rootPattern})\\s+([^\\s].*?)\\s+\\1${statePattern}\\b`, "i");
+  const match = text.match(duplicatedLocation);
+  if (match) {
+    return `${match[1]} ${match[2]}`.trim();
+  }
+
+  const trailingLocation = new RegExp(`\\s+${rootPattern}${statePattern}\\b`, "i");
+  return text.replace(trailingLocation, "").trim();
 }
 
 function pathParts(path) {
@@ -1512,6 +1546,10 @@ function formatResultTitles(results) {
 
 function uniqueValues(values) {
   return [...new Set(values.map((value) => String(value || "").trim()).filter(Boolean))];
+}
+
+function escapeRegExp(value) {
+  return String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 function safeHostname(url) {
