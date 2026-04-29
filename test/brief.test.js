@@ -106,6 +106,9 @@ test("builds a first-call brief from an existing scan", () => {
   assert.ok(brief.actionReport.pageMap.some((item) => item.keyword === "drain cleaning" && item.status === "Improve existing"));
   assert.ok(brief.actionReport.proofAssets.some((item) => item.asset === "Reviews and testimonials" && item.priority === "High"));
   assert.ok(brief.actionReport.contentInventory.some((item) => item.path === "/services/drain-cleaning/" && item.type === "Service"));
+  assert.ok(brief.competitorStructure.some((item) => item.path === "/reviews/" && item.priority === "High"));
+  assert.ok(brief.reputationSummary.some((item) => item.channel === "Review profiles" && item.signal.includes("1")));
+  assert.ok(brief.confirmationScript.some((item) => item.topic === "Competitor reality check"));
   assert.ok(brief.suggestedStructure.some((item) => item.path === "/services/{service}/"));
   assert.ok(brief.clientCallIntelligence.some((item) => item.prompt === "Confirm lead flow" && item.nextStep.includes("1 form(s)")));
   assert.ok(brief.clientCallIntelligence.some((item) => item.prompt === "Confirm analytics/Search Console access" && item.nextStep.includes("Google Tag Manager")));
@@ -133,9 +136,15 @@ test("renders a Markdown brief for Obsidian/client prep", () => {
   assert.match(markdown, /## Keyword Research/);
   assert.match(markdown, /\| Cluster \| Keywords \|/);
   assert.match(markdown, /## Competitor Research/);
+  assert.match(markdown, /## Review \+ Reputation Summary/);
+  assert.match(markdown, /\| Channel \| Signal \| Action \|/);
+  assert.match(markdown, /## Competitor-Informed Structure/);
+  assert.match(markdown, /\| Priority \| Path \| Trigger \| Rationale \|/);
   assert.match(markdown, /## Keyword To Page Map/);
   assert.match(markdown, /## Suggested Site Structure/);
   assert.match(markdown, /## Client Call Intelligence/);
+  assert.match(markdown, /## Kickoff Confirmation Script/);
+  assert.match(markdown, /\| Topic \| Ask \| Why \|/);
   assert.match(markdown, /Confirm CRM\/booking owner/);
   assert.match(markdown, /## Research Queue/);
   assert.match(markdown, /## First-Call Questions/);

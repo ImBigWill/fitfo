@@ -31,6 +31,9 @@ export function buildTableExportBundle(scan, options = {}) {
     actionItems: normalizeActionItems(actionReport.priorityActions || []),
     proofAssets: normalizeProofAssets(actionReport.proofAssets || []),
     contentInventory: normalizeContentInventory(actionReport.contentInventory || []),
+    competitorStructure: normalizeCompetitorStructure(report.competitorStructure || []),
+    reputationSummary: normalizeReputationSummary(report.reputationSummary || []),
+    confirmationScript: normalizeConfirmationScript(report.confirmationScript || []),
     keywordClusters: normalizeKeywordClusters(actionReport.keywordClusters || {}),
     competitors: normalizeCompetitors(competitorResearch),
     keywordPageMap: normalizePageMap(actionReport.pageMap || []),
@@ -48,6 +51,9 @@ export async function writeTableExports(scan, options = {}) {
     actionItems: path.join(directory, `${domain}-action-items.csv`),
     proofAssets: path.join(directory, `${domain}-proof-assets.csv`),
     contentInventory: path.join(directory, `${domain}-content-inventory.csv`),
+    competitorStructure: path.join(directory, `${domain}-competitor-structure.csv`),
+    reputationSummary: path.join(directory, `${domain}-reputation-summary.csv`),
+    confirmationScript: path.join(directory, `${domain}-confirmation-script.csv`),
     keywordClusters: path.join(directory, `${domain}-keyword-clusters.csv`),
     competitors: path.join(directory, `${domain}-competitors.csv`),
     keywordPageMap: path.join(directory, `${domain}-keyword-page-map.csv`),
@@ -74,6 +80,22 @@ export async function writeTableExports(scan, options = {}) {
       ["title", "Title"],
       ["status", "Status"],
       ["action", "Action"],
+    ]), "utf8"),
+    writeFile(files.competitorStructure, toCsv(bundle.competitorStructure, [
+      ["priority", "Priority"],
+      ["path", "Path"],
+      ["trigger", "Trigger"],
+      ["rationale", "Rationale"],
+    ]), "utf8"),
+    writeFile(files.reputationSummary, toCsv(bundle.reputationSummary, [
+      ["channel", "Channel"],
+      ["signal", "Signal"],
+      ["action", "Action"],
+    ]), "utf8"),
+    writeFile(files.confirmationScript, toCsv(bundle.confirmationScript, [
+      ["topic", "Topic"],
+      ["ask", "Ask"],
+      ["why", "Why"],
     ]), "utf8"),
     writeFile(files.keywordClusters, toCsv(bundle.keywordClusters, [
       ["cluster", "Cluster"],
@@ -142,6 +164,31 @@ function normalizeContentInventory(items) {
     title: item.title || "",
     status: item.status || "",
     action: item.action || "",
+  }));
+}
+
+function normalizeCompetitorStructure(items) {
+  return items.map((item) => ({
+    priority: item.priority || "",
+    path: item.path || "",
+    trigger: item.trigger || "",
+    rationale: item.rationale || "",
+  }));
+}
+
+function normalizeReputationSummary(items) {
+  return items.map((item) => ({
+    channel: item.channel || "",
+    signal: item.signal || "",
+    action: item.action || "",
+  }));
+}
+
+function normalizeConfirmationScript(items) {
+  return items.map((item) => ({
+    topic: item.topic || "",
+    ask: item.ask || "",
+    why: item.why || "",
   }));
 }
 

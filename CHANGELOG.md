@@ -23,7 +23,8 @@ Initial private version.
 - `fitfo plan` kickoff research game plan that carries market, keyword, and positioning prompts into build planning.
 - Keyword and competitor intelligence v1 with keyword clusters, competitor/directory/review classification, keyword-to-page mapping, proof-asset requests, content inventory, and prioritized action items.
 - Table-formatted Markdown/Obsidian sections for action reports, keyword clusters, competitor research, proof assets, content inventory, and keyword-to-page maps.
-- `--export-tables <dir>` sidecar exports for action items, proof assets, content inventory, keyword clusters, competitors, keyword-to-page maps, raw research results, and a combined JSON bundle.
+- Competitor-informed structure, review/reputation summary, and kickoff confirmation script sections in brief and plan reports.
+- `--export-tables <dir>` sidecar exports for action items, proof assets, content inventory, competitor structure, reputation summary, confirmation script, keyword clusters, competitors, keyword-to-page maps, raw research results, and a combined JSON bundle.
 - Broader Firecrawl research queries that include inferred service category and local competitor/search intent when a location is provided.
 - Authenticated Firecrawl CLI fallback when `FIRECRAWL_API_KEY` is not set.
 - Interactive `fitfo` prompt.

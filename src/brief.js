@@ -8,6 +8,9 @@ export function buildBrief(scan) {
   const subdomains = scan.dns.subdomains || [];
   const site = scan.site || {};
   const siteSummary = site.summary || {};
+  const actionReport = buildActionReport(scan);
+  const competitorStructure = buildCompetitorStructure(scan, actionReport);
+  const reputationSummary = buildReputationSummary(scan, actionReport);
 
   return {
     subject: domain.apex,
@@ -28,9 +31,12 @@ export function buildBrief(scan) {
     siteIntelligence: buildSiteIntelligence(scan),
     marketResearch: buildMarketResearch(scan),
     kickoffResearch: buildKickoffResearch(scan),
-    actionReport: buildActionReport(scan),
+    actionReport,
+    competitorStructure,
+    reputationSummary,
     suggestedStructure: buildSuggestedStructure(scan),
     clientCallIntelligence: buildClientCallIntelligence(scan),
+    confirmationScript: buildConfirmationScript(scan, actionReport, competitorStructure, reputationSummary),
     confirmations: buildConfirmations(scan),
     researchQueue: buildResearchQueue(scan),
     opportunityQueue: buildOpportunityQueue(scan),
@@ -81,11 +87,17 @@ export function renderBriefText(scan, options = {}) {
     "",
     panel(theme, "Competitor Research", formatCompetitorResearch(theme, brief.actionReport.competitorResearch)),
     "",
+    panel(theme, "Review + Reputation Summary", formatReputationSummary(theme, brief.reputationSummary)),
+    "",
+    panel(theme, "Competitor-Informed Structure", formatCompetitorStructure(theme, brief.competitorStructure)),
+    "",
     panel(theme, "Keyword To Page Map", formatPageMap(theme, brief.actionReport.pageMap)),
     "",
     panel(theme, "Suggested Site Structure", brief.suggestedStructure.map((item) => `${theme.bullet("›")} ${theme.label(item.path)} ${theme.dim(item.reason)}`)),
     "",
     panel(theme, "Client Call Intelligence", brief.clientCallIntelligence.map((item) => `${theme.bullet("›")} ${theme.label(item.prompt)} ${theme.dim(item.nextStep)}`)),
+    "",
+    panel(theme, "Kickoff Confirmation Script", formatConfirmationScript(theme, brief.confirmationScript)),
     "",
     panel(theme, "Research Queue", brief.researchQueue.map((item) => `${theme.bullet("›")} ${theme.label(item.area)} ${theme.dim(item.task)}`)),
     "",
@@ -141,6 +153,14 @@ export function renderBriefMarkdown(scan, options = {}) {
     "",
     ...markdownCompetitorResearch(brief.actionReport.competitorResearch),
     "",
+    "## Review + Reputation Summary",
+    "",
+    markdownReputationSummary(brief.reputationSummary),
+    "",
+    "## Competitor-Informed Structure",
+    "",
+    markdownCompetitorStructure(brief.competitorStructure),
+    "",
     "## Keyword To Page Map",
     "",
     ...markdownPageMap(brief.actionReport.pageMap),
@@ -189,6 +209,10 @@ export function renderBriefMarkdown(scan, options = {}) {
     "## Client Call Intelligence",
     "",
     ...brief.clientCallIntelligence.map((item) => `- **${item.prompt}:** ${item.nextStep}`),
+    "",
+    "## Kickoff Confirmation Script",
+    "",
+    markdownConfirmationScript(brief.confirmationScript),
     "",
     "## Research Queue",
     "",
@@ -782,6 +806,102 @@ function buildProofAssets(scan, competitorResearch) {
   ];
 }
 
+function buildCompetitorStructure(scan, actionReport) {
+  const pages = scan.site?.pages || [];
+  const research = actionReport.competitorResearch || {};
+  const patterns = research.patterns.join(" ").toLowerCase();
+  const pageMap = actionReport.pageMap || [];
+  const hasReviews = hasPath(pages, "review") || hasPath(pages, "testimonial");
+  const hasAbout = hasPath(pages, "about") || hasPath(pages, "team");
+  const hasFaq = hasPath(pages, "faq") || hasPath(pages, "question");
+  const hasLocations = hasPath(pages, "location") || hasPath(pages, "area");
+  const hasServices = hasPath(pages, "service");
+  const items = [];
+
+  const add = (priority, path, trigger, rationale) => {
+    if (!items.some((item) => item.path === path)) {
+      items.push({ priority, path, trigger, rationale });
+    }
+  };
+
+  if (!hasServices && (research.competitors?.length || pageMap.some((item) => item.intent === "service"))) {
+    add("High", "/services/", "Competitor/service SERPs show service intent", "Create a service hub so priority work is easy to scan, compare, and expand into focused service pages.");
+  }
+
+  const serviceTargets = pageMap.filter((item) => ["service", "emergency"].includes(item.intent) && item.page !== "/").slice(0, 3);
+  for (const target of serviceTargets) {
+    add(target.intent === "emergency" ? "High" : "Medium", target.page, `Keyword signal: ${target.keyword}`, "Scope this only if the client confirms it is profitable, staffed, and supported by proof.");
+  }
+
+  if (!hasReviews && ((research.reviewProfiles?.length || 0) > 0 || (research.directories?.length || 0) > 0 || patterns.includes("review proof"))) {
+    add("High", "/reviews/", "Review and directory results surfaced", "Centralize reputation proof and decide which third-party profiles should be linked, embedded, or simply monitored.");
+  }
+
+  if (scan.research?.location && !hasLocations) {
+    add("Medium", "/locations/{city}/", `Search location: ${scan.research.location}`, "Build location pages only for real service areas with local proof, photos, reviews, and operations coverage.");
+  }
+
+  if (!hasFaq) {
+    add("Medium", "/faq/", "Client-call and SERP questions need a home", "Use this for sales objections, pricing/process questions, emergency expectations, and service-area clarity.");
+  }
+
+  if (!hasAbout && (patterns.includes("local ownership") || patterns.includes("licensed/insured"))) {
+    add("Medium", "/about/", "Trust patterns surfaced in competitor/reputation research", "Use company story, licensing, insurance, team, process, and proof to support conversion.");
+  }
+
+  if (!items.length) {
+    add("Medium", "/services/{priority-service}/", "Manual validation needed", "No strong competitor structure signal surfaced. Use the client call to rank services before expanding the sitemap.");
+  }
+
+  return items.slice(0, 8);
+}
+
+function buildReputationSummary(scan, actionReport) {
+  const research = actionReport.competitorResearch || {};
+  const reviewProfiles = research.reviewProfiles || [];
+  const directories = research.directories || [];
+  const socialProfiles = research.socialProfiles || [];
+  const owned = research.owned || [];
+  const patterns = research.patterns || [];
+  const hasReviewsPage = (scan.site?.pages || []).some((page) => /\breview|testimonial\b/i.test(`${page.path || ""} ${page.title || ""}`));
+
+  return [
+    {
+      channel: "Review profiles",
+      signal: reviewProfiles.length ? `${reviewProfiles.length} profile/result signal(s)` : "None detected",
+      action: reviewProfiles.length
+        ? "Confirm Google Business Profile, Yelp/Angi/industry profile ownership, best reviews, and whether profiles should be linked or monitored."
+        : "Ask which review platforms matter and who owns Google Business Profile before writing reputation copy.",
+    },
+    {
+      channel: "Directories",
+      signal: directories.length ? `${directories.length} directory signal(s)` : "None detected",
+      action: directories.length
+        ? "Check NAP consistency, categories, tracking numbers, and whether directory pages outrank the client."
+        : "Confirm whether industry/local directories are part of the acquisition mix.",
+    },
+    {
+      channel: "Owned proof",
+      signal: hasReviewsPage || owned.length ? "Owned proof exists or surfaced" : "No owned review/testimonial proof found in crawl/search",
+      action: hasReviewsPage
+        ? "Refresh testimonials, citations, source links, review schema, and service-specific proof."
+        : "Plan a reviews/proof page or proof blocks if the client can provide usable review assets.",
+    },
+    {
+      channel: "Social proof",
+      signal: socialProfiles.length ? `${socialProfiles.length} social profile signal(s)` : "None detected",
+      action: socialProfiles.length
+        ? "Confirm which social profiles are active, who owns them, and whether they should appear on the site."
+        : "Ask whether social channels drive trust, recruiting, or leads before adding them to the website.",
+    },
+    {
+      channel: "Market patterns",
+      signal: patterns.length ? patterns.join(", ") : "No repeated patterns detected",
+      action: "Use these as prompts for proof collection, not as final positioning until the client confirms what is true.",
+    },
+  ];
+}
+
 function buildSuggestedStructure(scan) {
   const pages = scan.site?.pages || [];
   const hasContact = hasPath(pages, "contact");
@@ -808,6 +928,54 @@ function buildSuggestedStructure(scan) {
   );
 
   return structure;
+}
+
+function buildConfirmationScript(scan, actionReport, competitorStructure, reputationSummary) {
+  const keywordExamples = uniqueValues([
+    ...(actionReport.keywordClusters?.coreServices || []),
+    ...(actionReport.keywordClusters?.local || []),
+  ]).slice(0, 4);
+  const competitorExamples = (actionReport.competitorResearch?.competitors || []).slice(0, 3).map((result) => result.title || result.url);
+  const reputationSignals = reputationSummary.filter((item) => !/^None detected$/i.test(item.signal)).map((item) => item.channel);
+
+  return [
+    {
+      topic: "Priority services and markets",
+      ask: keywordExamples.length
+        ? `We found signals around ${keywordExamples.join(", ")}. Which of these are profitable, staffed, and worth building around?`
+        : "Which services, locations, and lead types should the website prioritize first?",
+      why: "Prevents building pages for services the client does not want or cannot support.",
+    },
+    {
+      topic: "Competitor reality check",
+      ask: competitorExamples.length
+        ? `These competitors or market results surfaced: ${competitorExamples.join(", ")}. Which ones are actually relevant, and who else should we inspect?`
+        : "Who are the real competitors the client cares about, and which competitors are irrelevant noise?",
+      why: "Search results are research prompts, not strategy by themselves.",
+    },
+    {
+      topic: "Reputation ownership",
+      ask: reputationSignals.length
+        ? `We saw reputation signals around ${reputationSignals.join(", ")}. Who owns those profiles, and which proof can we use on the site?`
+        : "Which review profiles, testimonials, photos, credentials, and proof assets can we use publicly?",
+      why: "Proof assets shape conversion pages, review pages, schema, and claims.",
+    },
+    {
+      topic: "Structure approval",
+      ask: `Does this initial structure make sense: ${competitorStructure.slice(0, 4).map((item) => item.path).join(", ")}? What should be removed before we scope content?`,
+      why: "Keeps the sitemap tied to business reality instead of generic SEO expansion.",
+    },
+    {
+      topic: "Lead routing and measurement",
+      ask: "Where should forms, calls, booking widgets, and quote requests go, and who owns GA4, GTM, Search Console, ads, CRM, and call tracking?",
+      why: "Launch work is risky until routing, attribution, and account ownership are clear.",
+    },
+    {
+      topic: "Handoff blockers",
+      ask: "Who can grant access to registrar, DNS, hosting, CMS, email, analytics, CRM, backups, and previous developer notes?",
+      why: "These are the likely blockers before implementation or launch.",
+    },
+  ];
 }
 
 function buildClientCallIntelligence(scan) {
@@ -1013,6 +1181,14 @@ function formatCompetitorResearch(theme, research) {
   ];
 }
 
+function formatReputationSummary(theme, reputationSummary) {
+  return reputationSummary.map((item) => `${theme.bullet("›")} ${theme.label(item.channel)} ${theme.dim(`${item.signal} | ${item.action}`)}`);
+}
+
+function formatCompetitorStructure(theme, structure) {
+  return structure.map((item) => `${theme.bullet("›")} ${theme.label(item.path)} ${theme.chip(`[${item.priority}]`)} ${theme.dim(`${item.trigger}: ${item.rationale}`)}`);
+}
+
 function formatPageMap(theme, pageMap) {
   if (!pageMap.length) {
     return [`${theme.bullet("›")} ${theme.label("No map yet")} ${theme.dim("Run --deep --search or confirm service priorities manually.")}`];
@@ -1021,6 +1197,10 @@ function formatPageMap(theme, pageMap) {
   return pageMap.slice(0, 10).map((item) => (
     `${theme.bullet("›")} ${theme.label(item.keyword)} ${theme.chip(`[${item.priority}]`)} ${theme.dim(`${item.status}: ${item.page} (${item.intent})`)}`
   ));
+}
+
+function formatConfirmationScript(theme, script) {
+  return script.map((item, index) => numbered(theme, index + 1, item.topic, `${item.ask} ${item.why}`));
 }
 
 function markdownResearchItems(items) {
@@ -1081,6 +1261,23 @@ function markdownCompetitorResearch(research) {
   ];
 }
 
+function markdownReputationSummary(reputationSummary) {
+  return markdownTableWithHeaders(["Channel", "Signal", "Action"], reputationSummary.map((item) => [
+    item.channel,
+    item.signal,
+    item.action,
+  ]));
+}
+
+function markdownCompetitorStructure(structure) {
+  return markdownTableWithHeaders(["Priority", "Path", "Trigger", "Rationale"], structure.map((item) => [
+    item.priority,
+    item.path,
+    item.trigger,
+    item.rationale,
+  ]));
+}
+
 function markdownPageMap(pageMap) {
   if (!pageMap.length) return ["- No keyword page map yet. Run `--deep --search` or confirm service priorities manually."];
   return [
@@ -1093,6 +1290,14 @@ function markdownPageMap(pageMap) {
       item.note,
     ])),
   ];
+}
+
+function markdownConfirmationScript(script) {
+  return markdownTableWithHeaders(["Topic", "Ask", "Why"], script.map((item) => [
+    item.topic,
+    item.ask,
+    item.why,
+  ]));
 }
 
 function extractKeywordCandidates(scan) {

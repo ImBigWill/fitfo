@@ -75,6 +75,9 @@ Current kickoff research sections:
 - content inventory by page type
 - keyword clusters
 - competitor/review/directory classification
+- competitor-informed structure suggestions
+- review/reputation summary
+- kickoff confirmation script
 - keyword-to-page map
 - CSV/JSON table sidecar exports
 
@@ -82,7 +85,6 @@ Next set:
 
 - sharper local keyword clustering
 - competitor-informed copy and sitemap pattern extraction
-- richer review/reputation summary
 - questions for the client to confirm, deny, or improve
 
 ## Plan Mode Ideas
@@ -95,6 +97,9 @@ Current sections:
 - recommended site structure
 - build workstreams
 - kickoff research game plan
+- competitor-informed structure
+- review/reputation summary
+- kickoff confirmation script
 - prioritized action report
 - keyword page map
 - confirmation questions
@@ -102,9 +107,7 @@ Current sections:
 Next improvements:
 
 - stronger service/location page recommendations
-- competitor-informed structure suggestions
 - local SEO/service-area recommendations
-- content inventory and proof-asset requests
 - launch checklist grouped by access, content, tracking, and technical QA
 - pre-launch dev checklist for canonical host, redirects, DNS cutover, hosting, CMS, email safety, tracking, CRM, and QA
 

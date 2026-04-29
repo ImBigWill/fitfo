@@ -33,7 +33,10 @@ domain input
       -> content inventory
       -> keyword clusters
       -> competitor research
+      -> review/reputation summary
+      -> competitor-informed structure
       -> keyword-to-page map
+      -> kickoff confirmation script
       -> optional CSV/JSON table exports
     -> research queue
     -> opportunities to inspect
@@ -57,7 +60,7 @@ domain input
 - `src/lib/site.js` handles local deep crawl/site intelligence extraction.
 - `src/lib/research.js` handles optional Firecrawl-backed market/search research.
 
-Markdown and Obsidian brief exports put the action report, proof assets, content inventory, keyword clusters, competitor research, and keyword-to-page map into tables so they can be scanned quickly or moved into a client workspace.
+Markdown and Obsidian brief exports put the action report, proof assets, content inventory, keyword clusters, competitor research, reputation summary, competitor-informed structure, confirmation script, and keyword-to-page map into tables so they can be scanned quickly or moved into a client workspace.
 
 `--export-tables <dir>` writes those same planning tables as CSV sidecars plus a combined JSON bundle. This is intentionally a sidecar export so the terminal report, Obsidian note, and spreadsheet workflow do not compete with each other.
 
