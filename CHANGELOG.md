@@ -17,6 +17,7 @@ Initial private version.
 - `fitfo <domain>` scanner command.
 - `fitfo brief <domain>` first-call prep scaffold.
 - `fitfo plan <domain>` client build plan command for priorities, site structure, workstreams, and confirmation questions.
+- `fitfo onboard <domain>` one-command full-intake preset for deep scan, search-backed client planning, Obsidian action-plan export, and CSV/JSON table exports.
 - `fitfo brief <domain> --deep` crawl mode for sitemap pages, metadata, headings, CTAs, forms, schema, and suggested site structure.
 - `fitfo brief <domain> --search` optional Firecrawl-backed web research for market, review, and service SERP signals.
 - Kickoff research brief sections for current site read, market snapshot, keyword/page opportunities, positioning hypotheses, and first-call agenda.

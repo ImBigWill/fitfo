@@ -4,7 +4,7 @@ import readline from "node:readline/promises";
 import { stdin as input, stdout as output } from "node:process";
 import { applyConfigDefaults, handleConfigCommand, loadConfig } from "../src/cli/config.js";
 import { renderOutput } from "../src/cli/output.js";
-import { parseArgs } from "../src/cli/options.js";
+import { hasProvidedOption, parseArgs } from "../src/cli/options.js";
 import { defaultDesktopReportPath, normalizeSaveDestination, normalizeSaveFormat, promptedReportFileName, resolvePromptedOutputPath, shouldPromptForReportSave } from "../src/cli/post-scan.js";
 import { absoluteOutputPath, resolveOutputPath, writeReport } from "../src/cli/reports.js";
 import { renderRunStart, renderSavedMessage } from "../src/cli/status.js";
@@ -51,6 +51,7 @@ try {
 
   options = applyConfigDefaults(options, await loadConfig());
   options.vault ||= process.env.FITFO_OBSIDIAN_DIR || null;
+  options = applyOnboardDefaults(options);
   domainArg = options.domain;
 
   if (!domainArg) {
@@ -80,12 +81,7 @@ try {
     location: options.location,
     country: options.country,
   });
-  const terminalOutput = renderOutput(scan, {
-    color: !noColor,
-    format: options.format,
-    obsidian: options.obsidian,
-    report: options.command,
-  });
+  const terminalOutput = renderOutput(scan, terminalRenderOptions(options, !noColor));
 
   if (!options.quiet) {
     console.log(terminalOutput);
@@ -111,17 +107,84 @@ try {
   process.exit(1);
 }
 
+function terminalRenderOptions(options, color) {
+  if (options.command !== "onboard") {
+    return {
+      color,
+      format: options.format,
+      obsidian: options.obsidian,
+      report: options.command,
+    };
+  }
+
+  if (hasProvidedOption(options, "format") && options.format === "json") {
+    return {
+      color,
+      format: options.format,
+      obsidian: options.obsidian,
+      report: options.command,
+    };
+  }
+
+  return {
+    color,
+    format: "text",
+    obsidian: false,
+    report: "plan",
+  };
+}
+
+function applyOnboardDefaults(options) {
+  if (options.command !== "onboard") {
+    return options;
+  }
+
+  const explicitFormat = hasProvidedOption(options, "format");
+  const next = {
+    ...options,
+    deep: true,
+    search: true,
+    save: true,
+    onboard: true,
+    onboardFileFormat: explicitFormat ? options.format : "obsidian",
+  };
+  preserveProvided(options, next);
+
+  if (!next.exportTables) {
+    next.exportTables = "fitfo-exports";
+  }
+
+  return next;
+}
+
 async function saveReport(scan, outputPath, options) {
+  const onboardFileFormat = options.command === "onboard" ? options.onboardFileFormat : null;
+  const fileOptions = onboardFileFormat
+    ? { ...options, command: "plan", format: onboardFileFormat, obsidian: onboardFileFormat === "obsidian" }
+    : options;
   const fileOutput = renderOutput(scan, {
     color: false,
-    format: options.format,
-    obsidian: options.obsidian,
-    report: options.command,
+    format: fileOptions.format,
+    obsidian: fileOptions.obsidian,
+    report: fileOptions.command,
   });
   return writeReport(outputPath, fileOutput);
 }
 
+function preserveProvided(source, target) {
+  if (source.provided instanceof Set) {
+    Object.defineProperty(target, "provided", {
+      value: new Set(source.provided),
+      enumerable: false,
+    });
+  }
+}
+
 function shouldRenderRunStart(options) {
+  if (options.command === "onboard" && !(hasProvidedOption(options, "format") && options.format === "json")) {
+    return !options.quiet;
+  }
+
   return !options.quiet && options.format === "text";
 }
 

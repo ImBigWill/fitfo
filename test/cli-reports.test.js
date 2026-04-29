@@ -40,6 +40,42 @@ test("uses a stable Obsidian vault path when a vault directory is configured", (
   assert.equal(outputPath, "/vault/Clients/example.com-brief.md");
 });
 
+test("uses a stable full-onboarding path for onboard reports", () => {
+  const vaultPath = resolveOutputPath(scan, {
+    command: "onboard",
+    out: null,
+    save: true,
+    obsidian: false,
+    format: "text",
+    vault: "/vault/Clients",
+  });
+  const fallbackPath = resolveOutputPath(scan, {
+    command: "onboard",
+    out: null,
+    save: true,
+    obsidian: false,
+    format: "text",
+    vault: null,
+  });
+
+  assert.equal(vaultPath, "/vault/Clients/example.com-onboard.md");
+  assert.equal(fallbackPath, "fitfo-reports/example.com-onboard.md");
+});
+
+test("uses explicit onboard report format extensions", () => {
+  const outputPath = resolveOutputPath(scan, {
+    command: "onboard",
+    onboardFileFormat: "json",
+    out: null,
+    save: true,
+    obsidian: false,
+    format: "json",
+    vault: null,
+  });
+
+  assert.equal(outputPath, "fitfo-reports/example.com-onboard.json");
+});
+
 test("expands saved report paths for clear terminal output", () => {
   assert.equal(absoluteOutputPath("fitfo-reports/example.md").startsWith("/"), true);
   assert.equal(absoluteOutputPath("~/fitfo-example.md").startsWith("/"), true);

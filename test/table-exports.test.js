@@ -68,6 +68,13 @@ test("builds plan launch checklist export rows", () => {
   assert.ok(bundle.launchChecklist.some((item) => item.item === "DNS cutover" && item.phase === "Launch"));
 });
 
+test("treats onboard table exports as plan exports", () => {
+  const bundle = buildTableExportBundle(scan, { report: "onboard" });
+
+  assert.equal(bundle.metadata.reportType, "plan");
+  assert.ok(bundle.launchChecklist.some((item) => item.item === "DNS cutover" && item.phase === "Launch"));
+});
+
 test("writes CSV and JSON table exports", async () => {
   const directory = await mkdtemp(path.join(tmpdir(), "fitfo-table-exports-"));
   const result = await writeTableExports(scan, { dir: directory, report: "brief" });

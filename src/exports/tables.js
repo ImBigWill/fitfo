@@ -13,7 +13,7 @@ const KEYWORD_CLUSTER_LABELS = {
 };
 
 export function buildTableExportBundle(scan, options = {}) {
-  const reportType = options.report === "plan" ? "plan" : "brief";
+  const reportType = options.report === "plan" || options.report === "onboard" ? "plan" : "brief";
   const report = reportType === "plan" ? buildClientPlan(scan) : buildBrief(scan);
   const actionReport = report.actionReport || {};
   const competitorResearch = actionReport.competitorResearch || {};

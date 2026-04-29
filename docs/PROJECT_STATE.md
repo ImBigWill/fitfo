@@ -16,6 +16,7 @@ It can:
 - generate keyword clusters, competitor/review/directory classification, keyword-to-page maps, service/location recommendations, proof-asset requests, content inventory, competitor-informed structure, reputation summaries, confirmation scripts, and prioritized action items
 - use either `FIRECRAWL_API_KEY` or an authenticated local Firecrawl CLI for market research
 - generate a `fitfo plan` client build plan from scan, crawl, and research signals
+- run `fitfo onboard` as a one-command full-intake preset that deep-scans, searches, saves an Obsidian action-plan note, and exports CSV/JSON planning tables
 - render a styled onboarding report
 - render plain output for copying/saving
 - output JSON

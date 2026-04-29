@@ -1,4 +1,4 @@
-const COMMANDS = new Set(["scan", "brief", "plan", "config", "doctor", "version", "help"]);
+const COMMANDS = new Set(["scan", "brief", "plan", "onboard", "config", "doctor", "version", "help"]);
 const FORMATS = new Set(["text", "markdown", "obsidian", "json"]);
 
 export function parseArgs(argv) {
@@ -92,6 +92,7 @@ export function parseArgs(argv) {
     } else if (arg === "--json") {
       options.json = true;
       options.format = "json";
+      options.provided.add("format");
     } else if (arg === "--no-color") {
       options.noColor = true;
     } else if (arg === "--format" || arg === "-f") {
@@ -158,6 +159,10 @@ export function normalizeFormat(value) {
   if (format === "md") return "markdown";
   if (FORMATS.has(format)) return format;
   throw new Error(`Unsupported format "${value}". Use text, markdown, obsidian, or json.`);
+}
+
+export function hasProvidedOption(options, key) {
+  return options.provided instanceof Set && options.provided.has(key);
 }
 
 function applyFormat(options, value) {

@@ -26,6 +26,16 @@ test("applies safe config defaults without overriding explicit flags", () => {
   assert.equal(merged.searchLimit, 8);
 });
 
+test("preserves explicit option tracking while applying config defaults", () => {
+  const options = parseArgs(["brief", "example.com", "--json"]);
+  const merged = applyConfigDefaults(options, {
+    format: "obsidian",
+  });
+
+  assert.equal(merged.format, "json");
+  assert.equal(merged.provided.has("format"), true);
+});
+
 test("normalizes config values by key", () => {
   assert.equal(normalizeConfigValue("deep", "yes"), true);
   assert.equal(normalizeConfigValue("search", "off"), false);

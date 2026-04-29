@@ -75,6 +75,7 @@ export async function handleConfigCommand(args = []) {
 
 export function applyConfigDefaults(options, config = {}) {
   const merged = { ...options };
+  preserveProvided(options, merged);
 
   applyDefault(merged, config, "vault", null);
   applyDefault(merged, config, "location", null);
@@ -98,6 +99,15 @@ export function applyConfigDefaults(options, config = {}) {
   }
 
   return merged;
+}
+
+function preserveProvided(source, target) {
+  if (source.provided instanceof Set) {
+    Object.defineProperty(target, "provided", {
+      value: new Set(source.provided),
+      enumerable: false,
+    });
+  }
 }
 
 export function normalizeConfigValue(key, value) {

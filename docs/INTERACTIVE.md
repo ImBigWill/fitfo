@@ -50,6 +50,43 @@ Fast path equivalents:
 fitfo clientdomain.com
 fitfo brief clientdomain.com --deep --search --location "City, ST"
 fitfo plan clientdomain.com --deep --search --location "City, ST"
+fitfo onboard clientdomain.com
+```
+
+## One-Command Full Intake
+
+Use `onboard` when you want the whole run without remembering the full flag stack:
+
+```bash
+fitfo onboard clientdomain.com
+```
+
+This runs the complete action-plan path:
+
+- domain, DNS, hosting, CMS, email, analytics, CRM, and subdomain scan
+- deep website crawl
+- Firecrawl-backed market/search research
+- plan-mode recommendations and launch checklist
+- Obsidian-ready action-plan note
+- CSV/JSON sidecar table exports in `fitfo-exports/`
+
+If a vault is configured, FITFO saves:
+
+```text
+clientdomain.com-onboard.md
+```
+
+One-off vault destination:
+
+```bash
+fitfo onboard clientdomain.com --location "City, ST" --vault ~/Obsidian/Clients
+```
+
+Recommended default setup:
+
+```bash
+fitfo config set vault ~/Obsidian/Clients
+fitfo config set location "City, ST"
 ```
 
 ## End-Of-Run Save Prompt

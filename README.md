@@ -93,6 +93,7 @@ Fast path when you already know the command:
 fitfo clientdomain.com
 fitfo brief clientdomain.com --deep --search --location "City, ST"
 fitfo plan clientdomain.com --deep --search --location "City, ST"
+fitfo onboard clientdomain.com
 ```
 
 Environment check:
@@ -163,6 +164,14 @@ Client build plan:
 ```bash
 fitfo plan example.com --deep --search --location "Richmond, VA"
 ```
+
+Full client onboarding packet:
+
+```bash
+fitfo onboard example.com
+```
+
+`fitfo onboard` runs the full intake path: plan mode, deep crawl, Firecrawl-backed search, an Obsidian-ready action-plan note, and CSV/JSON table exports. If a vault is configured, the note is saved there as `example.com-onboard.md`. Otherwise it saves to `fitfo-reports/example.com-onboard.md`.
 
 Save defaults:
 
@@ -257,6 +266,18 @@ Save without printing the full report:
 
 ```bash
 fitfo brief example.com --obsidian --out ~/Obsidian/Clients/example.com-brief.md --quiet
+```
+
+Run the complete intake and save to your configured Obsidian vault:
+
+```bash
+fitfo onboard example.com
+```
+
+Or provide the vault inline:
+
+```bash
+fitfo onboard example.com --location "Richmond, VA" --vault ~/Obsidian/Clients
 ```
 
 ## What FITFO Checks

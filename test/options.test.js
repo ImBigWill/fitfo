@@ -45,6 +45,14 @@ test("parses plan command", () => {
   assert.equal(options.deep, true);
 });
 
+test("parses onboard command", () => {
+  const options = parseArgs(["onboard", "example.com", "--location", "Richmond, VA"]);
+
+  assert.equal(options.command, "onboard");
+  assert.equal(options.domain, "example.com");
+  assert.equal(options.location, "Richmond, VA");
+});
+
 test("parses config command arguments", () => {
   const options = parseArgs(["config", "set", "vault", "~/Obsidian/Clients"]);
 

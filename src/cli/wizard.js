@@ -55,13 +55,15 @@ export function normalizeWizardIntent(value, fallback = "kickoff") {
 }
 
 export function applyWizardIntent(options, intent) {
-  return {
+  const next = {
     ...options,
     command: intent.command,
     deep: intent.deep,
     search: intent.search,
     wizardIntent: intent.key,
   };
+  preserveProvided(options, next);
+  return next;
 }
 
 export function shouldAskForWizardLocation(options) {
@@ -70,4 +72,13 @@ export function shouldAskForWizardLocation(options) {
 
 function getWizardIntent(key) {
   return WIZARD_INTENTS.find((intent) => intent.key === key) || WIZARD_INTENTS[0];
+}
+
+function preserveProvided(source, target) {
+  if (source.provided instanceof Set) {
+    Object.defineProperty(target, "provided", {
+      value: new Set(source.provided),
+      enumerable: false,
+    });
+  }
 }

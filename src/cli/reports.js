@@ -9,6 +9,14 @@ export function defaultReportPath(scan, format, obsidian) {
 }
 
 export function resolveOutputPath(scan, options) {
+  if (!options.out && options.command === "onboard") {
+    const fileName = onboardFileName(scan, options);
+    if (options.vault) {
+      return path.join(expandHome(options.vault), fileName);
+    }
+    return path.join("fitfo-reports", fileName);
+  }
+
   if (!options.out && options.obsidian && options.vault) {
     return path.join(expandHome(options.vault), obsidianFileName(scan, options));
   }
@@ -31,8 +39,14 @@ export async function writeReport(outputPath, content) {
 }
 
 function obsidianFileName(scan, options) {
-  const suffix = options.command === "brief" ? "-brief" : options.command === "plan" ? "-plan" : "";
+  const suffix = options.command === "brief" ? "-brief" : options.command === "plan" ? "-plan" : options.command === "onboard" ? "-onboard" : "";
   return `${scan.domain.apex}${suffix}.md`;
+}
+
+function onboardFileName(scan, options) {
+  const format = options.onboardFileFormat || "obsidian";
+  const extension = format === "json" ? "json" : format === "text" ? "txt" : "md";
+  return `${scan.domain.apex}-onboard.${extension}`;
 }
 
 function expandHome(value) {
