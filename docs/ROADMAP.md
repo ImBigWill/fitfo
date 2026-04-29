@@ -39,11 +39,10 @@ fitfo plan clientdomain.com --deep --search --location "City, ST"
 - Improve redirect checks for `www` and apex canonical behavior.
 - Improve hosting fingerprints.
 - Improve DNS provider fingerprints.
-- Add fixture coverage for common registrar, DNS, hosting, and CRM/service-business patterns.
 - Improve analytics and marketing tag detection.
 - Improve Markdown report templates after real Obsidian use.
-- Add `fitfo config` for saved defaults.
-- Add fixture-based tests for known real-world domain/hosting patterns.
+- Expand fixture coverage as real-world misses show up.
+- Improve save-flow wording after more Desktop and Obsidian usage.
 
 ## Onboarding Scanner Ideas
 
@@ -87,6 +86,7 @@ Next set:
 - sharper local keyword clustering
 - competitor-informed copy and sitemap pattern extraction
 - questions for the client to confirm, deny, or improve
+- real-domain passes that turn missed service, location, review, and CRM patterns into fixtures
 
 ## Plan Mode Ideas
 
@@ -108,10 +108,10 @@ Current sections:
 
 Next improvements:
 
-- stronger service/location page recommendations
 - local SEO/service-area recommendations
-- launch checklist grouped by access, content, tracking, and technical QA
-- pre-launch dev checklist for canonical host, redirects, DNS cutover, hosting, CMS, email safety, tracking, CRM, and QA
+- sharper prioritization between must-build pages, nice-to-have pages, and client-confirmation pages
+- launch checklist grouped even more explicitly by access, content, tracking, and technical QA
+- pre-launch dev checklist refinements after real project handoff use
 
 Important: brief mode should label findings as public signals, inferred hypotheses, and questions. It should not pretend to know the business from one scan.
 

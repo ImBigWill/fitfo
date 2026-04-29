@@ -1,6 +1,6 @@
 # Project State
 
-Last updated after the first deep-brief and planning pass.
+Last updated: 2026-04-28, after the service/location, plan checklist, provider fixture, and docs pass.
 
 ## Current State
 
@@ -102,7 +102,25 @@ These may become separate commands or modules:
 
 ## Next Sensible Commit Candidates
 
-- Refine Obsidian templates after more real scans.
-- Add more provider fixture cases as real scans expose missed patterns.
+- Run more real client-domain passes and add fixtures for any missed registrar, DNS, hosting, CRM, or email patterns.
+- Refine Obsidian templates after more real scans, especially saved brief/plan notes.
 - Improve service/location sitemap heuristics after testing more real client sites.
 - Refine keyword clustering and competitor classification with more Firecrawl result sets.
+- Keep tightening the default terminal report so the CLI feels polished while staying copy/paste friendly.
+
+## Morning Pickup
+
+Recommended next session:
+
+1. Pull latest `master` and confirm `fitfo doctor`, `npm test`, and `npm run check` pass.
+2. Run 3-5 real domains through:
+
+   ```bash
+   fitfo clientdomain.com
+   fitfo brief clientdomain.com --deep --search --location "City, ST"
+   fitfo plan clientdomain.com --deep --search --location "City, ST"
+   ```
+
+3. Save one report to Desktop and one to the Obsidian vault to confirm the save prompts feel obvious.
+4. Turn any missed provider or CRM detection into a focused fixture in `test/fixtures/provider-patterns.js`.
+5. Pick one UX polish task for the opening screen or save flow and commit it separately.

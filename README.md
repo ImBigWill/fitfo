@@ -42,6 +42,8 @@ Generated reports are ignored by default through `fitfo-reports/` and `reports/`
 - [Security](SECURITY.md)
 - [Changelog](CHANGELOG.md)
 
+For the next-session handoff, start with [Morning Pickup](docs/PROJECT_STATE.md#morning-pickup).
+
 Social badge can be added later once the preferred handle is confirmed.
 
 ## CLI Style Direction
