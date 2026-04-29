@@ -108,6 +108,7 @@ test("builds a first-call brief from an existing scan", () => {
   assert.ok(brief.actionReport.contentInventory.some((item) => item.path === "/services/drain-cleaning/" && item.type === "Service"));
   assert.ok(brief.competitorStructure.some((item) => item.path === "/reviews/" && item.priority === "High"));
   assert.ok(brief.reputationSummary.some((item) => item.channel === "Review profiles" && item.signal.includes("1")));
+  assert.ok(brief.serviceLocationRecommendations.some((item) => item.page === "/services/drain-cleaning/" && item.type === "Service"));
   assert.ok(brief.confirmationScript.some((item) => item.topic === "Competitor reality check"));
   assert.ok(brief.suggestedStructure.some((item) => item.path === "/services/{service}/"));
   assert.ok(brief.clientCallIntelligence.some((item) => item.prompt === "Confirm lead flow" && item.nextStep.includes("1 form(s)")));
@@ -140,6 +141,8 @@ test("renders a Markdown brief for Obsidian/client prep", () => {
   assert.match(markdown, /\| Channel \| Signal \| Action \|/);
   assert.match(markdown, /## Competitor-Informed Structure/);
   assert.match(markdown, /\| Priority \| Path \| Trigger \| Rationale \|/);
+  assert.match(markdown, /## Service \+ Location Recommendations/);
+  assert.match(markdown, /\| Priority \| Type \| Page \| Focus \| Recommendation \|/);
   assert.match(markdown, /## Keyword To Page Map/);
   assert.match(markdown, /## Suggested Site Structure/);
   assert.match(markdown, /## Client Call Intelligence/);

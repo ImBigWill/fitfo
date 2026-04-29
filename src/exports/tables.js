@@ -33,6 +33,7 @@ export function buildTableExportBundle(scan, options = {}) {
     contentInventory: normalizeContentInventory(actionReport.contentInventory || []),
     competitorStructure: normalizeCompetitorStructure(report.competitorStructure || []),
     reputationSummary: normalizeReputationSummary(report.reputationSummary || []),
+    serviceLocationRecommendations: normalizeServiceLocationRecommendations(report.serviceLocationRecommendations || []),
     confirmationScript: normalizeConfirmationScript(report.confirmationScript || []),
     keywordClusters: normalizeKeywordClusters(actionReport.keywordClusters || {}),
     competitors: normalizeCompetitors(competitorResearch),
@@ -53,6 +54,7 @@ export async function writeTableExports(scan, options = {}) {
     contentInventory: path.join(directory, `${domain}-content-inventory.csv`),
     competitorStructure: path.join(directory, `${domain}-competitor-structure.csv`),
     reputationSummary: path.join(directory, `${domain}-reputation-summary.csv`),
+    serviceLocationRecommendations: path.join(directory, `${domain}-service-location-recommendations.csv`),
     confirmationScript: path.join(directory, `${domain}-confirmation-script.csv`),
     keywordClusters: path.join(directory, `${domain}-keyword-clusters.csv`),
     competitors: path.join(directory, `${domain}-competitors.csv`),
@@ -91,6 +93,13 @@ export async function writeTableExports(scan, options = {}) {
       ["channel", "Channel"],
       ["signal", "Signal"],
       ["action", "Action"],
+    ]), "utf8"),
+    writeFile(files.serviceLocationRecommendations, toCsv(bundle.serviceLocationRecommendations, [
+      ["priority", "Priority"],
+      ["type", "Type"],
+      ["page", "Page"],
+      ["focus", "Focus"],
+      ["recommendation", "Recommendation"],
     ]), "utf8"),
     writeFile(files.confirmationScript, toCsv(bundle.confirmationScript, [
       ["topic", "Topic"],
@@ -181,6 +190,16 @@ function normalizeReputationSummary(items) {
     channel: item.channel || "",
     signal: item.signal || "",
     action: item.action || "",
+  }));
+}
+
+function normalizeServiceLocationRecommendations(items) {
+  return items.map((item) => ({
+    priority: item.priority || "",
+    type: item.type || "",
+    page: item.page || "",
+    focus: item.focus || "",
+    recommendation: item.recommendation || "",
   }));
 }
 

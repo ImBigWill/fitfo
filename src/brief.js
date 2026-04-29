@@ -11,6 +11,7 @@ export function buildBrief(scan) {
   const actionReport = buildActionReport(scan);
   const competitorStructure = buildCompetitorStructure(scan, actionReport);
   const reputationSummary = buildReputationSummary(scan, actionReport);
+  const serviceLocationRecommendations = buildServiceLocationRecommendations(scan, actionReport);
 
   return {
     subject: domain.apex,
@@ -34,6 +35,7 @@ export function buildBrief(scan) {
     actionReport,
     competitorStructure,
     reputationSummary,
+    serviceLocationRecommendations,
     suggestedStructure: buildSuggestedStructure(scan),
     clientCallIntelligence: buildClientCallIntelligence(scan),
     confirmationScript: buildConfirmationScript(scan, actionReport, competitorStructure, reputationSummary),
@@ -90,6 +92,8 @@ export function renderBriefText(scan, options = {}) {
     panel(theme, "Review + Reputation Summary", formatReputationSummary(theme, brief.reputationSummary)),
     "",
     panel(theme, "Competitor-Informed Structure", formatCompetitorStructure(theme, brief.competitorStructure)),
+    "",
+    panel(theme, "Service + Location Recommendations", formatServiceLocationRecommendations(theme, brief.serviceLocationRecommendations)),
     "",
     panel(theme, "Keyword To Page Map", formatPageMap(theme, brief.actionReport.pageMap)),
     "",
@@ -160,6 +164,10 @@ export function renderBriefMarkdown(scan, options = {}) {
     "## Competitor-Informed Structure",
     "",
     markdownCompetitorStructure(brief.competitorStructure),
+    "",
+    "## Service + Location Recommendations",
+    "",
+    markdownServiceLocationRecommendations(brief.serviceLocationRecommendations),
     "",
     "## Keyword To Page Map",
     "",
@@ -902,6 +910,65 @@ function buildReputationSummary(scan, actionReport) {
   ];
 }
 
+function buildServiceLocationRecommendations(scan, actionReport) {
+  const pageMap = actionReport.pageMap || [];
+  const pages = scan.site?.pages || [];
+  const hasLocationPages = pages.some((page) => classifyPageType(page.path || "/") === "Location");
+  const location = scan.research?.location || "";
+  const items = [];
+  const add = (priority, type, page, focus, recommendation) => {
+    if (!items.some((item) => item.page === page && item.focus === focus)) {
+      items.push({ priority, type, page, focus, recommendation });
+    }
+  };
+
+  for (const item of pageMap.filter((entry) => ["service", "emergency"].includes(entry.intent)).slice(0, 5)) {
+    add(
+      item.intent === "emergency" ? "High" : item.priority,
+      item.intent === "emergency" ? "Emergency service" : "Service",
+      item.page,
+      item.keyword,
+      item.status === "Improve existing"
+        ? "Improve copy depth, proof, FAQs, CTA, metadata, schema, and internal links on the existing page."
+        : "Confirm business value and staffing before building a focused page for this service.",
+    );
+  }
+
+  for (const item of pageMap.filter((entry) => entry.intent === "local").slice(0, 4)) {
+    add(
+      "Medium",
+      "Location",
+      item.page,
+      item.keyword,
+      item.status === "Improve existing"
+        ? "Add local proof, service-area clarity, reviews, photos, and conversion paths to the existing page."
+        : "Build only if this is a real service area with operations coverage, local proof, and enough demand.",
+    );
+  }
+
+  if (location && !hasLocationPages && !items.some((item) => item.type === "Location")) {
+    add(
+      "Medium",
+      "Location",
+      "/locations/{city}/",
+      location,
+      "Confirm priority cities and service radius before creating location pages.",
+    );
+  }
+
+  if (!items.length) {
+    add(
+      "High",
+      "Manual",
+      "/services/{priority-service}/",
+      "Client-ranked services",
+      "No strong service/location map was generated. Ask the client to rank services and markets before scoping pages.",
+    );
+  }
+
+  return items.slice(0, 10);
+}
+
 function buildSuggestedStructure(scan) {
   const pages = scan.site?.pages || [];
   const hasContact = hasPath(pages, "contact");
@@ -1189,6 +1256,10 @@ function formatCompetitorStructure(theme, structure) {
   return structure.map((item) => `${theme.bullet("›")} ${theme.label(item.path)} ${theme.chip(`[${item.priority}]`)} ${theme.dim(`${item.trigger}: ${item.rationale}`)}`);
 }
 
+function formatServiceLocationRecommendations(theme, recommendations) {
+  return recommendations.map((item) => `${theme.bullet("›")} ${theme.label(item.page)} ${theme.chip(`[${item.priority}]`)} ${theme.dim(`${item.type}: ${item.focus}. ${item.recommendation}`)}`);
+}
+
 function formatPageMap(theme, pageMap) {
   if (!pageMap.length) {
     return [`${theme.bullet("›")} ${theme.label("No map yet")} ${theme.dim("Run --deep --search or confirm service priorities manually.")}`];
@@ -1275,6 +1346,16 @@ function markdownCompetitorStructure(structure) {
     item.path,
     item.trigger,
     item.rationale,
+  ]));
+}
+
+function markdownServiceLocationRecommendations(recommendations) {
+  return markdownTableWithHeaders(["Priority", "Type", "Page", "Focus", "Recommendation"], recommendations.map((item) => [
+    item.priority,
+    item.type,
+    item.page,
+    item.focus,
+    item.recommendation,
   ]));
 }
 

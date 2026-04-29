@@ -50,6 +50,7 @@ test("builds table export rows for research sidecars", () => {
   assert.ok(bundle.contentInventory.some((item) => item.path === "/services/drain-cleaning/"));
   assert.ok(bundle.competitorStructure.some((item) => item.path.startsWith("/services/")));
   assert.ok(bundle.reputationSummary.some((item) => item.channel === "Market patterns"));
+  assert.ok(bundle.serviceLocationRecommendations.some((item) => item.page === "/services/drain-cleaning/"));
   assert.ok(bundle.confirmationScript.some((item) => item.topic === "Competitor reality check"));
   assert.ok(bundle.keywordClusters.some((item) => item.keyword === "drain cleaning"));
   assert.ok(bundle.competitors.some((item) => item.type === "competitor" && item.title === "Competitor Plumbing"));
@@ -63,11 +64,13 @@ test("writes CSV and JSON table exports", async () => {
 
   const keywords = await readFile(result.files.keywordClusters, "utf8");
   const script = await readFile(result.files.confirmationScript, "utf8");
+  const serviceLocation = await readFile(result.files.serviceLocationRecommendations, "utf8");
   const json = JSON.parse(await readFile(result.files.json, "utf8"));
 
   assert.match(keywords, /Cluster,Keyword/);
   assert.match(keywords, /Core services,drain cleaning/);
   assert.match(script, /Topic,Ask,Why/);
+  assert.match(serviceLocation, /Priority,Type,Page,Focus,Recommendation/);
   assert.equal(json.metadata.domain, "client.example");
   assert.ok(json.competitors.some((item) => item.title === "Competitor Plumbing"));
   assert.ok(json.confirmationScript.some((item) => item.topic === "Structure approval"));
