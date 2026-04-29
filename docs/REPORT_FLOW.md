@@ -13,6 +13,7 @@ domain input
   -> scan report
     -> verdict
     -> plain English
+    -> client handoff summary
     -> track-this-down checklist
     -> handoff packet
     -> raw records
@@ -76,6 +77,20 @@ FITFO should make the source of each recommendation obvious:
 - **Ask Client**: something FITFO should not pretend to know; confirm with the client or previous developer.
 
 Action-plan items and kickoff research sections should use these labels consistently so the first call separates facts from assumptions.
+
+## Client Handoff Summary
+
+The scan report should answer the client handoff question before it dives into raw records:
+
+- where the domain/registrar appears to live
+- who appears to control DNS/nameservers
+- where hosting or the origin may live
+- what CMS/admin access is needed
+- what email records exist and what must be preserved
+- which analytics, CRM, booking, marketing, or DNS services were found
+- which subdomains may represent hidden tools or staging sites
+
+Each row should state the public signal, confidence level, and what the client needs to provide or confirm. If FITFO only inferred a provider from nameservers, the report should say so and require manual confirmation.
 
 `--export-tables <dir>` writes those same planning tables as CSV sidecars plus a combined JSON bundle. This is intentionally a sidecar export so the terminal report, Obsidian note, and spreadsheet workflow do not compete with each other.
 

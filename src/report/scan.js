@@ -49,6 +49,8 @@ export function renderTextReport(scan, options = {}) {
       `${theme.bullet("›")} Previous developer contact is ${theme.label("not discoverable from public records")}. Ask the client who last managed the site, DNS, hosting, or WordPress account.`,
     ]),
     "",
+    panel(theme, "Client Handoff Summary", formatClientHandoffSummary(theme, scan)),
+    "",
     panel(theme, "Track This Down", analysis.actionPlan.flatMap((action, index) => numbered(theme, index + 1, action.label, action.detail))),
     "",
     panel(theme, "Registrar / Domain Records", [
@@ -182,6 +184,10 @@ export function renderMarkdownReport(scan, options = {}) {
     markdownEmailLine(analysis),
     ...(analysis.emailSafety?.summary ? [`- Mail safety: **${analysis.emailSafety.riskLevel} risk.** ${analysis.emailSafety.summary}`] : []),
     "- Previous developer contact is **not discoverable from public records**. Ask the client who last managed the site, DNS, hosting, or WordPress account.",
+    "",
+    "## Client Handoff Summary",
+    "",
+    markdownClientHandoffSummary(scan),
     "",
     "## Track This Down",
     "",
@@ -412,6 +418,14 @@ function formatHandoffPacket(theme, scan) {
   ];
 }
 
+function formatClientHandoffSummary(theme, scan) {
+  return buildClientHandoffSummary(scan).flatMap((item) => [
+    `${theme.bullet("›")} ${theme.label(item.area)} ${theme.chip(`[${item.confidence}]`)}`,
+    `  ${theme.dim(`Found: ${item.found}`)}`,
+    `  ${theme.dim(`Need: ${item.need}`)}`,
+  ]);
+}
+
 function formatObject(theme, label, values) {
   const entries = Object.entries(values || {});
   if (!entries.length) return kv(theme, label, theme.dim("None captured"));
@@ -496,6 +510,14 @@ function markdownTable(rows) {
   ].join("\n");
 }
 
+function markdownTableWithHeaders(headers, rows) {
+  return [
+    `| ${headers.map(escapeTable).join(" | ")} |`,
+    `| ${headers.map(() => "---").join(" | ")} |`,
+    ...rows.map((row) => `| ${row.map(escapeTable).join(" | ")} |`),
+  ].join("\n");
+}
+
 function markdownListSection(label, values) {
   if (!values || values.length === 0) {
     return `- **${label}:** None detected`;
@@ -553,6 +575,80 @@ function markdownHandoffPacket(scan) {
     "",
     ...packet.beforeLaunch.map((item) => `- [ ] ${item}`),
   ].join("\n");
+}
+
+function markdownClientHandoffSummary(scan) {
+  return markdownTableWithHeaders(["Area", "Confidence", "Public Signal", "Client Needs To Provide / Confirm"], buildClientHandoffSummary(scan).map((item) => [
+    item.area,
+    item.confidence,
+    item.found,
+    item.need,
+  ]));
+}
+
+function buildClientHandoffSummary(scan) {
+  const { analysis, dns, rdap } = scan;
+  const registrar = analysis.registrarDetails || {
+    name: analysis.registrar || "Unknown",
+    confidence: analysis.registrar === "Unknown" ? "Manual" : "High",
+    source: rdap.registrar?.name ? "RDAP" : "Public scan",
+    note: analysis.registrar === "Unknown" ? "Registrar was not publicly identified." : "Registrar found from public records.",
+  };
+  const nameservers = dns.nameservers?.length ? dns.nameservers.join(", ") : "No nameservers detected";
+  const mxRecords = dns.mx?.length ? dns.mx.map((record) => `${record.priority} ${record.exchange}`).join(", ") : "No MX records detected";
+  const services = analysis.connectedServices?.length ? analysis.connectedServices.join(", ") : "No extra DNS service hints found";
+  const subdomains = dns.subdomains?.length ? `${dns.subdomains.length} common subdomain(s) resolved` : "No common subdomains resolved";
+
+  return [
+    {
+      area: "Domain / Registrar",
+      confidence: registrar.confidence || "Manual",
+      found: `${registrar.name}. ${registrar.note || registrar.source || ""}`.trim(),
+      need: "Client must provide registrar login, billing owner, delegated access, or confirm who owns the domain account.",
+    },
+    {
+      area: "DNS / Nameservers",
+      confidence: analysis.dnsProvider === "Unknown" ? "Manual" : "High",
+      found: `${analysis.dnsProvider}. Nameservers: ${nameservers}.`,
+      need: "Client or previous developer must confirm who controls DNS before any website, email, or launch changes.",
+    },
+    {
+      area: "Hosting / Website Files",
+      confidence: analysis.hosting.confidence || "Manual",
+      found: `${analysis.hosting.provider}. ${analysis.hosting.note || ""}`.trim(),
+      need: "Client must confirm hosting account, collaborator access, backups, deployment path, and emergency restore contact.",
+    },
+    {
+      area: "CMS / Website Admin",
+      confidence: analysis.cms.confidence || "Manual",
+      found: analysis.cms.platform,
+      need: analysis.cms.platform === "WordPress"
+        ? "Client should provide a new WordPress administrator user and confirm who manages plugins, theme, backups, and updates."
+        : "Client should confirm CMS/admin access and who can edit or deploy the website.",
+    },
+    {
+      area: "Email / DNS Safety",
+      confidence: analysis.email.provider === "Unknown" ? "Manual" : "High",
+      found: `${analysis.email.provider}. MX: ${mxRecords}.`,
+      need: "Client must confirm email provider and preserve MX, SPF, DKIM, and DMARC before DNS or nameserver changes.",
+    },
+    {
+      area: "Analytics / CRM / Services",
+      confidence: [...(analysis.marketing?.found || []), ...(analysis.operations?.found || []), ...(analysis.connectedServices || [])].length ? "Found" : "Manual",
+      found: [
+        analysis.marketing?.found?.length ? `Marketing: ${analysis.marketing.found.join(", ")}` : "Marketing: none detected",
+        analysis.operations?.found?.length ? `CRM/ops: ${analysis.operations.found.join(", ")}` : "CRM/ops: none detected",
+        `DNS services: ${services}`,
+      ].join(". "),
+      need: "Client should provide GA4, Search Console, Tag Manager, ads/pixels, call tracking, CRM/booking, forms, and reporting access where applicable.",
+    },
+    {
+      area: "Subdomains / Hidden Tools",
+      confidence: dns.subdomains?.length ? "Found" : "Manual",
+      found: subdomains,
+      need: "Client or previous developer should confirm whether any staging, portal, booking, mail, app, or shop subdomains are active.",
+    },
+  ];
 }
 
 function buildHandoffPacket(scan) {

@@ -23,6 +23,8 @@ Initial private version.
 - Evidence labels in plan/action output and action-item table exports.
 - Example output docs, provider fixture guidance, public-release checklist, and issue templates.
 - Provider fixtures for DreamHost, Flywheel, Liquid Web, Birdeye, NiceJob, and Service Fusion handoff patterns.
+- Client handoff summary table in scan exports.
+- Likely registrar inference from nameserver patterns when RDAP registrar data is missing.
 - `fitfo brief <domain> --deep` crawl mode for sitemap pages, metadata, headings, CTAs, forms, schema, and suggested site structure.
 - `fitfo brief <domain> --search` optional Firecrawl-backed web research for market, review, and service SERP signals.
 - Kickoff research brief sections for current site read, market snapshot, keyword/page opportunities, positioning hypotheses, and first-call agenda.

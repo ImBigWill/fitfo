@@ -98,6 +98,45 @@ test("flags high email safety risk when MX exists without SPF or DMARC", () => {
   assert.ok(analysis.risks.some((risk) => risk.includes("MX records exist but no SPF")));
 });
 
+test("infers likely registrar from nameservers when RDAP registrar is missing", () => {
+  const analysis = analyzeProfile({
+    domain: {
+      apex: "client.example",
+      hostname: "client.example",
+    },
+    rdap: {
+      available: false,
+      registrar: null,
+      nameservers: [],
+    },
+    dns: {
+      nameservers: ["ns01.domaincontrol.com", "ns02.domaincontrol.com"],
+      cnames: [],
+      addresses: ["192.0.2.10"],
+      ipv6Addresses: [],
+      mx: [],
+      txt: [],
+      caa: [],
+    },
+    http: {
+      reachable: true,
+      finalUrl: "https://client.example/",
+      headers: {},
+      htmlSample: "",
+      wordpress: {
+        likely: false,
+        signals: [],
+      },
+    },
+  });
+
+  assert.equal(analysis.registrar, "Likely GoDaddy");
+  assert.equal(analysis.registrarDetails.confidence, "Medium");
+  assert.equal(analysis.registrarDetails.source, "Nameserver inference");
+  assert.ok(analysis.accessNeeded.some((item) => item.item === "GoDaddy access"));
+  assert.ok(analysis.actionPlan.some((item) => item.label === "Track down GoDaddy"));
+});
+
 test("detects sender platforms from SPF and TXT records", () => {
   const analysis = analyzeProfile({
     domain: {

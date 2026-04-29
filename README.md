@@ -99,6 +99,8 @@ fitfo onboard example.com
 - Obsidian-ready action-plan note
 - CSV/JSON table exports for planning workflows
 
+The exported report leads with a client handoff summary: where FITFO thinks the domain, DNS, hosting, CMS, email, services, and subdomains live, how confident that finding is, and what the client needs to provide or confirm.
+
 When run in an interactive terminal, `fitfo onboard` asks for missing full-intake details before scanning:
 
 - market/location, if no location is configured or passed
@@ -338,6 +340,7 @@ Key sections:
 
 - **Verdict**: registrar, DNS provider, Cloudflare status, hosting, CMS, email, and services.
 - **Track This Down**: the practical access errands for the client or previous developer.
+- **Client Handoff Summary**: a client-facing table of public findings, confidence, and what access or confirmation is needed.
 - **DNS Records**: nameservers, IPs, email records, and safety records.
 - **Email Safety**: mail provider, SPF/DMARC status, sender clues, and DNS cutover checklist.
 - **Common Subdomains**: likely hidden properties to verify before DNS or hosting changes.

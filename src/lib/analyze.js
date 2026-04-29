@@ -78,6 +78,21 @@ const DNS_PROVIDER_HINTS = [
   ["name.com", "Name.com"],
 ];
 
+const REGISTRAR_HINTS = [
+  ["domaincontrol.com", "GoDaddy"],
+  ["secureserver.net", "GoDaddy"],
+  ["registrar-servers.com", "Namecheap"],
+  ["dns-parking.com", "Hostinger"],
+  ["squarespacedns.com", "Squarespace Domains"],
+  ["wixdns.net", "Wix"],
+  ["porkbun.com", "Porkbun"],
+  ["name.com", "Name.com"],
+  ["hover.com", "Hover"],
+  ["dreamhost.com", "DreamHost"],
+  ["ionos.com", "IONOS"],
+  ["ui-dns", "IONOS"],
+];
+
 const EMAIL_HINTS = [
   ["google.com", "Google Workspace"],
   ["googlemail.com", "Google Workspace"],
@@ -159,6 +174,7 @@ const OPERATIONS_HINTS = [
 
 export function analyzeProfile({ domain, rdap, dns, http }) {
   const inputStatus = analyzeInputStatus({ domain, rdap, dns, http });
+  const registrarDetails = detectRegistrar({ rdap, dns });
   const cloudflare = detectCloudflare({ rdap, dns, http });
   const dnsProvider = detectDnsProvider({ rdap, dns, cloudflare });
   const hosting = detectHosting({ dns, http, cloudflare });
@@ -170,9 +186,9 @@ export function analyzeProfile({ domain, rdap, dns, http }) {
   const operations = detectOperationsStack({ dns, http });
   const urlStructure = analyzeUrlStructure({ domain, http });
   const previousDeveloper = detectPreviousDeveloper();
-  const accessNeeded = buildAccessChecklist({ cloudflare, hosting, cms, email, emailSafety, dnsProvider, registrar: rdap.registrar?.name, marketing, operations });
+  const accessNeeded = buildAccessChecklist({ cloudflare, hosting, cms, email, emailSafety, dnsProvider, registrar: registrarDetails.name, marketing, operations });
   const actionPlan = buildActionPlan({
-    registrar: rdap.registrar?.name,
+    registrar: registrarDetails.name,
     cloudflare,
     hosting,
     cms,
@@ -191,7 +207,8 @@ export function analyzeProfile({ domain, rdap, dns, http }) {
   return {
     subject: domain.apex,
     inputStatus,
-    registrar: rdap.registrar?.name || "Unknown",
+    registrar: registrarDetails.name,
+    registrarDetails,
     dnsProvider,
     cloudflare,
     hosting,
@@ -207,6 +224,36 @@ export function analyzeProfile({ domain, rdap, dns, http }) {
     actionPlan,
     risks,
     launchChecklist,
+  };
+}
+
+function detectRegistrar({ rdap, dns }) {
+  const rdapRegistrar = rdap.registrar?.name;
+  if (rdapRegistrar) {
+    return {
+      name: rdapRegistrar,
+      confidence: "High",
+      source: "RDAP",
+      note: "Registrar found from RDAP records.",
+    };
+  }
+
+  const nameservers = [...(rdap.nameservers || []), ...(dns.nameservers || [])].join(" ").toLowerCase();
+  const match = REGISTRAR_HINTS.find(([needle]) => nameservers.includes(needle));
+  if (match) {
+    return {
+      name: `Likely ${match[1]}`,
+      confidence: "Medium",
+      source: "Nameserver inference",
+      note: `RDAP did not return a registrar, but nameservers strongly suggest ${match[1]}. Confirm domain ownership and billing manually.`,
+    };
+  }
+
+  return {
+    name: "Unknown",
+    confidence: "Manual",
+    source: "Manual confirmation",
+    note: "Registrar was not found in RDAP and could not be inferred confidently from nameservers.",
   };
 }
 
@@ -638,7 +685,7 @@ function detectCms(http) {
 
 function buildAccessChecklist({ cloudflare, hosting, cms, email, emailSafety, dnsProvider, registrar, marketing, operations }) {
   const items = [];
-  const registrarName = knownOrFallback(registrar, "domain registrar");
+  const registrarName = handoffName(registrar, "domain registrar");
 
   items.push({
     item: `${registrarName} access`,
@@ -714,7 +761,7 @@ function buildAccessChecklist({ cloudflare, hosting, cms, email, emailSafety, dn
 
 function buildActionPlan({ registrar, cloudflare, hosting, cms, email, emailSafety, dnsProvider, urlStructure, inputStatus }) {
   const actions = [];
-  const registrarName = knownOrFallback(registrar, "domain registrar");
+  const registrarName = handoffName(registrar, "domain registrar");
 
   if (inputStatus?.status === "Unresolved") {
     actions.push({
@@ -904,6 +951,11 @@ function buildLaunchChecklist({ urlStructure, hosting, cms, email, emailSafety, 
 
 function knownOrFallback(value, fallback) {
   return value && value !== "Unknown" ? value : fallback;
+}
+
+function handoffName(value, fallback) {
+  if (!value || value === "Unknown") return fallback;
+  return String(value).replace(/^Likely\s+/i, "");
 }
 
 function safeHost(url) {
