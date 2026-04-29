@@ -5,6 +5,7 @@ node_modules/
 dist/
 coverage/
 fitfo-reports/
+fitfo-exports/
 reports/
 .firecrawl/
 npm-debug.log*

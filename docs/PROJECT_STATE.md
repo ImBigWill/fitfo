@@ -20,6 +20,7 @@ It can:
 - render plain output for copying/saving
 - output JSON
 - output Markdown
+- export kickoff action/research tables to CSV files plus a combined JSON bundle with `--export-tables`
 - save Obsidian-ready Markdown notes with frontmatter, tags, checklists, and client-call questions
 - save stable Obsidian vault notes with `--vault` or `FITFO_OBSIDIAN_DIR`
 - prompt to save findings after normal interactive terminal scans, defaulting to Desktop Markdown with Obsidian vault/folder and custom path choices
@@ -79,6 +80,7 @@ Core should focus on fast onboarding discovery:
 - kickoff research sections that clearly label observed facts, research signals, inferred hypotheses, and client-confirmation prompts
 - keyword and competitor intelligence that remains deterministic and client-call oriented
 - proof-asset and content-inventory output for kickoff planning
+- table sidecar exports for Sheets, Obsidian, and client planning workflows
 - access checklist
 - previous developer/client handoff questions
 

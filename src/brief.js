@@ -643,8 +643,13 @@ function buildKeywordClusters(scan) {
   }
 
   if (location) {
+    const locationRoot = location.toLowerCase().split(",")[0].trim();
+    const locationText = location.toLowerCase();
     for (const keyword of clusters.coreServices.slice(0, 4)) {
-      clusters.local.push(`${keyword} ${location}`);
+      const normalized = keyword.toLowerCase();
+      if (!normalized.includes(locationRoot) && !normalized.includes(locationText)) {
+        clusters.local.push(`${keyword} ${location}`);
+      }
     }
   }
 
@@ -688,8 +693,8 @@ function buildKeywordPageMap(scan, keywordClusters) {
   ]).slice(0, 14);
 
   return keywords.map((keyword) => {
-    const existingPage = findMatchingPage(keyword, pages);
     const intent = classifyKeywordIntent(keyword, location);
+    const existingPage = findMatchingPage(keyword, pages, intent);
     return {
       keyword,
       intent,
@@ -1100,7 +1105,6 @@ function extractKeywordCandidates(scan) {
 
   for (const result of scan.research?.results || []) {
     values.push(result.query || "");
-    values.push(result.title || "");
   }
 
   const stop = new Set([
@@ -1157,7 +1161,7 @@ function classifyResearchResult(result, apex) {
     return /\breview|rating|stars?\b/i.test(text) ? "review" : "directory";
   }
   if (/\breview|rating|testimonial|complaints?\b/i.test(text)) return "review";
-  if (/\b(service|repair|install|emergency|commercial|residential|plumb|hvac|roof|electric)\b/i.test(text)) return "competitor";
+  if (/\b(service|repair|install|emergency|commercial|residential|plumb(?:er|ing)?|hvac|roof|electric)\b/i.test(text)) return "competitor";
   return "other";
 }
 
@@ -1192,7 +1196,7 @@ function summarizeCompetitorPatterns(results) {
     .slice(0, 8);
 }
 
-function findMatchingPage(keyword, pages) {
+function findMatchingPage(keyword, pages, intent = "service") {
   const tokens = keywordTokens(keyword);
   if (!tokens.length) return null;
 
@@ -1200,6 +1204,8 @@ function findMatchingPage(keyword, pages) {
   let bestScore = 0;
 
   for (const page of pages) {
+    if (!pageMatchesIntent(page, intent)) continue;
+
     const haystack = [
       page.path || "",
       page.title || "",
@@ -1217,6 +1223,25 @@ function findMatchingPage(keyword, pages) {
 
   const minimumScore = tokens.length <= 1 ? 1 : 2;
   return bestScore >= minimumScore ? bestPage : null;
+}
+
+function pageMatchesIntent(page, intent) {
+  const type = classifyPageType(page.path || "/");
+  const text = `${page.path || ""} ${page.title || ""}`.toLowerCase();
+
+  if (intent === "proof") {
+    return type === "Proof" || /\breview|testimonial|case-study|gallery|project\b/.test(text);
+  }
+
+  if (intent === "informational") {
+    return type === "FAQ" || /\bfaq|question|guide|blog|resource\b/.test(text);
+  }
+
+  if (intent === "local") {
+    return type === "Location" || type === "Homepage" || /\blocation|area|city|county|near\b/.test(text);
+  }
+
+  return type === "Service" || type === "Homepage";
 }
 
 function classifyKeywordIntent(keyword, location = "") {

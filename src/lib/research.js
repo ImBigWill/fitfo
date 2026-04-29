@@ -85,6 +85,7 @@ export function buildResearchQueries(domain, http, site, options = {}) {
   const brand = cleanTitle(http?.title) || domain.apex;
   const serviceHints = extractServiceHints(site).slice(0, 3);
   const location = options.location;
+  const category = inferServiceCategory(http, site);
   const base = location ? `${brand} ${location}` : brand;
   const queries = [
     `"${brand}"`,
@@ -92,8 +93,17 @@ export function buildResearchQueries(domain, http, site, options = {}) {
     `${base} services`,
   ];
 
+  if (category && location) {
+    queries.push(`${category} ${location}`);
+  }
+
   for (const service of serviceHints) {
     queries.push(`${service} ${location || domain.apex}`);
+  }
+
+  if (category && location) {
+    queries.push(`best ${category} ${location}`);
+    queries.push(`${category} reviews ${location}`);
   }
 
   if (serviceHints.length > 0 && location) {
@@ -201,7 +211,7 @@ function extractServiceHints(site) {
   return candidates
     .map((value) => value.toLowerCase().replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ").trim())
     .filter((value) => value.length > 3 && value.length < 50)
-    .filter((value) => /\b(service|repair|install|clean|plumb|roof|hvac|electric|legal|design|marketing|emergency)\b/.test(value));
+    .filter((value) => /\b(service|repair|install|clean|plumb(?:er|ing)?|roof|hvac|electric|legal|design|marketing|emergency)\b/.test(value));
 }
 
 function uniqueResults(results) {
@@ -211,4 +221,28 @@ function uniqueResults(results) {
     seen.add(result.url);
     return true;
   });
+}
+
+function inferServiceCategory(http, site) {
+  const haystack = [
+    http?.title || "",
+    ...(site?.pages || []).flatMap((page) => [
+      page.title || "",
+      page.metaDescription || "",
+      ...(page.headings?.h1 || []),
+      ...(page.headings?.h2 || []),
+      page.path || "",
+    ]),
+  ].join(" ").toLowerCase();
+
+  const checks = [
+    ["plumber", /\bplumb(?:er|ing)?\b/],
+    ["hvac contractor", /\bhvac|heating|cooling|air conditioning\b/],
+    ["electrician", /\belectric(?:ian|al)?\b/],
+    ["roofer", /\broof(?:er|ing)?\b/],
+    ["drain cleaning", /\bdrain|sewer\b/],
+    ["marketing agency", /\bmarketing|seo|web design\b/],
+  ];
+
+  return checks.find(([, pattern]) => pattern.test(haystack))?.[0] || null;
 }

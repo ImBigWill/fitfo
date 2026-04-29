@@ -19,6 +19,7 @@ export function renderHelp(options = {}) {
       kv(theme, "", theme.dim("--deep  --search  --location city  --crawl-limit n")),
       kv(theme, "", theme.dim("--search-limit n  --no-color")),
       kv(theme, "", theme.dim("--save  --quiet  --vault dir  --out file")),
+      kv(theme, "", theme.dim("--export-tables dir")),
     ]),
     "",
     panel(theme, "Commands", [
@@ -36,6 +37,7 @@ export function renderHelp(options = {}) {
       kv(theme, "out", `${theme.value("fitfo lght.co -o report.txt")} ${theme.dim("- specific file")}`),
       kv(theme, "quiet", `${theme.value("fitfo lght.co --out report.md --quiet")} ${theme.dim("- save only")}`),
       kv(theme, "vault", `${theme.value("fitfo brief lght.co --vault ~/Notes")} ${theme.dim("- vault note")}`),
+      kv(theme, "tables", `${theme.value("fitfo brief lght.co --export-tables exports")} ${theme.dim("- CSV/JSON sidecars")}`),
       kv(theme, "markdown", `${theme.value("fitfo lght.co --markdown")} ${theme.dim("- Markdown report")}`),
       kv(theme, "obsidian", `${theme.value("fitfo lght.co --obsidian")} ${theme.dim("- Obsidian note")}`),
       kv(theme, "json", `${theme.value("fitfo lght.co --json")} ${theme.dim("- machine-readable data")}`),

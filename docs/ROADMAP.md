@@ -76,13 +76,13 @@ Current kickoff research sections:
 - keyword clusters
 - competitor/review/directory classification
 - keyword-to-page map
+- CSV/JSON table sidecar exports
 
 Next set:
 
 - sharper local keyword clustering
 - competitor-informed copy and sitemap pattern extraction
 - richer review/reputation summary
-- CSV/JSON exports for keyword and competitor tables
 - questions for the client to confirm, deny, or improve
 
 ## Plan Mode Ideas

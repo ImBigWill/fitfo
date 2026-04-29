@@ -11,11 +11,13 @@ test("builds Firecrawl research queries from title, location, and crawled servic
         { path: "/services/drain-cleaning/", headings: { h1: ["Drain Cleaning"], h2: ["Emergency Plumbing Repair"] } },
       ],
     },
-    { location: "Richmond VA" },
+    { location: "Richmond VA", queryLimit: 10 },
   );
 
   assert.ok(queries.includes("\"Client Plumbing\""));
   assert.ok(queries.includes("Client Plumbing Richmond VA reviews"));
+  assert.ok(queries.includes("plumber Richmond VA"));
+  assert.ok(queries.includes("best plumber Richmond VA"));
   assert.ok(queries.some((query) => query.includes("emergency plumbing repair")));
   assert.ok(queries.some((query) => query.includes("best emergency plumbing repair Richmond VA")));
 });

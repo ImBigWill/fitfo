@@ -141,6 +141,14 @@ It also generates:
 - proof-asset requests for reviews, photos, credentials, case studies, offers, and lead-routing evidence
 - content inventory tables for crawled pages, page type, issues, and recommended action
 
+Export the kickoff tables as CSV files plus a JSON bundle:
+
+```bash
+fitfo brief example.com --deep --search --location "Richmond, VA" --export-tables fitfo-exports
+```
+
+This writes sidecar files for action items, proof assets, content inventory, keyword clusters, competitors, keyword-to-page maps, raw research results, and a combined `example.com-research-tables.json` bundle.
+
 Client build plan:
 
 ```bash
@@ -281,6 +289,7 @@ Key sections:
 - **Kickoff Research Brief**: when using brief mode, current site read, market snapshot, keyword/page opportunities, positioning hypotheses, and kickoff call agenda.
 - **Kickoff Research Game Plan**: when using plan mode, carries market, keyword, and positioning prompts into build planning.
 - **Detailed Action Report**: prioritized next steps, proof-asset requests, content inventory, keyword clusters, competitor research, and keyword-to-page mapping for kickoff and build planning.
+- **Table Exports**: with `--export-tables <dir>`, CSV/JSON sidecars for moving research into Sheets, Obsidian, or client planning docs.
 
 Markdown and Obsidian exports also include YAML frontmatter, tags, client-call questions, checklist items, and table-formatted action, keyword, competitor, content, and page-map sections.
 

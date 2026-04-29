@@ -10,6 +10,7 @@ import { absoluteOutputPath, resolveOutputPath, writeReport } from "../src/cli/r
 import { renderRunStart, renderSavedMessage } from "../src/cli/status.js";
 import { applyWizardIntent, normalizeWizardIntent, shouldAskForWizardLocation, WIZARD_INTENTS } from "../src/cli/wizard.js";
 import { renderDoctor } from "../src/doctor.js";
+import { writeTableExports } from "../src/exports/tables.js";
 import { scanDomain } from "../src/index.js";
 import { renderHelp, renderPromptIntro } from "../src/help.js";
 import { APP_VERSION } from "../src/meta.js";
@@ -96,6 +97,14 @@ try {
     console.log(options.quiet ? `Saved FITFO report to ${savedPath}` : `\n${renderSavedMessage(savedPath, { color: !noColor })}`);
   } else if (shouldPromptForReportSave(options)) {
     await promptForReportSave(scan, options, { color: !noColor });
+  }
+
+  if (options.exportTables) {
+    const exportResult = await writeTableExports(scan, {
+      dir: options.exportTables,
+      report: options.command,
+    });
+    console.log(options.quiet ? `Saved FITFO table exports to ${exportResult.directory}` : renderSavedMessage(exportResult.directory, { color: !noColor }));
   }
 } catch (error) {
   console.error(`\nFITFO failed: ${error.message}`);

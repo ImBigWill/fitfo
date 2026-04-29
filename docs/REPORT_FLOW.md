@@ -34,6 +34,7 @@ domain input
       -> keyword clusters
       -> competitor research
       -> keyword-to-page map
+      -> optional CSV/JSON table exports
     -> research queue
     -> opportunities to inspect
     -> client questions
@@ -57,6 +58,8 @@ domain input
 - `src/lib/research.js` handles optional Firecrawl-backed market/search research.
 
 Markdown and Obsidian brief exports put the action report, proof assets, content inventory, keyword clusters, competitor research, and keyword-to-page map into tables so they can be scanned quickly or moved into a client workspace.
+
+`--export-tables <dir>` writes those same planning tables as CSV sidecars plus a combined JSON bundle. This is intentionally a sidecar export so the terminal report, Obsidian note, and spreadsheet workflow do not compete with each other.
 
 This keeps the default scan focused on access and infrastructure while giving deeper research its own lane.
 

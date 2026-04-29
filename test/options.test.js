@@ -9,6 +9,7 @@ test("parses default scan command with a domain", () => {
     crawlLimit: 8,
     deep: false,
     domain: "example.com",
+    exportTables: null,
     help: false,
     json: false,
     format: "text",
@@ -68,6 +69,7 @@ test("parses markdown and json aliases", () => {
   assert.equal(parseArgs(["brief", "example.com", "--crawl-limit", "12"]).crawlLimit, 12);
   assert.equal(parseArgs(["brief", "example.com", "--search"]).search, true);
   assert.equal(parseArgs(["brief", "example.com", "--search-limit", "7"]).searchLimit, 7);
+  assert.equal(parseArgs(["brief", "example.com", "--export-tables", "exports"]).exportTables, "exports");
   assert.equal(parseArgs(["brief", "example.com", "--location", "Richmond, VA"]).location, "Richmond, VA");
   assert.equal(parseArgs(["version"]).version, true);
   assert.equal(parseArgs(["help"]).help, true);

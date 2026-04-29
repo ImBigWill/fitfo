@@ -7,6 +7,7 @@ export function parseArgs(argv) {
     crawlLimit: 8,
     deep: false,
     domain: null,
+    exportTables: null,
     help: false,
     json: false,
     format: "text",
@@ -54,6 +55,13 @@ export function parseArgs(argv) {
       }
       options.country = value.toUpperCase();
       options.provided.add("country");
+      index += 1;
+    } else if (arg === "--export-tables" || arg === "--tables") {
+      const value = argv[index + 1];
+      if (!value || value.startsWith("-")) {
+        throw new Error(`${arg} requires a directory path.`);
+      }
+      options.exportTables = value;
       index += 1;
     } else if (arg === "--search-limit") {
       const value = argv[index + 1];
