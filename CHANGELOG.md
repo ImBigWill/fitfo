@@ -47,6 +47,7 @@ Initial private version.
 - Simple domain-based filenames for prompted saves, such as `example.com.md`.
 - Styled terminal report with hot pink, black, and electric blue direction.
 - Dedicated interactive startup screen with launch-frame styling and scan/map/brief flow.
+- Command Code-inspired terminal polish with a larger FITFO wordmark, quieter metadata, and a sharper startup handoff card.
 - `--json`, `--no-color`, `--save`, and `--out` options.
 - `--format markdown`, `--markdown`, and `--obsidian` report exports.
 - `--quiet` mode for saving reports without printing the full output.

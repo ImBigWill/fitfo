@@ -22,21 +22,20 @@ export function renderAppHeader(theme, meta = {}) {
   const motto = meta.motto || "Kickstarting onboarding.";
   const width = meta.width || TERMINAL_WIDTH;
   const innerWidth = width - 4;
-  const brandColumn = renderWordmark(theme).split("\n");
+  const brandColumn = renderMiniWordmark(theme).split("\n");
   const copyColumn = [
-    `${theme.hotChip("FITFO")} ${theme.dim(`v${version}`)} ${theme.faint("::")} ${theme.blue("intake console")}`,
+    `${theme.label("FITFO")} ${theme.dim(`v${version}`)}`,
+    `${theme.dim("console:")} ${theme.value("domain intake")}`,
     theme.tagline(motto),
-    `${theme.dim("mode")} ${theme.value(clipPlain(mode, 28))}`,
-    `${theme.dim("scope")} ${theme.dim(clipPlain(scope, 31))}`,
+    `${theme.dim("mode:")} ${theme.blue(clipPlain(mode, 30))}`,
+    `${theme.dim("scope:")} ${theme.dim(clipPlain(scope, 30))}`,
   ];
   const masthead = columns(brandColumn, copyColumn, 3).split("\n");
-  const rule = `${theme.accentBorder("━".repeat(12))}${theme.border("━".repeat(innerWidth - 24))}${theme.accentBorder("━".repeat(12))}`;
 
   return [
-    theme.border(`╭${"─".repeat(width - 2)}╮`),
-    boxLine(theme, rule, innerWidth),
+    theme.border(`╭${theme.accentBorder("─".repeat(10))}${"─".repeat(width - 22)}${theme.accentBorder("─".repeat(10))}╮`),
     ...masthead.map((line) => boxLine(theme, line, innerWidth)),
-    boxLine(theme, `${theme.faint("signal")} ${theme.title("#FF00AA")} ${theme.faint("x")} ${theme.blue("electric blue")} ${theme.faint("x")} ${theme.value("blackout")}`, innerWidth),
+    boxLine(theme, `${theme.faint("palette")} ${theme.title("#FF00AA")} ${theme.faint("/")} ${theme.blue("electric blue")} ${theme.faint("/")} ${theme.value("black")}`, innerWidth),
     theme.border(`╰${"─".repeat(width - 2)}╯`),
   ].join("\n");
 }
@@ -46,44 +45,47 @@ export function renderLaunchScreen(theme, meta = {}) {
   const width = meta.width || TERMINAL_WIDTH;
   const innerWidth = width - 4;
   const logo = renderWordmark(theme, { gradient: true }).split("\n");
-  const rail = signalRail(theme, innerWidth);
-  const microRail = centerVisible(theme.gradient("▰▰▰▰▰▰▰▰▰▰▰▰"), innerWidth);
-  const deck = centerVisible(`${theme.hotChip("FITFO")} ${theme.dim(`v${version}`)} ${theme.faint("::")} ${theme.blue("blackout intake console")}`, innerWidth);
+  const deck = centerVisible(`${theme.label("FITFO")} ${theme.dim(`v${version}`)} ${theme.faint("·")} ${theme.dim("domain intake console")}`, innerWidth);
+  const home = centerVisible(theme.faint("~"), innerWidth);
   const pipeline = [
-    theme.hotChip("SCAN"),
-    theme.faint("domain records"),
-    theme.blue("→"),
-    theme.blueChip("MAP"),
-    theme.faint("access owners"),
-    theme.blue("→"),
-    theme.hotChip("BRIEF"),
-    theme.faint("first call"),
+    theme.prompt("›"),
+    theme.blue("1."),
+    theme.label("Onboard a client domain"),
+    theme.dim("(recommended)"),
+    "",
+    theme.faint("2."),
+    theme.dim("Quick scan only"),
   ].join(" ");
 
   return [
-    theme.border(`╭${"─".repeat(width - 2)}╮`),
-    boxLine(theme, rail, innerWidth),
-    boxLine(theme, microRail, innerWidth),
-    boxLine(theme, deck, innerWidth),
+    theme.border(`╭${theme.accentBorder("─".repeat(10))}${"─".repeat(width - 22)}${theme.accentBorder("─".repeat(10))}╮`),
     boxLine(theme, "", innerWidth),
     ...logo.map((line) => boxLine(theme, centerVisible(line, innerWidth), innerWidth)),
+    boxLine(theme, deck, innerWidth),
+    boxLine(theme, home, innerWidth),
     boxLine(theme, "", innerWidth),
-    boxLine(theme, centerVisible(theme.tagline("Kickstarting onboarding."), innerWidth), innerWidth),
-    boxLine(theme, centerVisible(`${theme.italic(theme.dim("Figure It The Fuck Out"))} ${theme.faint("/")} ${theme.dim("Find Infrastructure, Tech & Footprint Overview")}`, innerWidth), innerWidth),
+    boxLine(theme, centerVisible(theme.italic(theme.tagline("Kickstarting onboarding.")), innerWidth), innerWidth),
     boxLine(theme, "", innerWidth),
-    boxLine(theme, centerVisible(pipeline, innerWidth), innerWidth),
-    boxLine(theme, rail, innerWidth),
+    ...launchCard(theme, "Build The Client Handoff", [
+      "Map registrar, DNS, Cloudflare, hosting, CMS, and email.",
+      "Track analytics, CRM, and previous-developer access before the call.",
+      "",
+      pipeline,
+      "",
+      `${theme.dim("Use arrow keys or numbers to select, Enter to confirm")}`,
+    ], innerWidth),
     theme.border(`╰${"─".repeat(width - 2)}╯`),
   ].join("\n");
 }
 
 export function renderWordmark(theme, options = {}) {
   const lines = [
-    "██████ █████ █████ █████  █████ ",
-    "██       █     █   ██    ██   ██",
-    "████     █     █   ████  ██   ██",
-    "██       █     █   ██    ██   ██",
-    "██     █████   █   ██     █████ ",
+    "██████╗ ██╗████████╗███████╗ ██████╗ ",
+    "██╔═══╝ ██║╚══██╔══╝██╔════╝██╔═══██╗",
+    "█████╗  ██║   ██║   █████╗  ██║   ██║",
+    "██╔══╝  ██║   ██║   ██╔══╝  ██║   ██║",
+    "██║     ██║   ██║   ██║     ╚██████╔╝",
+    "╚═╝     ╚═╝   ╚═╝   ╚═╝      ╚═════╝ ",
   ];
 
   return lines
@@ -94,6 +96,14 @@ export function renderWordmark(theme, options = {}) {
       return index === 2 ? theme.blue(line) : theme.title(line);
     })
     .join("\n");
+}
+
+export function renderMiniWordmark(theme) {
+  return [
+    theme.gradient("█▀▀ █ ▀█▀ █▀▀ █▀█"),
+    theme.gradient("█▀  █  █  █▀  █ █"),
+    theme.gradient("▀   ▀  ▀  ▀   ▀▀▀"),
+  ].join("\n");
 }
 
 export function panel(theme, title, lines, options = {}) {
@@ -183,9 +193,18 @@ function boxLine(theme, value, innerWidth) {
   return `${theme.border("│")} ${padVisible(value, innerWidth)} ${theme.border("│")}`;
 }
 
-function signalRail(theme, width) {
-  const plain = "━".repeat(width);
-  return theme.gradient(plain);
+function launchCard(theme, title, lines, innerWidth) {
+  const cardWidth = Math.min(68, innerWidth);
+  const cardInner = cardWidth - 4;
+  const leftPad = Math.max(0, Math.floor((innerWidth - cardWidth) / 2));
+  const pad = " ".repeat(leftPad);
+  const normalized = normalizeLines(lines, cardInner);
+
+  return [
+    boxLine(theme, `${pad}${theme.border(`╭─`)}${theme.hotChip(title)}${theme.border("─".repeat(Math.max(0, cardWidth - visibleLength(title) - 6)))}${theme.border("╮")}`, innerWidth),
+    ...normalized.map((line) => boxLine(theme, `${pad}${theme.border("│")} ${padVisible(line, cardInner)} ${theme.border("│")}`, innerWidth)),
+    boxLine(theme, `${pad}${theme.border(`╰${"─".repeat(cardWidth - 2)}╯`)}`, innerWidth),
+  ];
 }
 
 function normalizeLines(lines, width) {
