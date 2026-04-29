@@ -34,6 +34,7 @@ export function buildTableExportBundle(scan, options = {}) {
     competitorStructure: normalizeCompetitorStructure(report.competitorStructure || []),
     reputationSummary: normalizeReputationSummary(report.reputationSummary || []),
     serviceLocationRecommendations: normalizeServiceLocationRecommendations(report.serviceLocationRecommendations || []),
+    launchChecklist: normalizeLaunchChecklist(report.launchChecklist || []),
     confirmationScript: normalizeConfirmationScript(report.confirmationScript || []),
     keywordClusters: normalizeKeywordClusters(actionReport.keywordClusters || {}),
     competitors: normalizeCompetitors(competitorResearch),
@@ -55,6 +56,7 @@ export async function writeTableExports(scan, options = {}) {
     competitorStructure: path.join(directory, `${domain}-competitor-structure.csv`),
     reputationSummary: path.join(directory, `${domain}-reputation-summary.csv`),
     serviceLocationRecommendations: path.join(directory, `${domain}-service-location-recommendations.csv`),
+    launchChecklist: path.join(directory, `${domain}-launch-checklist.csv`),
     confirmationScript: path.join(directory, `${domain}-confirmation-script.csv`),
     keywordClusters: path.join(directory, `${domain}-keyword-clusters.csv`),
     competitors: path.join(directory, `${domain}-competitors.csv`),
@@ -100,6 +102,11 @@ export async function writeTableExports(scan, options = {}) {
       ["page", "Page"],
       ["focus", "Focus"],
       ["recommendation", "Recommendation"],
+    ]), "utf8"),
+    writeFile(files.launchChecklist, toCsv(bundle.launchChecklist, [
+      ["phase", "Phase"],
+      ["item", "Item"],
+      ["detail", "Detail"],
     ]), "utf8"),
     writeFile(files.confirmationScript, toCsv(bundle.confirmationScript, [
       ["topic", "Topic"],
@@ -200,6 +207,14 @@ function normalizeServiceLocationRecommendations(items) {
     page: item.page || "",
     focus: item.focus || "",
     recommendation: item.recommendation || "",
+  }));
+}
+
+function normalizeLaunchChecklist(items) {
+  return items.map((item) => ({
+    phase: item.phase || "",
+    item: item.item || "",
+    detail: item.detail || "",
   }));
 }
 

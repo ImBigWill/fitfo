@@ -25,6 +25,10 @@ const scan = {
     email: { provider: "Google Workspace" },
     connectedServices: [],
     marketing: { found: [] },
+    launchChecklist: [
+      { item: "Canonical host", detail: "Preserve HTTPS on www." },
+      { item: "DNS cutover", detail: "Confirm TTLs and rollback path." },
+    ],
   },
 };
 
@@ -39,6 +43,7 @@ test("builds a client plan from scan, crawl, and research signals", () => {
   assert.ok(plan.reputationSummary.some((item) => item.channel === "Market patterns"));
   assert.ok(plan.serviceLocationRecommendations.some((item) => item.page === "/services/drain-cleaning/"));
   assert.ok(plan.workstreams.some((item) => item.name === "Tracking and conversion"));
+  assert.ok(plan.launchChecklist.some((item) => item.item === "DNS cutover" && item.phase === "Launch"));
   assert.ok(plan.kickoffResearch.marketSnapshot.some((item) => item.label === "Competitor and market SERP"));
   assert.ok(plan.kickoffResearch.keywordPageOpportunities.some((item) => item.label === "Priority keyword candidates"));
   assert.ok(plan.actionReport.priorityActions.some((item) => item.label === "Map keywords to pages"));
@@ -58,6 +63,8 @@ test("renders a Markdown plan for Obsidian", () => {
   assert.match(markdown, /## Review \+ Reputation Summary/);
   assert.match(markdown, /## Service \+ Location Recommendations/);
   assert.match(markdown, /## Build Workstreams/);
+  assert.match(markdown, /## Launch Checklist/);
+  assert.match(markdown, /\| Phase \| Item \| Detail \|/);
   assert.match(markdown, /## Kickoff Research Game Plan/);
   assert.match(markdown, /### Market Snapshot/);
   assert.match(markdown, /## Prioritized Action Report/);

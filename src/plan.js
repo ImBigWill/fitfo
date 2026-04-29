@@ -13,6 +13,7 @@ export function buildClientPlan(scan) {
     reputationSummary: brief.reputationSummary,
     serviceLocationRecommendations: brief.serviceLocationRecommendations,
     workstreams: buildWorkstreams(scan),
+    launchChecklist: buildPlanLaunchChecklist(scan),
     kickoffResearch: brief.kickoffResearch,
     actionReport: brief.actionReport,
     clientCallIntelligence: brief.clientCallIntelligence,
@@ -50,6 +51,8 @@ export function renderPlanText(scan, options = {}) {
     panel(theme, "Service + Location Recommendations", plan.serviceLocationRecommendations.map((item) => `${theme.bullet("›")} ${theme.label(item.page)} ${theme.chip(`[${item.priority}]`)} ${theme.dim(`${item.type}: ${item.focus}. ${item.recommendation}`)}`)),
     "",
     panel(theme, "Build Workstreams", plan.workstreams.map((item) => `${theme.bullet("›")} ${theme.label(item.name)} ${theme.dim(item.scope)}`)),
+    "",
+    panel(theme, "Launch Checklist", plan.launchChecklist.map((item) => `${theme.bullet("›")} ${theme.label(item.item)} ${theme.chip(`[${item.phase}]`)} ${theme.dim(item.detail)}`)),
     "",
     panel(theme, "Kickoff Research Game Plan", formatPlanResearch(theme, plan.kickoffResearch)),
     "",
@@ -123,6 +126,14 @@ export function renderPlanMarkdown(scan, options = {}) {
     "## Build Workstreams",
     "",
     ...plan.workstreams.map((item) => `- **${item.name}:** ${item.scope}`),
+    "",
+    "## Launch Checklist",
+    "",
+    markdownTableWithHeaders(["Phase", "Item", "Detail"], plan.launchChecklist.map((item) => [
+      item.phase,
+      item.item,
+      item.detail,
+    ])),
     "",
     "## Kickoff Research Game Plan",
     "",
@@ -291,6 +302,34 @@ function buildWorkstreams(scan) {
       scope: "Wire GA4/GTM/Search Console, forms, calls, CRM, ads, and reporting before launch.",
     },
   ];
+}
+
+function buildPlanLaunchChecklist(scan) {
+  const phaseMap = new Map([
+    ["Canonical host", "Pre-launch"],
+    ["Redirects", "Pre-launch"],
+    ["DNS cutover", "Launch"],
+    ["Hosting and backups", "Pre-launch"],
+    ["CMS launch state", "Pre-launch"],
+    ["Email safety", "Launch"],
+    ["Tracking and CRM", "Launch"],
+    ["Post-launch QA", "Post-launch"],
+  ]);
+
+  const launchChecklist = scan.analysis?.launchChecklist || [];
+  if (!launchChecklist.length) {
+    return [{
+      phase: "Pre-launch",
+      item: "Manual launch plan",
+      detail: "Run a full scan and confirm canonical host, redirects, DNS, hosting, CMS, email, tracking, CRM, and QA before launch.",
+    }];
+  }
+
+  return launchChecklist.map((item) => ({
+    phase: phaseMap.get(item.item) || "Pre-launch",
+    item: item.item,
+    detail: item.detail,
+  }));
 }
 
 function yamlString(value) {

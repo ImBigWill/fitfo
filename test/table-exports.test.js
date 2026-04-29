@@ -39,6 +39,10 @@ const scan = {
     connectedServices: [],
     marketing: { found: [] },
     operations: { found: [] },
+    launchChecklist: [
+      { item: "Canonical host", detail: "Preserve apex." },
+      { item: "DNS cutover", detail: "Confirm TTLs." },
+    ],
   },
 };
 
@@ -56,6 +60,12 @@ test("builds table export rows for research sidecars", () => {
   assert.ok(bundle.competitors.some((item) => item.type === "competitor" && item.title === "Competitor Plumbing"));
   assert.ok(bundle.keywordPageMap.some((item) => item.keyword === "drain cleaning"));
   assert.ok(bundle.researchResults.some((item) => item.query === "plumber Richmond, VA"));
+});
+
+test("builds plan launch checklist export rows", () => {
+  const bundle = buildTableExportBundle(scan, { report: "plan" });
+
+  assert.ok(bundle.launchChecklist.some((item) => item.item === "DNS cutover" && item.phase === "Launch"));
 });
 
 test("writes CSV and JSON table exports", async () => {
