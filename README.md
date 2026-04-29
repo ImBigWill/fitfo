@@ -34,6 +34,7 @@ Generated reports are ignored by default through `fitfo-reports/` and `reports/`
 
 - [Project state](docs/PROJECT_STATE.md)
 - [Install](docs/INSTALL.md)
+- [Interactive onboarding](docs/INTERACTIVE.md)
 - [Report flow](docs/REPORT_FLOW.md)
 - [Roadmap](docs/ROADMAP.md)
 - [Release notes](docs/RELEASE.md)
