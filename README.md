@@ -14,6 +14,17 @@ FITFO is a command-line onboarding scanner for figuring out the first layer of a
 
 Motto: **Kickstarting onboarding.**
 
+## Quick Start
+
+From this folder:
+
+```bash
+npm link
+fitfo onboard clientdomain.com
+```
+
+That is the main command. It runs the full client intake, creates the action plan, and saves planning exports unless you pass `--no-save`.
+
 ## Status
 
 Private repo for now. The goal is to open source this later once the scanner and CLI experience settle.
@@ -71,13 +82,68 @@ From this folder:
 npm link
 ```
 
-Then run FITFO from anywhere:
+## Run The Full Onboarding
+
+Use `onboard` when you want FITFO to run the complete intake and produce the starting action plan:
 
 ```bash
-fitfo clientdomain.com
+fitfo onboard example.com
 ```
 
-Interactive mode:
+`fitfo onboard` runs the full intake path:
+
+- domain, registrar, DNS, nameserver, hosting, Cloudflare/CDN, email, CMS, analytics, CRM, booking, call tracking, and subdomain checks
+- deep website crawl when the site is reachable
+- Firecrawl-backed market/search research when Firecrawl is configured
+- keyword, competitor, service/location, reputation, launch, and action-plan sections
+- Obsidian-ready action-plan note
+- CSV/JSON table exports for planning workflows
+
+When run in an interactive terminal, `fitfo onboard` asks for missing full-intake details before scanning:
+
+- market/location, if no location is configured or passed
+- Obsidian vault/folder, if no vault or output path is configured
+
+If a vault is configured, the note is saved as:
+
+```text
+example.com-onboard.md
+```
+
+Preview the run without scanning:
+
+```bash
+fitfo onboard example.com --preview
+```
+
+Run terminal-only without saving the Obsidian note or CSV/JSON table exports:
+
+```bash
+fitfo onboard example.com --no-save
+```
+
+Save to a specific vault:
+
+```bash
+fitfo onboard example.com --location "Richmond, VA" --vault ~/Obsidian/Clients
+```
+
+Set useful defaults once:
+
+```bash
+fitfo config set vault ~/Obsidian/Clients
+fitfo config set location "Richmond, VA"
+```
+
+Then the daily command stays short:
+
+```bash
+fitfo onboard example.com
+```
+
+## Other Commands
+
+Guided interactive mode:
 
 ```bash
 fitfo
@@ -90,24 +156,7 @@ Use this when you want FITFO to ask what to make:
 - kickoff research brief
 - client build plan
 
-Fast path when you already know the command:
-
-```bash
-fitfo clientdomain.com
-fitfo brief clientdomain.com --deep --search --location "City, ST"
-fitfo plan clientdomain.com --deep --search --location "City, ST"
-fitfo onboard clientdomain.com
-```
-
-Environment check:
-
-```bash
-fitfo doctor
-```
-
-## Usage
-
-Styled terminal report:
+Fast technical scan:
 
 ```bash
 fitfo example.com
@@ -168,42 +217,13 @@ Client build plan:
 fitfo plan example.com --deep --search --location "Richmond, VA"
 ```
 
-Full client onboarding packet:
+Environment check:
 
 ```bash
-fitfo onboard example.com
+fitfo doctor
 ```
 
-`fitfo onboard` runs the full intake path: plan mode, deep crawl, Firecrawl-backed search, an Obsidian-ready action-plan note, and CSV/JSON table exports. If a vault is configured, the note is saved there as `example.com-onboard.md`. Otherwise it saves to `fitfo-reports/example.com-onboard.md`.
-
-When run in an interactive terminal, `fitfo onboard` asks for missing full-intake details before scanning:
-
-- market/location, if no location is configured or passed
-- Obsidian vault/folder, if no vault or output path is configured
-
-Press Enter to skip location or accept the default report folder.
-
-Preview the run without scanning:
-
-```bash
-fitfo onboard example.com --preview
-```
-
-Run the full intake in the terminal only, without saving the Obsidian note or table exports:
-
-```bash
-fitfo onboard example.com --no-save
-```
-
-Save defaults:
-
-```bash
-fitfo config set vault ~/Obsidian/Clients
-fitfo config set location "Richmond, VA"
-fitfo config set format obsidian
-fitfo config set deep true
-fitfo config set search true
-```
+## Output Options
 
 Show defaults:
 
@@ -288,18 +308,6 @@ Save without printing the full report:
 
 ```bash
 fitfo brief example.com --obsidian --out ~/Obsidian/Clients/example.com-brief.md --quiet
-```
-
-Run the complete intake and save to your configured Obsidian vault:
-
-```bash
-fitfo onboard example.com
-```
-
-Or provide the vault inline:
-
-```bash
-fitfo onboard example.com --location "Richmond, VA" --vault ~/Obsidian/Clients
 ```
 
 ## What FITFO Checks
