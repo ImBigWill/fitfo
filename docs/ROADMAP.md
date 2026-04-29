@@ -76,6 +76,7 @@ Current kickoff research sections:
 - keyword clusters
 - competitor/review/directory classification
 - competitor-informed structure suggestions
+- service/location page recommendations
 - review/reputation summary
 - kickoff confirmation script
 - keyword-to-page map
@@ -96,6 +97,7 @@ Current sections:
 - focus priorities
 - recommended site structure
 - build workstreams
+- launch checklist
 - kickoff research game plan
 - competitor-informed structure
 - review/reputation summary

@@ -13,7 +13,7 @@ It can:
 - generate a `fitfo brief --deep` site intelligence report from sitemap/robots/pages
 - generate optional Firecrawl-backed market research with `fitfo brief --search`
 - generate a kickoff research brief with observed site facts, search-backed market signals, inferred page/positioning opportunities, and first-call agenda prompts
-- generate keyword clusters, competitor/review/directory classification, keyword-to-page maps, proof-asset requests, content inventory, competitor-informed structure, reputation summaries, confirmation scripts, and prioritized action items
+- generate keyword clusters, competitor/review/directory classification, keyword-to-page maps, service/location recommendations, proof-asset requests, content inventory, competitor-informed structure, reputation summaries, confirmation scripts, and prioritized action items
 - use either `FIRECRAWL_API_KEY` or an authenticated local Firecrawl CLI for market research
 - generate a `fitfo plan` client build plan from scan, crawl, and research signals
 - render a styled onboarding report
@@ -80,7 +80,9 @@ Core should focus on fast onboarding discovery:
 - kickoff research sections that clearly label observed facts, research signals, inferred hypotheses, and client-confirmation prompts
 - keyword and competitor intelligence that remains deterministic and client-call oriented
 - proof-asset and content-inventory output for kickoff planning
+- service/location page recommendations for kickoff and build planning
 - competitor-informed structure, review/reputation summary, and kickoff confirmation-script output
+- plan-mode launch checklist output
 - table sidecar exports for Sheets, Obsidian, and client planning workflows
 - access checklist
 - previous developer/client handoff questions

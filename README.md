@@ -142,8 +142,10 @@ It also generates:
 - proof-asset requests for reviews, photos, credentials, case studies, offers, and lead-routing evidence
 - content inventory tables for crawled pages, page type, issues, and recommended action
 - competitor-informed structure recommendations for service, review, location, FAQ, and trust pages
+- service and location page recommendations tied to keyword intent, existing pages, and client validation
 - review/reputation summaries across directories, review profiles, social profiles, owned proof, and market patterns
 - a kickoff confirmation script for validating assumptions with the client
+- a plan-mode launch checklist for canonical host, redirects, DNS, hosting, CMS, email, tracking, CRM, and QA
 
 Export the kickoff tables as CSV files plus a JSON bundle:
 
@@ -151,7 +153,7 @@ Export the kickoff tables as CSV files plus a JSON bundle:
 fitfo brief example.com --deep --search --location "Richmond, VA" --export-tables fitfo-exports
 ```
 
-This writes sidecar files for action items, proof assets, content inventory, competitor structure, reputation summary, confirmation script, keyword clusters, competitors, keyword-to-page maps, raw research results, and a combined `example.com-research-tables.json` bundle.
+This writes sidecar files for action items, proof assets, content inventory, competitor structure, service/location recommendations, reputation summary, launch checklist, confirmation script, keyword clusters, competitors, keyword-to-page maps, raw research results, and a combined `example.com-research-tables.json` bundle.
 
 Client build plan:
 
@@ -292,7 +294,8 @@ Key sections:
 - **Site Intelligence**: when `--deep` is used, sitemap pages, headings, metadata, CTAs, forms, schema, phones, and suggested structure.
 - **Kickoff Research Brief**: when using brief mode, current site read, market snapshot, keyword/page opportunities, positioning hypotheses, and kickoff call agenda.
 - **Kickoff Research Game Plan**: when using plan mode, carries market, keyword, and positioning prompts into build planning.
-- **Detailed Action Report**: prioritized next steps, proof-asset requests, content inventory, keyword clusters, competitor research, reputation summary, competitor-informed structure, confirmation script, and keyword-to-page mapping for kickoff and build planning.
+- **Detailed Action Report**: prioritized next steps, proof-asset requests, content inventory, keyword clusters, competitor research, reputation summary, competitor-informed structure, service/location recommendations, confirmation script, and keyword-to-page mapping for kickoff and build planning.
+- **Launch Checklist**: in plan mode, grouped launch checks for canonical host, redirects, DNS, hosting, CMS, email, tracking/CRM, and QA.
 - **Table Exports**: with `--export-tables <dir>`, CSV/JSON sidecars for moving research into Sheets, Obsidian, or client planning docs.
 
 Markdown and Obsidian exports also include YAML frontmatter, tags, client-call questions, checklist items, and table-formatted action, keyword, competitor, reputation, structure, content, and page-map sections.
