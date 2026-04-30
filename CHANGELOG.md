@@ -26,9 +26,10 @@ Initial private version.
 - Client handoff summary table in scan exports.
 - Infrastructure snapshot and login/access checklist tables at the top of brief, plan, and onboard Markdown/Obsidian exports.
 - Evidence explanation, direct login request, and do-not-touch warning sections at the top of scan, brief, plan, and onboard reports.
+- Unknowns-blocking-work and call-one workflow sections with Found / Need / Risk / Ask / Owner / Audience structure.
 - End-of-run recap showing saved report path, table export path, Cloudflare status, top unknowns, and next step.
 - Top local competitor prompts in brief/plan reports from search/local/review-style research signals.
-- Table exports for infrastructure snapshot, login checklist, hosting evidence, and top local competitors.
+- Table exports for infrastructure snapshot, login checklist, unknown blockers, call-one workflow, hosting evidence, and top local competitors.
 - Integration boundary documentation that separates free core scanning from optional enrichment providers.
 - `--wayback` Internet Archive snapshot checks for recent homepage version comparison, plus Wayback sections in brief/plan/onboard Markdown.
 - Wayback CSV/JSON table exports for archived versions and change flags.

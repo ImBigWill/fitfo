@@ -70,6 +70,20 @@ tags:
 | --- | --- | --- | --- |
 | Forms | 1 | 0 | -1 from previous capture. |
 
+## Unknowns Blocking Work
+
+| Blocker | Severity | Owner | Evidence | Ask |
+| --- | --- | --- | --- | --- |
+| Origin hosting | High | Client / Previous Developer | Hosting is hidden behind Cloudflare. | Confirm where files, backups, deployment, and emergency restore access live. |
+| Lead routing / CRM | Medium | Client | No CRM, booking, or field-service tool was detected publicly. | Confirm where form fills, calls, bookings, estimates, and notifications go. |
+
+## Call One Workflow
+
+| Area | Found | Need | Risk | Ask | Owner | Audience |
+| --- | --- | --- | --- | --- | --- | --- |
+| Domain | GoDaddy | Get GoDaddy login, owner invite, billing contact, renewal status, and transfer-lock status. | No ownership, renewal, transfer lock, or nameserver changes without registrar access. | Who owns the GoDaddy account? | Client | Client-facing |
+| Internal next step | Public scan complete | Turn unknowns into assigned follow-up tasks before proposal, sitemap, or launch planning. | Planning based on assumptions can miss DNS/email/lead-routing dependencies. | Which items block our next milestone? | Us | Internal |
+
 ## Why FITFO Thinks This
 
 | Area | Finding | Confidence | Why FITFO Thinks This | Client Follow-Up |
@@ -79,10 +93,10 @@ tags:
 
 ## Go Get These Logins
 
-| Login / Access | Current Public Status | What Client Needs To Get |
-| --- | --- | --- |
-| Domain registrar | GoDaddy | Get GoDaddy login, owner invite, billing contact, renewal status, and transfer-lock status. |
-| Hosting | WP Engine | Get WP Engine hosting access, backups, deployment notes, SFTP/SSH or dashboard access, and billing owner. |
+| Login / Access | Current Public Status | Owner | What Client Needs To Get |
+| --- | --- | --- | --- |
+| Domain registrar | GoDaddy | Client | Get GoDaddy login, owner invite, billing contact, renewal status, and transfer-lock status. |
+| Hosting | WP Engine | Client / Previous Developer | Get WP Engine hosting access, backups, deployment notes, SFTP/SSH or dashboard access, and billing owner. |
 
 ## Do Not Touch Until Confirmed
 
@@ -111,6 +125,7 @@ tags:
 ```text
 fitfo-exports/
   example-plumbing.test-action-items.csv
+  example-plumbing.test-call-one-workflow.csv
   example-plumbing.test-competitors.csv
   example-plumbing.test-content-inventory.csv
   example-plumbing.test-hosting-evidence.csv
@@ -122,6 +137,7 @@ fitfo-exports/
   example-plumbing.test-launch-checklist.csv
   example-plumbing.test-top-local-competitors.csv
   example-plumbing.test-research-tables.json
+  example-plumbing.test-unknown-blockers.csv
 ```
 
 Use these for Sheets, kickoff docs, or internal planning views.

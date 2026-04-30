@@ -14,6 +14,11 @@ domain input
     -> verdict
     -> plain English
     -> client handoff summary
+    -> unknowns blocking work
+    -> call-one workflow
+    -> why FITFO thinks this
+    -> go-get-these-logins checklist
+    -> do-not-touch warnings
     -> track-this-down checklist
     -> handoff packet
     -> raw records
@@ -65,7 +70,7 @@ domain input
 - `src/lib/site.js` handles local deep crawl/site intelligence extraction.
 - `src/lib/research.js` handles optional Firecrawl-backed market/search research.
 
-Markdown and Obsidian brief/plan exports lead with infrastructure snapshot and login checklist tables so the client call starts with registrar, DNS, Cloudflare, hosting, CMS, email, and access ownership. They also include raw evidence tables for URL/redirect inventory, lead capture inventory, tracking/tool footprint, keyword evidence, action report, proof assets, content inventory, keyword clusters, top local competitors, competitor research, reputation summary, competitor-informed structure, service/location recommendations, confirmation script, and keyword-to-page map so they can be scanned quickly or moved into a client workspace.
+Markdown and Obsidian brief/plan exports lead with infrastructure snapshot, unknown blockers, call-one workflow, confidence explanations, login checklist, and do-not-touch warning tables so the client call starts with registrar, DNS, Cloudflare, hosting, CMS, email, access ownership, owner assignment, and safety risks. They also include raw evidence tables for URL/redirect inventory, lead capture inventory, tracking/tool footprint, keyword evidence, action report, proof assets, content inventory, keyword clusters, top local competitors, competitor research, reputation summary, competitor-informed structure, service/location recommendations, confirmation script, and keyword-to-page map so they can be scanned quickly or moved into a client workspace.
 
 ## Evidence Labels
 
@@ -91,6 +96,19 @@ The scan report should answer the client handoff question before it dives into r
 - which subdomains may represent hidden tools or staging sites
 
 Each row should state the public signal, confidence level, and what the client needs to provide or confirm. If FITFO only inferred a provider from nameservers, the report should say so and require manual confirmation.
+
+## Call-One Workflow
+
+The call-one workflow is the practical operating table for the first client call:
+
+- **Found**: what the public scan observed or inferred.
+- **Need**: the access, confirmation, or document required.
+- **Risk**: what can break or block work if the item is not resolved.
+- **Ask**: the exact question to ask the client or previous developer.
+- **Owner**: Client, Previous Developer, Us, or a shared owner.
+- **Audience**: Client-facing or Internal.
+
+This table should be treated as the bridge between reconnaissance and project management. It is intentionally more workflow-oriented than the raw DNS/HTTP evidence.
 
 `--export-tables <dir>` writes those same planning tables as CSV sidecars plus a combined JSON bundle. This is intentionally a sidecar export so the terminal report, Obsidian note, and spreadsheet workflow do not compete with each other.
 

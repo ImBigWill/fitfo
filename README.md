@@ -105,6 +105,8 @@ The exported report leads with an infrastructure snapshot and login checklist: r
 
 It also adds a plain evidence layer near the top:
 
+- **Unknowns Blocking Work**: the blockers that must be assigned before build or launch work.
+- **Call One Workflow**: a Found / Need / Risk / Ask / Owner / Audience table for the first client call.
 - **Why FITFO Thinks This**: the public signal behind each finding, plus what to confirm with the client.
 - **Go Get These Logins**: a direct list of the accounts/access the client needs to track down.
 - **Do Not Touch Until Confirmed**: DNS, email, Cloudflare/CDN, redirects, lead tracking, hosting, and subdomain warnings before launch work.
@@ -233,7 +235,7 @@ Export the kickoff tables as CSV files plus a JSON bundle:
 fitfo brief example.com --deep --search --location "Richmond, VA" --export-tables fitfo-exports
 ```
 
-This writes sidecar files for infrastructure snapshot, login checklist, hosting evidence, Wayback versions/changes, action items, proof assets, content inventory, competitor structure, top local competitors, service/location recommendations, reputation summary, launch checklist, confirmation script, keyword clusters, competitors, keyword-to-page maps, raw research results, and a combined `example.com-research-tables.json` bundle.
+This writes sidecar files for infrastructure snapshot, login checklist, unknown blockers, call-one workflow, hosting evidence, Wayback versions/changes, action items, proof assets, content inventory, competitor structure, top local competitors, service/location recommendations, reputation summary, launch checklist, confirmation script, keyword clusters, competitors, keyword-to-page maps, raw research results, and a combined `example.com-research-tables.json` bundle.
 
 Client build plan:
 
@@ -364,6 +366,8 @@ Key sections:
 
 - **Verdict**: registrar, DNS provider, Cloudflare status, hosting, CMS, email, and services.
 - **Infrastructure Snapshot**: registrar/domain provider, DNS, very plain Cloudflare status, hosting, CMS, email, confidence, and client needs.
+- **Unknowns Blocking Work**: ranked ownership and dependency blockers with severity, owner, evidence, and ask.
+- **Call One Workflow**: the main onboarding table: found, need, risk, ask, owner, and audience for each critical area.
 - **Why FITFO Thinks This**: confidence explanations for registrar, DNS, Cloudflare, hosting, launch URL, CMS, email, and previous developer visibility.
 - **Login / Access Checklist**: day-one accounts to track down, including registrar, DNS, Cloudflare if indicated, hosting, CMS, email, analytics, CRM, and previous developer contact.
 - **Go Get These Logins**: a client-facing access request list suitable for turning into kickoff tasks.
@@ -376,7 +380,7 @@ Key sections:
 - **Website Fingerprint**: reachability, final URL, redirects, TLS certificate, title, generator, and selected headers.
 - **Access Needed**: registrar, DNS, hosting, WordPress, email, analytics, and previous developer access.
 - **Handoff Packet**: what FITFO found, what access is needed, what to ask the previous developer, and what to verify before launch.
-- **Previous Developer Request**: a starter message clients can send to whoever currently controls the setup.
+- **Previous Developer Request**: a starter message and specific request list clients can send to whoever currently controls the setup.
 - **Site Intelligence**: when `--deep` is used, sitemap pages, headings, metadata, canonical tags, meta robots/noindex, CTAs, form actions/fields, schema, phones, script hosts, tool signals, and suggested structure.
 - **URL / Redirect Inventory**: canonical host, robots.txt, XML sitemap, canonical tags, noindex pages, and crawled URLs to preserve, improve, redirect, or remove.
 - **Wayback Recent Versions**: when `--wayback` is used, recent archived homepage versions, visible change flags, and risk notes for forms, phone visibility, tracking/tool signals, titles, H1s, and meta robots.
