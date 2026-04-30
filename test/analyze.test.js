@@ -98,6 +98,56 @@ test("flags high email safety risk when MX exists without SPF or DMARC", () => {
   assert.ok(analysis.risks.some((risk) => risk.includes("MX records exist but no SPF")));
 });
 
+test("uses free DNS network evidence for hosting inference", () => {
+  const analysis = analyzeProfile({
+    domain: {
+      apex: "client.example",
+      hostname: "client.example",
+    },
+    rdap: {
+      registrar: { name: "Namecheap" },
+      nameservers: ["dns1.registrar-servers.com"],
+    },
+    dns: {
+      nameservers: ["dns1.registrar-servers.com"],
+      cnames: [],
+      soa: ["dns1.registrar-servers.com hostmaster.registrar-servers.com 1 2 3 4 5"],
+      addresses: ["203.0.113.10"],
+      ipv6Addresses: [],
+      ipInsights: [{
+        address: "203.0.113.10",
+        reverseDns: ["server.siteground.net"],
+        asn: {
+          asn: "19527",
+          route: "203.0.113.0/24",
+          country: "US",
+          registry: "arin",
+          allocated: "2020-01-01",
+          name: "SITEGROUND, US",
+        },
+      }],
+      mx: [],
+      txt: [],
+      caa: [],
+    },
+    http: {
+      reachable: true,
+      finalUrl: "https://client.example/",
+      headers: {},
+      htmlSample: "",
+      wordpress: {
+        likely: false,
+        signals: [],
+      },
+    },
+  });
+
+  assert.equal(analysis.hosting.provider, "SiteGround");
+  assert.equal(analysis.hosting.confidence, "Medium");
+  assert.ok(analysis.hosting.evidence.some((item) => item.includes("PTR")));
+  assert.ok(analysis.hosting.evidence.some((item) => item.includes("ASN")));
+});
+
 test("infers likely registrar from nameservers when RDAP registrar is missing", () => {
   const analysis = analyzeProfile({
     domain: {

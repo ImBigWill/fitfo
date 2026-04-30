@@ -23,6 +23,7 @@ When FITFO misses a registrar, DNS provider, host, email service, CRM, booking t
 - Do not add credentials, private client names, API keys, account IDs, or copied private report content.
 - Prefer one missed pattern per fixture.
 - If RDAP misses a registrar but nameservers imply one, add a fixture that proves FITFO labels it as likely and still asks for manual confirmation.
+- For hosting misses, include the public clue that should have helped: CNAME, HTTP headers, SOA, reverse DNS/PTR, ASN/network owner, or visible page/script evidence.
 
 ## Current Priority Providers
 

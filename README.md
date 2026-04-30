@@ -326,13 +326,14 @@ fitfo brief example.com --obsidian --out ~/Obsidian/Clients/example.com-brief.md
 - nameservers
 - DNS provider hints
 - A / AAAA / CNAME records
+- SOA records, reverse DNS/PTR, and public ASN/network owner hints for live hosting evidence
 - MX records and email provider hints
 - SPF, DMARC, DMARC policy, DNSSEC, and CAA
 - email safety risk from missing SPF/DMARC and sender-platform clues
 - TLS certificate trust, issuer, and expiration
 - HTTP/HTTPS redirect behavior
 - Cloudflare or Cloudflare-like CDN signals
-- hosting fingerprints from DNS, headers, and page data
+- hosting fingerprints from DNS, reverse DNS, ASN/network owner, headers, and page data
 - WordPress and common CMS/page-builder signals
 - analytics and marketing tags, including GA4/GTM/Meta/HubSpot/CallRail/Klaviyo/Mailchimp/Calendly/form clues
 - common subdomains like `www`, `staging`, `dev`, `app`, `portal`, `shop`, `blog`, `booking`, `mail`, `webmail`, `crm`, and `admin`
@@ -371,6 +372,7 @@ Markdown and Obsidian exports also include YAML frontmatter, tags, client-call q
 
 FITFO is best-effort public reconnaissance.
 
+- Hosting attribution is strongest when CNAME, HTTP headers, reverse DNS/PTR, ASN/network owner, and page signals agree.
 - Hosting can be hidden behind Cloudflare, WP Engine edge, or another CDN/proxy.
 - Previous developer contact usually cannot be discovered from public records.
 - DNS records can be incomplete or intentionally hidden.

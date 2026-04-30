@@ -39,8 +39,8 @@ export function buildInfrastructureSnapshot(scan) {
       finding: hosting.provider || "Unknown",
       confidence: hosting.confidence || confidenceForValue(hosting.provider),
       clientNeed: hosting.provider && hosting.provider !== "Unknown" && hosting.provider !== "Hidden behind Cloudflare"
-        ? `Client must provide ${hosting.provider} hosting access, collaborator invite, backups, deployment path, and billing owner.`
-        : "Client or previous developer must confirm where the website files, backups, server, and deployment path live.",
+        ? `Client must provide ${hosting.provider} hosting access, collaborator invite, backups, deployment path, and billing owner. Public evidence: ${formatFound(hosting.evidence)}.`
+        : `Client or previous developer must confirm where the website files, backups, server, and deployment path live. Public evidence: ${formatFound(hosting.evidence)}.`,
     },
     {
       area: "CMS / Website Admin",

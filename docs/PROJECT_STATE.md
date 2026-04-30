@@ -72,8 +72,8 @@ master
 Core should focus on fast onboarding discovery:
 
 - domain records
-- DNS records
-- hosting/CMS/email clues
+- DNS records, SOA, reverse DNS/PTR, and public ASN/network-owner clues
+- hosting/CMS/email clues with public hosting evidence
 - email safety and DNS cutover risk
 - apex vs `www` launch URL guidance
 - unresolved-domain checks for typos, unregistered domains, or dead DNS

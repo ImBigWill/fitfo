@@ -59,8 +59,9 @@ Initial private version.
 - `help` command alias and clean argument-error handling.
 - RDAP lookup with selected TLD fallback endpoints.
 - Classic WHOIS fallback for selected cases where RDAP is unavailable.
-- DNS lookup for NS, A, AAAA, CNAME, MX, TXT, CAA, and DS records.
+- DNS lookup for NS, SOA, A, AAAA, CNAME, MX, TXT, CAA, and DS records.
 - DNS resolver fallback across Cloudflare and Google DNS-over-HTTPS.
+- Free live DNS enrichment for reverse DNS/PTR and public ASN/network-owner hints to improve hosting evidence without paid APIs.
 - TLS certificate and HTTP/HTTPS redirect checks.
 - Registrar, DNS provider, Cloudflare/CDN, hosting, CMS, and email inference.
 - Email safety analysis for MX/SPF/DMARC status, DMARC policy, sender-platform clues, and DNS cutover risk.

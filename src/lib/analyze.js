@@ -36,6 +36,17 @@ const HOSTING_HINTS = [
   ["wix", "Wix"],
   ["netlify", "Netlify"],
   ["vercel", "Vercel"],
+  ["amazonaws", "AWS"],
+  ["amazon.com", "AWS"],
+  ["cloudfront", "AWS CloudFront"],
+  ["fastly", "Fastly"],
+  ["akamai", "Akamai"],
+  ["google", "Google Cloud"],
+  ["googleusercontent", "Google Cloud"],
+  ["azure", "Microsoft Azure"],
+  ["microsoft", "Microsoft Azure"],
+  ["ovh", "OVHcloud"],
+  ["hetzner", "Hetzner"],
 ];
 
 const DNS_PROVIDER_HINTS = [
@@ -347,27 +358,21 @@ function detectDnsProvider({ rdap, dns, cloudflare }) {
 }
 
 function detectHosting({ dns, http, cloudflare }) {
-  const haystack = [
-    ...(dns.cnames || []),
-    ...(dns.nameservers || []),
-    http.finalUrl || "",
-    http.headers?.server || "",
-    http.headers?.["x-powered-by"] || "",
-    http.headers?.["x-served-by"] || "",
-    http.headers?.["x-hosted-by"] || "",
-    http.headers?.["x-pantheon-styx-hostname"] || "",
-    http.headers?.["x-acquia-application-uuid"] || "",
-  ]
-    .join(" ")
-    .toLowerCase();
-
+  const evidence = buildHostingEvidence({ dns, http });
+  const haystack = evidence.map((item) => item.value).join(" ").toLowerCase();
   const match = HOSTING_HINTS.find(([needle]) => haystack.includes(needle));
 
   if (match) {
+    const matchedEvidence = evidence
+      .filter((item) => String(item.value || "").toLowerCase().includes(match[0]))
+      .map((item) => `${item.source}: ${item.value}`);
+
     return {
       provider: match[1],
-      confidence: "Medium",
-      note: "Detected from DNS or HTTP hints.",
+      confidence: matchedEvidence.some((item) => /^CNAME|^HTTP|^PTR|^ASN/i.test(item)) ? "Medium" : "Low",
+      note: "Detected from public DNS, HTTP, reverse DNS, or ASN/network hints.",
+      evidence: matchedEvidence.length ? matchedEvidence : evidence.slice(0, 5).map((item) => `${item.source}: ${item.value}`),
+      edge: cloudflare.status === "Yes" || cloudflare.status === "Likely" ? "Cloudflare/CDN may be in front of the origin." : "No obvious Cloudflare edge detected.",
     };
   }
 
@@ -376,14 +381,54 @@ function detectHosting({ dns, http, cloudflare }) {
       provider: "Hidden behind Cloudflare",
       confidence: "High",
       note: "Cloudflare is in front, so the origin host may not be publicly visible.",
+      evidence: [
+        ...(cloudflare.signals || []).map((signal) => `Cloudflare: ${signal}`),
+        ...evidence.slice(0, 5).map((item) => `${item.source}: ${item.value}`),
+      ],
+      edge: "Cloudflare is the visible edge/proxy. Ask for origin hosting separately.",
     };
   }
 
+  const networkEvidence = evidence.filter((item) => ["PTR", "ASN", "SOA", "CAA"].includes(item.source));
+
   return {
     provider: "Unknown",
-    confidence: "Low",
-    note: "No clear hosting fingerprint found.",
+    confidence: networkEvidence.length ? "Manual" : "Low",
+    note: networkEvidence.length
+      ? "Public DNS/network clues were found, but none matched a known hosting provider confidently."
+      : "No clear hosting fingerprint found.",
+    evidence: networkEvidence.slice(0, 6).map((item) => `${item.source}: ${item.value}`),
+    edge: "No obvious CDN/proxy edge detected.",
   };
+}
+
+function buildHostingEvidence({ dns, http }) {
+  const headerKeys = [
+    "server",
+    "x-powered-by",
+    "x-served-by",
+    "x-hosted-by",
+    "x-pantheon-styx-hostname",
+    "x-acquia-application-uuid",
+    "x-cache",
+    "via",
+  ];
+  const evidence = [
+    ...(dns.cnames || []).map((value) => ({ source: "CNAME", value })),
+    ...(dns.soa || []).map((value) => ({ source: "SOA", value })),
+    ...(dns.caa || []).map((value) => ({ source: "CAA", value })),
+    ...(dns.nameservers || []).map((value) => ({ source: "Nameserver", value })),
+    ...(dns.ipInsights || []).flatMap((item) => [
+      ...(item.reverseDns || []).map((value) => ({ source: "PTR", value: `${item.address} -> ${value}` })),
+      item.asn ? { source: "ASN", value: `${item.address} -> AS${item.asn.asn} ${item.asn.name || ""} ${item.asn.route || ""}`.trim() } : null,
+    ].filter(Boolean)),
+    http.finalUrl ? { source: "Final URL", value: http.finalUrl } : null,
+    ...headerKeys.flatMap((key) => http.headers?.[key] ? [{ source: `HTTP ${key}`, value: http.headers[key] }] : []),
+  ].filter(Boolean);
+
+  return evidence.filter((item, index, rows) => (
+    rows.findIndex((candidate) => candidate.source === item.source && candidate.value === item.value) === index
+  ));
 }
 
 function detectEmail(dns) {
