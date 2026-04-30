@@ -78,8 +78,12 @@ fitfo-exports/
   example-plumbing.test-action-items.csv
   example-plumbing.test-competitors.csv
   example-plumbing.test-content-inventory.csv
+  example-plumbing.test-hosting-evidence.csv
+  example-plumbing.test-infrastructure-snapshot.csv
+  example-plumbing.test-login-checklist.csv
   example-plumbing.test-keyword-page-map.csv
   example-plumbing.test-launch-checklist.csv
+  example-plumbing.test-top-local-competitors.csv
   example-plumbing.test-research-tables.json
 ```
 

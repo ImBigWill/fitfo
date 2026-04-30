@@ -26,7 +26,8 @@ Initial private version.
 - Client handoff summary table in scan exports.
 - Infrastructure snapshot and login/access checklist tables at the top of brief, plan, and onboard Markdown/Obsidian exports.
 - Top local competitor prompts in brief/plan reports from search/local/review-style research signals.
-- Table exports for infrastructure snapshot, login checklist, and top local competitors.
+- Table exports for infrastructure snapshot, login checklist, hosting evidence, and top local competitors.
+- Integration boundary documentation that separates free core scanning from optional enrichment providers.
 - Richer deep-crawl extraction for canonical tags, meta robots/noindex, form actions/methods/fields, submit labels, script hosts, and crawl-level tool fingerprints.
 - Raw Markdown evidence sections for URL/redirect inventory, lead capture inventory, tracking/tool footprint, and keyword evidence in brief/plan/onboard reports.
 - Likely registrar inference from nameserver patterns when RDAP registrar data is missing.
