@@ -43,7 +43,7 @@ fitfo onboard clientdomain.com
 ## Near-Term
 
 - Improve redirect checks for `www` and apex canonical behavior.
-- Improve hosting fingerprints.
+- Improve hosting fingerprints while keeping core free; see [Integrations](INTEGRATIONS.md) for optional enrichment boundaries.
 - Improve DNS provider fingerprints.
 - Improve analytics and marketing tag detection.
 - Improve Markdown report templates after real Obsidian use.
