@@ -25,6 +25,8 @@ Initial private version.
 - Provider fixtures for DreamHost, Flywheel, Liquid Web, Birdeye, NiceJob, and Service Fusion handoff patterns.
 - Client handoff summary table in scan exports.
 - Infrastructure snapshot and login/access checklist tables at the top of brief, plan, and onboard Markdown/Obsidian exports.
+- Evidence explanation, direct login request, and do-not-touch warning sections at the top of scan, brief, plan, and onboard reports.
+- End-of-run recap showing saved report path, table export path, Cloudflare status, top unknowns, and next step.
 - Top local competitor prompts in brief/plan reports from search/local/review-style research signals.
 - Table exports for infrastructure snapshot, login checklist, hosting evidence, and top local competitors.
 - Integration boundary documentation that separates free core scanning from optional enrichment providers.

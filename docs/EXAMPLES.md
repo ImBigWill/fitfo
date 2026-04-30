@@ -70,6 +70,27 @@ tags:
 | --- | --- | --- | --- |
 | Forms | 1 | 0 | -1 from previous capture. |
 
+## Why FITFO Thinks This
+
+| Area | Finding | Confidence | Why FITFO Thinks This | Client Follow-Up |
+| --- | --- | --- | --- | --- |
+| Registrar | GoDaddy | High | Public domain records identify GoDaddy. | Ask for GoDaddy owner/admin access or a delegated invite. |
+| Hosting | WP Engine | Medium | CNAME and HTTP hints point toward WP Engine. | Confirm WP Engine account ownership, backups, deployment process, and billing owner. |
+
+## Go Get These Logins
+
+| Login / Access | Current Public Status | What Client Needs To Get |
+| --- | --- | --- |
+| Domain registrar | GoDaddy | Get GoDaddy login, owner invite, billing contact, renewal status, and transfer-lock status. |
+| Hosting | WP Engine | Get WP Engine hosting access, backups, deployment notes, SFTP/SSH or dashboard access, and billing owner. |
+
+## Do Not Touch Until Confirmed
+
+| Area | Do Not Touch | Why It Matters |
+| --- | --- | --- |
+| DNS zone | Do not change nameservers or delete records until the full DNS zone is documented. | Website, email, verification, tracking, booking, and CRM services may depend on records that are easy to miss. |
+| Email | Do not change MX, SPF, DKIM, or DMARC until the email provider and sender platforms are confirmed. | Email continuity depends on DNS records that may not be obvious to the client. |
+
 ## Focus First
 
 - **Access and ownership:** Secure domain, DNS, hosting, CMS, email, analytics, forms, and previous-developer handoff before changing anything.

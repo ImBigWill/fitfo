@@ -103,6 +103,12 @@ fitfo onboard example.com
 
 The exported report leads with an infrastructure snapshot and login checklist: registrar/domain provider, DNS/nameservers, very plain Cloudflare status, hosting, CMS, email, and exactly what the client needs to provide or confirm from day one.
 
+It also adds a plain evidence layer near the top:
+
+- **Why FITFO Thinks This**: the public signal behind each finding, plus what to confirm with the client.
+- **Go Get These Logins**: a direct list of the accounts/access the client needs to track down.
+- **Do Not Touch Until Confirmed**: DNS, email, Cloudflare/CDN, redirects, lead tracking, hosting, and subdomain warnings before launch work.
+
 When run in an interactive terminal, `fitfo onboard` asks for missing full-intake details before scanning:
 
 - market/location, if no location is configured or passed
@@ -358,7 +364,10 @@ Key sections:
 
 - **Verdict**: registrar, DNS provider, Cloudflare status, hosting, CMS, email, and services.
 - **Infrastructure Snapshot**: registrar/domain provider, DNS, very plain Cloudflare status, hosting, CMS, email, confidence, and client needs.
+- **Why FITFO Thinks This**: confidence explanations for registrar, DNS, Cloudflare, hosting, launch URL, CMS, email, and previous developer visibility.
 - **Login / Access Checklist**: day-one accounts to track down, including registrar, DNS, Cloudflare if indicated, hosting, CMS, email, analytics, CRM, and previous developer contact.
+- **Go Get These Logins**: a client-facing access request list suitable for turning into kickoff tasks.
+- **Do Not Touch Until Confirmed**: practical warnings for DNS, email, Cloudflare/CDN, canonical host, lead tracking, hosting origin, subdomains, and archived site-change risks.
 - **Track This Down**: the practical access errands for the client or previous developer.
 - **Client Handoff Summary**: a client-facing table of public findings, confidence, and what access or confirmation is needed.
 - **DNS Records**: nameservers, IPs, email records, and safety records.
