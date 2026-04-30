@@ -31,6 +31,7 @@ export function buildClientPlan(scan) {
     actionReport: brief.actionReport,
     clientCallIntelligence: brief.clientCallIntelligence,
     confirmationScript: brief.confirmationScript,
+    vertical: scan.vertical || {},
     questions: brief.callQuestions,
   };
 }
@@ -91,6 +92,8 @@ export function renderPlanText(scan, options = {}) {
     panel(theme, "Competitor-Informed Structure", plan.competitorStructure.map((item) => `${theme.bullet("›")} ${theme.label(item.path)} ${theme.chip(`[${item.priority}]`)} ${theme.dim(`${item.trigger}: ${item.rationale}`)}`)),
     "",
     panel(theme, "Top Local Competitors To Review", formatTopLocalCompetitors(theme, plan.topLocalCompetitors)),
+    "",
+    ...formatVerticalTextSections(theme, plan.vertical),
     "",
     panel(theme, "Review + Reputation Summary", plan.reputationSummary.map((item) => `${theme.bullet("›")} ${theme.label(item.channel)} ${theme.dim(`${item.signal} | ${item.action}`)}`)),
     "",
@@ -212,6 +215,7 @@ export function renderPlanMarkdown(scan, options = {}) {
     "",
     markdownTopLocalCompetitors(plan.topLocalCompetitors),
     "",
+    ...markdownVerticalSections(plan.vertical),
     "## Review + Reputation Summary",
     "",
     markdownTableWithHeaders(["Channel", "Signal", "Action"], plan.reputationSummary.map((item) => [
@@ -320,6 +324,76 @@ function markdownPlanPageMap(actionReport) {
       item.page,
       item.status,
     ])),
+  ];
+}
+
+function formatVerticalTextSections(theme, vertical = {}) {
+  if (!vertical.slug) return [];
+
+  return [
+    panel(theme, "Vertical Lens", [
+      `${theme.bullet("›")} ${theme.label(vertical.label)} ${theme.chip(`[${vertical.source}]`)} ${theme.dim("Use this as a market-specific review layer, not a substitute for client confirmation.")}`,
+      `${theme.bullet("›")} ${theme.label("Priority services")} ${theme.dim((vertical.services || []).slice(0, 6).join(", ") || "Confirm with client.")}`,
+    ]),
+    "",
+    panel(theme, "Homeowner Emergency UX", formatHomeownerUx(theme, vertical.homeownerUx)),
+    "",
+    panel(theme, "Plumbing Proof Assets Needed", formatVerticalProofAssets(theme, vertical.proofAssets)),
+    "",
+    panel(theme, "Plumbing Call Questions", formatVerticalAudienceQuestions(theme, vertical.audienceQuestions)),
+  ];
+}
+
+function formatHomeownerUx(theme, rows = []) {
+  if (!rows.length) {
+    return [`${theme.bullet("›")} ${theme.label("UX")} ${theme.dim("No vertical UX checks generated.")}`];
+  }
+
+  return rows.map((item) => `${theme.bullet("›")} ${theme.label(item.area)} ${theme.chip(`[${item.status}]`)} ${theme.dim(`${item.evidence} Next: ${item.recommendation}`)}`);
+}
+
+function formatVerticalProofAssets(theme, assets = []) {
+  if (!assets.length) return [`${theme.bullet("›")} ${theme.label("Proof")} ${theme.dim("Confirm reviews, photos, credentials, guarantees, and usage rights.")}`];
+  return assets.map((asset) => `${theme.bullet("›")} ${theme.dim(asset)}`);
+}
+
+function formatVerticalAudienceQuestions(theme, questions = []) {
+  if (!questions.length) return [`${theme.bullet("›")} ${theme.label("Questions")} ${theme.dim("No vertical questions generated.")}`];
+  return questions.map((item) => `${theme.bullet("›")} ${theme.label(item.audience)} ${theme.dim(item.question)}`);
+}
+
+function markdownVerticalSections(vertical = {}) {
+  if (!vertical.slug) return [];
+
+  return [
+    "## Vertical Lens",
+    "",
+    markdownTableWithHeaders(["Vertical", "Source", "Priority Services"], [[
+      vertical.label,
+      vertical.source,
+      (vertical.services || []).slice(0, 8).join(", ") || "Confirm with client",
+    ]]),
+    "",
+    "## Homeowner Emergency UX",
+    "",
+    markdownTableWithHeaders(["Area", "Status", "Evidence", "Recommendation"], (vertical.homeownerUx || []).map((item) => [
+      item.area,
+      item.status,
+      item.evidence,
+      item.recommendation,
+    ])),
+    "",
+    "## Plumbing Proof Assets Needed",
+    "",
+    ...((vertical.proofAssets || []).map((asset) => `- [ ] ${asset}`)),
+    "",
+    "## Plumbing Call Questions",
+    "",
+    markdownTableWithHeaders(["Audience", "Question"], (vertical.audienceQuestions || []).map((item) => [
+      item.audience,
+      item.question,
+    ])),
+    "",
   ];
 }
 

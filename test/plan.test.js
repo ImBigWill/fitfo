@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { buildClientPlan, renderPlanMarkdown } from "../src/plan.js";
+import { buildVerticalContext } from "../src/verticals/index.js";
 
 const scan = {
   finishedAt: "2026-04-27T00:01:00.000Z",
@@ -72,6 +73,8 @@ const scan = {
   },
 };
 
+scan.vertical = buildVerticalContext(scan, { vertical: "plumbing" });
+
 test("builds a client plan from scan, crawl, and research signals", () => {
   const plan = buildClientPlan(scan);
 
@@ -91,6 +94,10 @@ test("builds a client plan from scan, crawl, and research signals", () => {
   assert.ok(plan.doNotTouchWarnings.some((item) => item.area === "Email"));
   assert.ok(plan.previousDeveloperRequestItems.some((item) => item.includes("Full DNS zone export")));
   assert.ok(plan.topLocalCompetitors.some((item) => item.name === "Competitor Plumbing Services"));
+  assert.equal(plan.vertical.slug, "plumbing");
+  assert.ok(plan.vertical.homeownerUx.some((item) => item.area === "Emergency contact path"));
+  assert.ok(plan.vertical.proofAssets.includes("license and insurance details"));
+  assert.ok(plan.vertical.audienceQuestions.some((item) => item.audience === "Owner"));
   assert.ok(plan.siteEvidence.urlInventory.some((item) => item.area === "Canonical host"));
   assert.equal(plan.waybackEvidence.versions.length, 2);
   assert.ok(plan.siteEvidence.toolFootprint.some((item) => item.tool === "Marketing tags"));
@@ -136,6 +143,14 @@ test("renders a Markdown plan for Obsidian", () => {
   assert.match(markdown, /\| Priority \| Path \| Trigger \| Rationale \|/);
   assert.match(markdown, /## Top Local Competitors To Review/);
   assert.match(markdown, /Competitor Plumbing Services/);
+  assert.match(markdown, /## Vertical Lens/);
+  assert.match(markdown, /Plumbing \/ home services/);
+  assert.match(markdown, /## Homeowner Emergency UX/);
+  assert.match(markdown, /Emergency contact path/);
+  assert.match(markdown, /## Plumbing Proof Assets Needed/);
+  assert.match(markdown, /license and insurance details/);
+  assert.match(markdown, /## Plumbing Call Questions/);
+  assert.match(markdown, /Which plumbing jobs are most valuable right now/);
   assert.match(markdown, /## Review \+ Reputation Summary/);
   assert.match(markdown, /## Service \+ Location Recommendations/);
   assert.match(markdown, /## Build Workstreams/);
