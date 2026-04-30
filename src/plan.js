@@ -16,6 +16,7 @@ export function buildClientPlan(scan) {
     serviceLocationRecommendations: brief.serviceLocationRecommendations,
     topLocalCompetitors: brief.actionReport.competitorResearch?.topLocalCompetitors || [],
     siteEvidence: brief.actionReport.siteEvidence,
+    waybackEvidence: brief.waybackEvidence,
     keywordEvidence: brief.actionReport.keywordEvidence,
     workstreams: buildWorkstreams(scan),
     launchChecklist: buildPlanLaunchChecklist(scan),
@@ -50,6 +51,8 @@ export function renderPlanText(scan, options = {}) {
     panel(theme, "Login / Access Checklist", formatLoginChecklist(theme, plan.loginChecklist)),
     "",
     panel(theme, "URL / Redirect Inventory", formatEvidenceRows(theme, plan.siteEvidence?.urlInventory)),
+    "",
+    panel(theme, "Wayback Recent Versions", formatWaybackRows(theme, plan.waybackEvidence)),
     "",
     panel(theme, "Lead Capture Inventory", formatLeadRows(theme, plan.siteEvidence?.leadCaptureInventory)),
     "",
@@ -125,6 +128,10 @@ export function renderPlanMarkdown(scan, options = {}) {
     "## URL / Redirect Inventory",
     "",
     markdownEvidenceRows(["Area / URL", "Extracted Evidence", "Client / Launch Question"], plan.siteEvidence?.urlInventory, ["area", "evidence", "ask"]),
+    "",
+    "## Wayback Recent Versions",
+    "",
+    ...markdownWaybackRows(plan.waybackEvidence),
     "",
     "## Lead Capture Inventory",
     "",
@@ -296,6 +303,30 @@ function formatEvidenceRows(theme, rows = []) {
   return rows.slice(0, 8).map((item) => `${theme.bullet("›")} ${theme.label(item.area || item.tool || item.keyword)} ${theme.dim(`${item.evidence || item.details || ""} | ${item.ask || item.nextStep || ""}`)}`);
 }
 
+function formatWaybackRows(theme, evidence = {}) {
+  if (!evidence.enabled) {
+    return [`${theme.bullet("›")} ${theme.label("Not enabled")} ${theme.dim("Run with --wayback to compare recent archived homepage versions.")}`];
+  }
+
+  if (!evidence.versions?.length) {
+    return [`${theme.bullet("›")} ${theme.label("No readable snapshots")} ${theme.dim(`${evidence.snapshotsFound || 0} snapshot(s) found; confirm manually in the Wayback Machine if needed.`)}`];
+  }
+
+  const lines = evidence.versions.slice(0, 3).map((version) => (
+    `${theme.bullet("›")} ${theme.label(version.capturedAt)} ${theme.dim(`${version.title || "Untitled"} | forms ${version.formCount} | phones ${version.phones.length} | tools ${version.toolSignals.length}`)}`
+  ));
+
+  for (const warning of (evidence.warnings || []).slice(0, 3)) {
+    lines.push(`${theme.bullet("›")} ${theme.label("Flag")} ${theme.dim(warning)}`);
+  }
+
+  for (const change of (evidence.changes || []).slice(0, 4)) {
+    lines.push(`${theme.bullet("›")} ${theme.label(change.signal)} ${theme.dim(`${change.previous} -> ${change.latest}`)}`);
+  }
+
+  return lines;
+}
+
 function formatLeadRows(theme, rows = []) {
   if (!rows.length) return [`${theme.bullet("›")} ${theme.label("No lead evidence yet")} ${theme.dim("Run --deep or confirm forms, calls, booking, chat, and CRM manually.")}`];
   return rows.slice(0, 8).map((item) => `${theme.bullet("›")} ${theme.label(`${item.page} ${item.signal}`)} ${theme.dim(`${item.details} | ${item.ask}`)}`);
@@ -343,6 +374,57 @@ function markdownTopLocalCompetitors(competitors = []) {
 function markdownEvidenceRows(headers, rows = [], keys = []) {
   if (!rows.length) return "- No extracted evidence yet. Run `--deep --search` where appropriate or confirm manually on the client call.";
   return markdownTableWithHeaders(headers, rows.map((item) => keys.map((key) => item[key] || "")));
+}
+
+function markdownWaybackRows(evidence = {}) {
+  if (!evidence.enabled) {
+    return ["- Not enabled. Run with `--wayback` to compare recent archived homepage versions."];
+  }
+
+  if (!evidence.versions?.length) {
+    return [
+      `- Snapshots found: ${evidence.snapshotsFound || 0}. No readable archived HTML versions were extracted.`,
+      ...((evidence.errors || []).slice(0, 5).map((error) => `- Error: ${error}`)),
+    ];
+  }
+
+  const sections = [
+    markdownTableWithHeaders(["Captured", "URL", "Title", "H1", "Words", "Forms", "Phones", "Tools"], evidence.versions.map((version) => [
+      version.capturedAt,
+      version.original,
+      version.title || "Not detected",
+      version.h1 || "Not detected",
+      version.wordCount,
+      version.formCount,
+      version.phones?.length ? version.phones.join(", ") : "None detected",
+      version.toolSignals?.length ? version.toolSignals.join(", ") : "None detected",
+    ])),
+  ];
+
+  if (evidence.changes?.length) {
+    sections.push(
+      "",
+      "### Wayback Change Flags",
+      "",
+      markdownTableWithHeaders(["Signal", "Previous Capture", "Latest Capture", "Note"], evidence.changes.map((change) => [
+        change.signal,
+        change.previous,
+        change.latest,
+        change.note,
+      ])),
+    );
+  }
+
+  if (evidence.warnings?.length) {
+    sections.push(
+      "",
+      "### Wayback Risk Notes",
+      "",
+      ...evidence.warnings.map((warning) => `- ${warning}`),
+    );
+  }
+
+  return sections;
 }
 
 function formatPlanResearch(theme, kickoffResearch) {

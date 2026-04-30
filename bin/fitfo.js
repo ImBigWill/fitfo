@@ -82,6 +82,7 @@ try {
       deep: options.deep,
       crawlLimit: options.crawlLimit,
       search: options.search,
+      wayback: options.wayback,
     }));
     console.log("");
   }
@@ -94,6 +95,9 @@ try {
     searchLimit: options.searchLimit,
     location: options.location,
     country: options.country,
+    wayback: options.wayback,
+    waybackLimit: options.waybackLimit,
+    waybackVersions: options.waybackVersions,
   });
   const terminalOutput = renderOutput(scan, terminalRenderOptions(options, !noColor));
 

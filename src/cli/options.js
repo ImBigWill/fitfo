@@ -25,6 +25,9 @@ export function parseArgs(argv) {
     country: "US",
     vault: null,
     version: false,
+    wayback: false,
+    waybackLimit: 20,
+    waybackVersions: 3,
   };
   Object.defineProperty(options, "provided", {
     value: new Set(),
@@ -42,6 +45,9 @@ export function parseArgs(argv) {
     } else if (arg === "--search") {
       options.search = true;
       options.provided.add("search");
+    } else if (arg === "--wayback") {
+      options.wayback = true;
+      options.provided.add("wayback");
     } else if (arg === "--location") {
       const value = argv[index + 1];
       if (!value || value.startsWith("-")) {
@@ -76,6 +82,34 @@ export function parseArgs(argv) {
       }
       options.searchLimit = limit;
       options.provided.add("searchLimit");
+      index += 1;
+    } else if (arg === "--wayback-limit") {
+      const value = argv[index + 1];
+      if (!value || value.startsWith("-")) {
+        throw new Error("--wayback-limit requires a number.");
+      }
+      const limit = Number(value);
+      if (!Number.isInteger(limit) || limit < 1 || limit > 50) {
+        throw new Error("--wayback-limit must be an integer between 1 and 50.");
+      }
+      options.waybackLimit = limit;
+      options.wayback = true;
+      options.provided.add("waybackLimit");
+      options.provided.add("wayback");
+      index += 1;
+    } else if (arg === "--wayback-versions") {
+      const value = argv[index + 1];
+      if (!value || value.startsWith("-")) {
+        throw new Error("--wayback-versions requires a number.");
+      }
+      const limit = Number(value);
+      if (!Number.isInteger(limit) || limit < 1 || limit > 5) {
+        throw new Error("--wayback-versions must be an integer between 1 and 5.");
+      }
+      options.waybackVersions = limit;
+      options.wayback = true;
+      options.provided.add("waybackVersions");
+      options.provided.add("wayback");
       index += 1;
     } else if (arg === "--crawl-limit") {
       const value = argv[index + 1];

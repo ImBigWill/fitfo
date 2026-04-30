@@ -10,6 +10,7 @@ export function buildBrief(scan) {
   const site = scan.site || {};
   const siteSummary = site.summary || {};
   const actionReport = buildActionReport(scan);
+  const waybackEvidence = buildWaybackEvidence(scan);
   const competitorStructure = buildCompetitorStructure(scan, actionReport);
   const reputationSummary = buildReputationSummary(scan, actionReport);
   const serviceLocationRecommendations = buildServiceLocationRecommendations(scan, actionReport);
@@ -32,10 +33,12 @@ export function buildBrief(scan) {
       ["Connected services", connectedServices.length ? connectedServices.join(", ") : "None detected"],
       ["Subdomains found", String(subdomains.length)],
       ["Deep crawl", site.enabled ? `${siteSummary.pagesScanned || 0} page(s)` : "Not enabled"],
+      ["Wayback", waybackEvidence.enabled ? `${waybackEvidence.versions.length} recent version(s)` : "Not enabled"],
       ["Forms found", site.enabled ? String(siteSummary.formsDetected || 0) : "Not checked"],
       ["Schema", site.enabled && siteSummary.schemaTypes?.length ? siteSummary.schemaTypes.join(", ") : "Not detected"],
     ],
     siteIntelligence: buildSiteIntelligence(scan),
+    waybackEvidence,
     marketResearch: buildMarketResearch(scan),
     kickoffResearch: buildKickoffResearch(scan),
     actionReport,
@@ -74,6 +77,8 @@ export function renderBriefText(scan, options = {}) {
     panel(theme, "Login / Access Checklist", formatLoginChecklist(theme, brief.loginChecklist)),
     "",
     panel(theme, "URL / Redirect Inventory", formatUrlInventory(theme, brief.actionReport.siteEvidence.urlInventory)),
+    "",
+    panel(theme, "Wayback Recent Versions", formatWaybackEvidence(theme, brief.waybackEvidence)),
     "",
     panel(theme, "Lead Capture Inventory", formatLeadCaptureInventory(theme, brief.actionReport.siteEvidence.leadCaptureInventory)),
     "",
@@ -168,6 +173,10 @@ export function renderBriefMarkdown(scan, options = {}) {
     "## URL / Redirect Inventory",
     "",
     markdownUrlInventory(brief.actionReport.siteEvidence.urlInventory),
+    "",
+    "## Wayback Recent Versions",
+    "",
+    ...markdownWaybackEvidence(brief.waybackEvidence),
     "",
     "## Lead Capture Inventory",
     "",
@@ -401,6 +410,38 @@ function buildMarketResearch(scan) {
   }
 
   return items;
+}
+
+function buildWaybackEvidence(scan) {
+  const wayback = scan.wayback || {};
+  const versions = wayback.versions || [];
+  const changes = wayback.comparison?.changes || [];
+  const warnings = wayback.warnings || [];
+
+  return {
+    enabled: Boolean(wayback.enabled),
+    provider: wayback.provider || "internet-archive",
+    snapshotsFound: wayback.snapshotsFound || 0,
+    checkedUrls: wayback.checkedUrls || [],
+    versions: versions.map((version) => ({
+      capturedAt: version.capturedAt || version.timestamp || "Unknown",
+      original: version.original || "",
+      title: version.title || "",
+      h1: version.h1 || "",
+      metaDescription: version.metaDescription || "",
+      metaRobots: version.metaRobots || "",
+      wordCount: version.wordCount || 0,
+      formCount: version.formCount || 0,
+      phones: version.phones || [],
+      ctas: version.ctas || [],
+      toolSignals: version.toolSignals || [],
+      archiveUrl: version.archiveUrl || "",
+      fetchError: version.fetchError || "",
+    })),
+    changes,
+    warnings,
+    errors: wayback.errors || [],
+  };
 }
 
 function buildKickoffResearch(scan) {
@@ -1518,6 +1559,33 @@ function formatUrlInventory(theme, rows) {
   return rows.slice(0, 10).map((item) => `${theme.bullet("›")} ${theme.label(item.area)} ${theme.dim(`${item.evidence} | ${item.ask}`)}`);
 }
 
+function formatWaybackEvidence(theme, evidence) {
+  if (!evidence.enabled) {
+    return [`${theme.bullet("›")} ${theme.label("Not enabled")} ${theme.dim("Run with --wayback to compare recent Internet Archive homepage captures.")}`];
+  }
+
+  if (!evidence.versions.length) {
+    return [
+      `${theme.bullet("›")} ${theme.label("Snapshots")} ${theme.dim(`${evidence.snapshotsFound || 0} capture(s) found; no readable HTML versions were extracted.`)}`,
+      ...evidence.errors.slice(0, 3).map((error) => `${theme.bullet("›")} ${theme.label("Error")} ${theme.dim(error)}`),
+    ];
+  }
+
+  const lines = evidence.versions.slice(0, 3).map((version) => (
+    `${theme.bullet("›")} ${theme.label(version.capturedAt)} ${theme.dim(`${version.title || "Untitled"} | H1: ${version.h1 || "none"} | forms ${version.formCount} | phones ${version.phones.length}`)}`
+  ));
+
+  for (const warning of evidence.warnings.slice(0, 3)) {
+    lines.push(`${theme.bullet("›")} ${theme.label("Flag")} ${theme.dim(warning)}`);
+  }
+
+  for (const change of evidence.changes.slice(0, 5)) {
+    lines.push(`${theme.bullet("›")} ${theme.label(change.signal)} ${theme.dim(`${change.previous} -> ${change.latest}`)}`);
+  }
+
+  return lines;
+}
+
 function formatLeadCaptureInventory(theme, rows) {
   return rows.slice(0, 10).map((item) => `${theme.bullet("›")} ${theme.label(`${item.page} ${item.signal}`)} ${theme.dim(`${item.details} | ${item.ask}`)}`);
 }
@@ -1649,6 +1717,57 @@ function markdownUrlInventory(rows) {
     item.evidence,
     item.ask,
   ]));
+}
+
+function markdownWaybackEvidence(evidence) {
+  if (!evidence.enabled) {
+    return ["- Not enabled. Run with `--wayback` to compare recent Internet Archive homepage captures."];
+  }
+
+  if (!evidence.versions.length) {
+    return [
+      `- Snapshots found: ${evidence.snapshotsFound || 0}. No readable archived HTML versions were extracted.`,
+      ...evidence.errors.slice(0, 5).map((error) => `- Error: ${error}`),
+    ];
+  }
+
+  const sections = [
+    markdownTableWithHeaders(["Captured", "URL", "Title", "H1", "Words", "Forms", "Phones", "Tools"], evidence.versions.map((version) => [
+      version.capturedAt,
+      version.original,
+      version.title || "Not detected",
+      version.h1 || "Not detected",
+      version.wordCount,
+      version.formCount,
+      version.phones.length ? version.phones.join(", ") : "None detected",
+      version.toolSignals.length ? version.toolSignals.join(", ") : "None detected",
+    ])),
+  ];
+
+  if (evidence.changes.length) {
+    sections.push(
+      "",
+      "### Wayback Change Flags",
+      "",
+      markdownTableWithHeaders(["Signal", "Previous Capture", "Latest Capture", "Note"], evidence.changes.map((change) => [
+        change.signal,
+        change.previous,
+        change.latest,
+        change.note,
+      ])),
+    );
+  }
+
+  if (evidence.warnings.length) {
+    sections.push(
+      "",
+      "### Wayback Risk Notes",
+      "",
+      ...evidence.warnings.map((warning) => `- ${warning}`),
+    );
+  }
+
+  return sections;
 }
 
 function markdownLeadCaptureInventory(rows) {

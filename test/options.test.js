@@ -26,6 +26,9 @@ test("parses default scan command with a domain", () => {
     location: null,
     vault: null,
     version: false,
+    wayback: false,
+    waybackLimit: 20,
+    waybackVersions: 3,
   });
 });
 
@@ -88,6 +91,9 @@ test("parses markdown and json aliases", () => {
   assert.equal(parseArgs(["brief", "example.com", "--crawl-limit", "12"]).crawlLimit, 12);
   assert.equal(parseArgs(["brief", "example.com", "--search"]).search, true);
   assert.equal(parseArgs(["brief", "example.com", "--search-limit", "7"]).searchLimit, 7);
+  assert.equal(parseArgs(["brief", "example.com", "--wayback"]).wayback, true);
+  assert.equal(parseArgs(["brief", "example.com", "--wayback-limit", "12"]).waybackLimit, 12);
+  assert.equal(parseArgs(["brief", "example.com", "--wayback-versions", "2"]).waybackVersions, 2);
   assert.equal(parseArgs(["brief", "example.com", "--export-tables", "exports"]).exportTables, "exports");
   assert.equal(parseArgs(["brief", "example.com", "--location", "Richmond, VA"]).location, "Richmond, VA");
   assert.equal(parseArgs(["version"]).version, true);
@@ -99,4 +105,6 @@ test("rejects unsupported formats and unknown options", () => {
   assert.throws(() => parseArgs(["example.com", "--wat"]), /Unknown option/);
   assert.throws(() => parseArgs(["example.com", "--crawl-limit", "0"]), /between 1 and 50/);
   assert.throws(() => parseArgs(["example.com", "--search-limit", "0"]), /between 1 and 20/);
+  assert.throws(() => parseArgs(["example.com", "--wayback-limit", "0"]), /between 1 and 50/);
+  assert.throws(() => parseArgs(["example.com", "--wayback-versions", "6"]), /between 1 and 5/);
 });

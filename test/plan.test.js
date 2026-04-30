@@ -19,6 +19,42 @@ const scan = {
     queries: ["Client Plumbing services Richmond VA"],
     results: [{ query: "Client Plumbing services Richmond VA", title: "Competitor Plumbing Services", description: "Drain repair and emergency plumbing", url: "https://competitor.example" }],
   },
+  wayback: {
+    enabled: true,
+    provider: "internet-archive",
+    snapshotsFound: 2,
+    versions: [
+      {
+        capturedAt: "2026-04-01 12:00 UTC",
+        original: "https://client.example/",
+        title: "Client Plumbing",
+        h1: "Client Plumbing",
+        wordCount: 400,
+        formCount: 0,
+        phones: ["555-123-4567"],
+        ctas: ["Request Service"],
+        toolSignals: ["Google Tag Manager"],
+      },
+      {
+        capturedAt: "2025-12-01 12:00 UTC",
+        original: "https://client.example/",
+        title: "Client Plumbing Old Site",
+        h1: "Emergency Plumbing",
+        wordCount: 700,
+        formCount: 1,
+        phones: ["555-123-4567"],
+        ctas: ["Book Now"],
+        toolSignals: ["Google Tag Manager", "CallRail"],
+      },
+    ],
+    comparison: {
+      changes: [
+        { signal: "Title", previous: "Client Plumbing Old Site", latest: "Client Plumbing", note: "Changed between recent Wayback captures." },
+      ],
+    },
+    warnings: ["Earlier archived homepage had forms but the latest archived version does not. Confirm current lead capture paths."],
+    errors: [],
+  },
   analysis: {
     registrar: "GoDaddy",
     registrarDetails: { confidence: "High" },
@@ -50,6 +86,7 @@ test("builds a client plan from scan, crawl, and research signals", () => {
   assert.ok(plan.loginChecklist.some((item) => item.access === "Cloudflare" && item.status === "No - no obvious Cloudflare"));
   assert.ok(plan.topLocalCompetitors.some((item) => item.name === "Competitor Plumbing Services"));
   assert.ok(plan.siteEvidence.urlInventory.some((item) => item.area === "Canonical host"));
+  assert.equal(plan.waybackEvidence.versions.length, 2);
   assert.ok(plan.siteEvidence.toolFootprint.some((item) => item.tool === "Marketing tags"));
   assert.ok(plan.keywordEvidence.some((item) => item.keyword.includes("drain cleaning")));
   assert.ok(plan.workstreams.some((item) => item.name === "Tracking and conversion"));
@@ -73,6 +110,9 @@ test("renders a Markdown plan for Obsidian", () => {
   assert.match(markdown, /\| Domain registrar \| GoDaddy \|/);
   assert.match(markdown, /## URL \/ Redirect Inventory/);
   assert.match(markdown, /\| Area \/ URL \| Extracted Evidence \| Client \/ Launch Question \|/);
+  assert.match(markdown, /## Wayback Recent Versions/);
+  assert.match(markdown, /### Wayback Change Flags/);
+  assert.match(markdown, /Earlier archived homepage had forms/);
   assert.match(markdown, /## Lead Capture Inventory/);
   assert.match(markdown, /## Tracking \/ Tool Footprint/);
   assert.match(markdown, /## Evidence Labels/);

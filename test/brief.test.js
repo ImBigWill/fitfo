@@ -64,6 +64,51 @@ const scan = {
     ],
     errors: [],
   },
+  wayback: {
+    enabled: true,
+    provider: "internet-archive",
+    snapshotsFound: 2,
+    checkedUrls: ["https://client.example/", "https://www.client.example/"],
+    versions: [
+      {
+        capturedAt: "2026-04-01 12:00 UTC",
+        original: "https://client.example/",
+        title: "Client Example Plumbing",
+        h1: "Client Example",
+        metaDescription: "Local plumbing help.",
+        metaRobots: "",
+        wordCount: 420,
+        formCount: 0,
+        phones: ["555-123-4567"],
+        ctas: ["Request an Estimate"],
+        toolSignals: ["Google Tag Manager"],
+        archiveUrl: "https://web.archive.org/web/20260401120000/https://client.example/",
+      },
+      {
+        capturedAt: "2025-12-01 12:00 UTC",
+        original: "https://client.example/",
+        title: "Old Agency Plumbing",
+        h1: "Plumbing Repairs",
+        metaDescription: "Old plumbing copy.",
+        metaRobots: "",
+        wordCount: 650,
+        formCount: 1,
+        phones: ["555-123-4567"],
+        ctas: ["Book Service"],
+        toolSignals: ["Google Tag Manager", "CallRail"],
+        archiveUrl: "https://web.archive.org/web/20251201120000/https://client.example/",
+      },
+    ],
+    comparison: {
+      available: true,
+      changes: [
+        { signal: "Title", previous: "Old Agency Plumbing", latest: "Client Example Plumbing", note: "Changed between recent Wayback captures." },
+        { signal: "Forms", previous: "1", latest: "0", note: "-1 from previous capture." },
+      ],
+    },
+    warnings: ["Earlier archived homepage had forms but the latest archived version does not. Confirm current lead capture paths."],
+    errors: [],
+  },
   analysis: {
     registrar: "GoDaddy",
     registrarDetails: { confidence: "High" },
@@ -97,6 +142,8 @@ test("builds a first-call brief from an existing scan", () => {
   assert.ok(brief.confirmations.some((item) => item.label === "WordPress operations"));
   assert.ok(brief.researchQueue.some((item) => item.area === "SEO"));
   assert.ok(brief.siteIntelligence.some((item) => item.label === "Pages crawled"));
+  assert.equal(brief.waybackEvidence.versions.length, 2);
+  assert.ok(brief.waybackEvidence.changes.some((item) => item.signal === "Forms"));
   assert.ok(brief.marketResearch.some((item) => item.label === "Queries"));
   assert.ok(brief.kickoffResearch.currentSiteRead.some((item) => item.label === "Lead paths" && item.source === "Observed"));
   assert.ok(brief.kickoffResearch.marketSnapshot.some((item) => item.label === "Review and reputation signals" && item.source === "Research"));
@@ -142,6 +189,10 @@ test("renders a Markdown brief for Obsidian/client prep", () => {
   assert.match(markdown, /\| Domain registrar \| GoDaddy \|/);
   assert.match(markdown, /## URL \/ Redirect Inventory/);
   assert.match(markdown, /\| Area \/ URL \| Extracted Evidence \| Client \/ Launch Question \|/);
+  assert.match(markdown, /## Wayback Recent Versions/);
+  assert.match(markdown, /\| Captured \| URL \| Title \| H1 \| Words \| Forms \| Phones \| Tools \|/);
+  assert.match(markdown, /### Wayback Change Flags/);
+  assert.match(markdown, /Earlier archived homepage had forms/);
   assert.match(markdown, /## Lead Capture Inventory/);
   assert.match(markdown, /\| Page \| Signal \| Extracted Details \| Client \/ Tracking Question \|/);
   assert.match(markdown, /## Tracking \/ Tool Footprint/);

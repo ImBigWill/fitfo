@@ -4,6 +4,7 @@ import { getHttpProfile } from "./lib/http.js";
 import { getRdapProfile } from "./lib/rdap.js";
 import { getSiteProfile } from "./lib/site.js";
 import { getResearchProfile } from "./lib/research.js";
+import { getWaybackProfile } from "./lib/wayback.js";
 import { analyzeProfile } from "./lib/analyze.js";
 import { APP_VERSION } from "./meta.js";
 
@@ -29,6 +30,11 @@ export async function scanDomain(input, options = {}) {
     location: options.location,
     country: options.country,
   });
+  const wayback = await getWaybackProfile(domain, http, {
+    enabled: options.wayback,
+    limit: options.waybackLimit,
+    versions: options.waybackVersions,
+  });
 
   return {
     tool: "FITFO",
@@ -41,6 +47,7 @@ export async function scanDomain(input, options = {}) {
     http,
     site,
     research,
+    wayback,
     analysis,
   };
 }

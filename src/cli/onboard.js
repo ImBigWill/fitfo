@@ -58,6 +58,7 @@ export function applyOnboardRuntimeDefaults(options = {}) {
     ...options,
     deep: true,
     search: true,
+    wayback: true,
     save: !options.noSave,
     onboard: true,
     onboardFileFormat: explicitFormat ? options.format : "obsidian",
@@ -93,6 +94,7 @@ export function renderOnboardSummary(domain, options = {}, display = {}) {
       kv(theme, "Tables", options.noSave ? theme.dim("Disabled by --no-save") : theme.value(tablePath)),
       kv(theme, "Deep", options.deep ? theme.ok("Enabled") : theme.dim("Disabled")),
       kv(theme, "Search", options.search ? theme.ok("Enabled") : theme.dim("Disabled")),
+      kv(theme, "Wayback", options.wayback ? theme.ok("Enabled") : theme.dim("Disabled")),
     ]),
   ].join("\n"));
 }
