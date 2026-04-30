@@ -73,6 +73,12 @@ export function renderBriefText(scan, options = {}) {
     "",
     panel(theme, "Login / Access Checklist", formatLoginChecklist(theme, brief.loginChecklist)),
     "",
+    panel(theme, "URL / Redirect Inventory", formatUrlInventory(theme, brief.actionReport.siteEvidence.urlInventory)),
+    "",
+    panel(theme, "Lead Capture Inventory", formatLeadCaptureInventory(theme, brief.actionReport.siteEvidence.leadCaptureInventory)),
+    "",
+    panel(theme, "Tracking / Tool Footprint", formatToolFootprint(theme, brief.actionReport.siteEvidence.toolFootprint)),
+    "",
     panel(theme, "Confirm On The Call", brief.confirmations.flatMap((item, index) => numbered(theme, index + 1, item.label, item.detail))),
     "",
     panel(theme, "Site Intelligence", brief.siteIntelligence.map((item) => `${theme.bullet("›")} ${theme.label(item.label)} ${theme.dim(item.detail)}`)),
@@ -96,6 +102,8 @@ export function renderBriefText(scan, options = {}) {
     panel(theme, "Content Inventory", formatContentInventory(theme, brief.actionReport.contentInventory)),
     "",
     panel(theme, "Keyword Research", formatKeywordClusters(theme, brief.actionReport.keywordClusters)),
+    "",
+    panel(theme, "Keyword Evidence", formatKeywordEvidence(theme, brief.actionReport.keywordEvidence)),
     "",
     panel(theme, "Competitor Research", formatCompetitorResearch(theme, brief.actionReport.competitorResearch)),
     "",
@@ -157,6 +165,18 @@ export function renderBriefMarkdown(scan, options = {}) {
     "",
     markdownLoginChecklist(brief.loginChecklist),
     "",
+    "## URL / Redirect Inventory",
+    "",
+    markdownUrlInventory(brief.actionReport.siteEvidence.urlInventory),
+    "",
+    "## Lead Capture Inventory",
+    "",
+    markdownLeadCaptureInventory(brief.actionReport.siteEvidence.leadCaptureInventory),
+    "",
+    "## Tracking / Tool Footprint",
+    "",
+    markdownToolFootprint(brief.actionReport.siteEvidence.toolFootprint),
+    "",
     "## Detailed Action Report",
     "",
     ...markdownActionReport(brief.actionReport),
@@ -172,6 +192,10 @@ export function renderBriefMarkdown(scan, options = {}) {
     "## Keyword Research",
     "",
     ...markdownKeywordClusters(brief.actionReport.keywordClusters),
+    "",
+    "## Keyword Evidence",
+    "",
+    markdownKeywordEvidence(brief.actionReport.keywordEvidence),
     "",
     "## Competitor Research",
     "",
@@ -632,15 +656,211 @@ function buildActionReport(scan) {
   const pageMap = buildKeywordPageMap(scan, keywordClusters);
   const contentInventory = buildContentInventory(scan);
   const proofAssets = buildProofAssets(scan, competitorResearch);
+  const siteEvidence = buildSiteEvidence(scan);
 
   return {
     priorityActions: buildPriorityActions(scan, keywordClusters, competitorResearch, pageMap),
     keywordClusters,
+    keywordEvidence: buildKeywordEvidence(scan, keywordClusters, pageMap),
     competitorResearch,
     pageMap,
     contentInventory,
     proofAssets,
+    siteEvidence,
   };
+}
+
+function buildSiteEvidence(scan) {
+  return {
+    urlInventory: buildUrlInventory(scan),
+    leadCaptureInventory: buildLeadCaptureInventory(scan),
+    toolFootprint: buildToolFootprint(scan),
+  };
+}
+
+function buildUrlInventory(scan) {
+  const rows = [];
+  const urlStructure = scan.analysis?.urlStructure || scan.http?.urlStructure || {};
+  const site = scan.site || {};
+  const summary = site.summary || {};
+
+  rows.push({
+    area: "Canonical host",
+    evidence: urlStructure.preferredHost
+      ? `${urlStructure.preferredProtocol || "unknown protocol"} ${urlStructure.preferredHost} (${urlStructure.canonicalStyle || "Unknown"})`
+      : "Unknown",
+    ask: urlStructure.recommendation || "Confirm whether launch should use www or apex/non-www.",
+  });
+
+  rows.push({
+    area: "Robots.txt",
+    evidence: site.enabled ? (site.robots?.checked ? "Found" : "Not found or not readable") : "Not checked",
+    ask: site.enabled
+      ? `Sitemap hints: ${site.robots?.sitemapUrls?.length ? site.robots.sitemapUrls.join(", ") : "none found in robots.txt"}`
+      : "Run --deep to check robots.txt and sitemap hints.",
+  });
+
+  rows.push({
+    area: "XML sitemap",
+    evidence: site.enabled ? `${site.sitemap?.urls?.length || 0} URL(s) found at ${site.sitemap?.url || "unknown sitemap"}` : "Not checked",
+    ask: site.enabled
+      ? "Use discovered URLs as a redirect/content inventory starter, not the final migration map."
+      : "Run --deep to discover sitemap URLs.",
+  });
+
+  rows.push({
+    area: "Canonical tags",
+    evidence: site.enabled ? `${summary.pagesWithCanonical || 0}/${summary.pagesScanned || 0} crawled page(s) had canonical tags` : "Not checked",
+    ask: "Confirm canonical policy before launch, redirects, Search Console setup, and sitemap submission.",
+  });
+
+  if (summary.pagesNoindex?.length) {
+    rows.push({
+      area: "Noindex pages",
+      evidence: summary.pagesNoindex.join(", "),
+      ask: "Confirm whether these pages should remain hidden after launch.",
+    });
+  }
+
+  for (const page of (site.pages || []).slice(0, 12)) {
+    rows.push({
+      area: page.path || "/",
+      evidence: [
+        page.title || "Untitled",
+        page.metaDescription ? "meta yes" : "meta missing",
+        page.headings?.h1?.length === 1 ? `H1: ${page.headings.h1[0]}` : `${page.headings?.h1?.length || 0} H1s`,
+        page.canonicalUrl ? `canonical: ${page.canonicalUrl}` : "canonical missing",
+        page.metaRobots ? `robots: ${page.metaRobots}` : null,
+      ].filter(Boolean).join(" | "),
+      ask: classifyPageType(page.path || "/") === "Service"
+        ? "Review before migration: service intent, proof, CTA, schema, internal links, and redirect target."
+        : "Confirm whether this URL should be preserved, improved, redirected, or removed.",
+    });
+  }
+
+  return rows;
+}
+
+function buildLeadCaptureInventory(scan) {
+  const pages = scan.site?.pages || [];
+  if (!pages.length) {
+    return [{
+      page: "Unknown",
+      signal: "No crawl data",
+      details: "Run --deep or manually identify forms, phone numbers, booking widgets, chats, and lead-routing tools.",
+      ask: "Ask where leads go today and who owns notifications, CRM routing, and thank-you pages.",
+    }];
+  }
+
+  const rows = [];
+  for (const page of pages.slice(0, 20)) {
+    for (const form of page.forms || []) {
+      rows.push({
+        page: page.path || "/",
+        signal: "Form",
+        details: [
+          form.method ? `method ${form.method}` : null,
+          form.action ? `action ${form.action}` : "no visible action",
+          form.fields?.length ? `fields: ${form.fields.join(", ")}` : "fields not visible",
+          form.submitLabels?.length ? `submit: ${form.submitLabels.join(", ")}` : null,
+        ].filter(Boolean).join(" | "),
+        ask: "Confirm owner, destination, spam handling, thank-you page, CRM routing, and conversion tracking.",
+      });
+    }
+
+    if (page.phones?.length) {
+      rows.push({
+        page: page.path || "/",
+        signal: "Phone",
+        details: page.phones.join(", "),
+        ask: "Confirm call tracking, primary number, forwarding owner, and whether numbers should change at launch.",
+      });
+    }
+
+    if (page.emails?.length) {
+      rows.push({
+        page: page.path || "/",
+        signal: "Email",
+        details: page.emails.join(", "),
+        ask: "Confirm mailbox owner and whether public email should stay visible.",
+      });
+    }
+
+    if (page.ctas?.length) {
+      rows.push({
+        page: page.path || "/",
+        signal: "CTA",
+        details: page.ctas.join(", "),
+        ask: "Confirm the intended conversion path for these calls to action.",
+      });
+    }
+  }
+
+  return rows.length ? rows.slice(0, 30) : [{
+    page: "Crawled pages",
+    signal: "No visible lead path",
+    details: "No forms, phone numbers, email addresses, or CTA labels were extracted from crawled pages.",
+    ask: "Ask how website leads are supposed to convert today.",
+  }];
+}
+
+function buildToolFootprint(scan) {
+  const analysis = scan.analysis || {};
+  const summary = scan.site?.summary || {};
+  const rows = [
+    {
+      tool: "Marketing tags",
+      evidence: formatFound(analysis.marketing?.found),
+      source: analysis.marketing?.found?.length ? "Homepage/HTTP fingerprint" : "Ask Client",
+      ask: "Confirm GA4, GTM, Search Console, ads, pixels, reporting owner, and whether tags should be rebuilt or preserved.",
+    },
+    {
+      tool: "CRM / booking / operations",
+      evidence: formatFound(analysis.operations?.found),
+      source: analysis.operations?.found?.length ? "Homepage/HTTP fingerprint" : "Ask Client",
+      ask: "Confirm CRM, booking, field-service, call-routing, form-routing, and notification owners.",
+    },
+    {
+      tool: "Deep crawl tool signals",
+      evidence: formatFound(summary.toolSignals),
+      source: summary.toolSignals?.length ? "Crawled pages" : "Observed gap",
+      ask: "Use this as a starting list; client must confirm account ownership and active usage.",
+    },
+    {
+      tool: "Script hosts",
+      evidence: formatFound(summary.scriptHosts),
+      source: summary.scriptHosts?.length ? "Crawled pages" : "Observed gap",
+      ask: "Review third-party scripts for tracking, forms, maps, widgets, chat, performance, and privacy impact.",
+    },
+  ];
+
+  return rows;
+}
+
+function buildKeywordEvidence(scan, keywordClusters, pageMap) {
+  const rows = [];
+  const clusters = [
+    ["Core service", keywordClusters.coreServices || []],
+    ["Emergency / high intent", keywordClusters.emergency || []],
+    ["Local modifier", keywordClusters.local || []],
+    ["Informational", keywordClusters.informational || []],
+    ["Proof / trust", keywordClusters.proofTrust || []],
+  ];
+
+  for (const [cluster, keywords] of clusters) {
+    for (const keyword of keywords.slice(0, 8)) {
+      const map = pageMap.find((item) => item.keyword === keyword);
+      rows.push({
+        cluster,
+        keyword,
+        evidence: keywordSource(scan, keyword),
+        page: map?.page || "Not mapped",
+        nextStep: map?.status || "Confirm business value",
+      });
+    }
+  }
+
+  return rows.slice(0, 24);
 }
 
 function buildPriorityActions(scan, keywordClusters, competitorResearch, pageMap) {
@@ -1294,6 +1514,18 @@ function formatLoginChecklist(theme, rows) {
   return rows.map((item) => `${theme.bullet("›")} ${theme.label(item.access)} ${theme.dim(`${item.status}: ${item.needed}`)}`);
 }
 
+function formatUrlInventory(theme, rows) {
+  return rows.slice(0, 10).map((item) => `${theme.bullet("›")} ${theme.label(item.area)} ${theme.dim(`${item.evidence} | ${item.ask}`)}`);
+}
+
+function formatLeadCaptureInventory(theme, rows) {
+  return rows.slice(0, 10).map((item) => `${theme.bullet("›")} ${theme.label(`${item.page} ${item.signal}`)} ${theme.dim(`${item.details} | ${item.ask}`)}`);
+}
+
+function formatToolFootprint(theme, rows) {
+  return rows.map((item) => `${theme.bullet("›")} ${theme.label(item.tool)} ${theme.chip(`[${item.source}]`)} ${theme.dim(`${item.evidence} | ${item.ask}`)}`);
+}
+
 function formatCompetitorStructure(theme, structure) {
   return structure.map((item) => `${theme.bullet("›")} ${theme.label(item.path)} ${theme.chip(`[${item.priority}]`)} ${theme.dim(`${item.trigger}: ${item.rationale}`)}`);
 }
@@ -1310,6 +1542,14 @@ function formatPageMap(theme, pageMap) {
   return pageMap.slice(0, 10).map((item) => (
     `${theme.bullet("›")} ${theme.label(item.keyword)} ${theme.chip(`[${item.priority}]`)} ${theme.dim(`${item.status}: ${item.page} (${item.intent})`)}`
   ));
+}
+
+function formatKeywordEvidence(theme, rows) {
+  if (!rows?.length) {
+    return [`${theme.bullet("›")} ${theme.label("No keyword evidence yet")} ${theme.dim("Run --deep --search or confirm service/location priorities manually.")}`];
+  }
+
+  return rows.slice(0, 10).map((item) => `${theme.bullet("›")} ${theme.label(item.keyword)} ${theme.chip(`[${item.cluster}]`)} ${theme.dim(`${item.evidence} -> ${item.page} (${item.nextStep})`)}`);
 }
 
 function formatConfirmationScript(theme, script) {
@@ -1403,6 +1643,32 @@ function markdownLoginChecklist(rows) {
   ]));
 }
 
+function markdownUrlInventory(rows) {
+  return markdownTableWithHeaders(["Area / URL", "Extracted Evidence", "Client / Launch Question"], rows.map((item) => [
+    item.area,
+    item.evidence,
+    item.ask,
+  ]));
+}
+
+function markdownLeadCaptureInventory(rows) {
+  return markdownTableWithHeaders(["Page", "Signal", "Extracted Details", "Client / Tracking Question"], rows.map((item) => [
+    item.page,
+    item.signal,
+    item.details,
+    item.ask,
+  ]));
+}
+
+function markdownToolFootprint(rows) {
+  return markdownTableWithHeaders(["Tool Area", "Evidence", "Source", "Client Question"], rows.map((item) => [
+    item.tool,
+    item.evidence,
+    item.source,
+    item.ask,
+  ]));
+}
+
 function markdownReputationSummary(reputationSummary) {
   return markdownTableWithHeaders(["Channel", "Signal", "Action"], reputationSummary.map((item) => [
     item.channel,
@@ -1442,6 +1708,17 @@ function markdownPageMap(pageMap) {
       item.note,
     ])),
   ];
+}
+
+function markdownKeywordEvidence(rows) {
+  if (!rows?.length) return "- No keyword evidence yet. Run `--deep --search` or confirm service/location priorities manually.";
+  return markdownTableWithHeaders(["Cluster", "Keyword", "Evidence Source", "Mapped Page", "Next Step"], rows.map((item) => [
+    item.cluster,
+    item.keyword,
+    item.evidence,
+    item.page,
+    item.nextStep,
+  ]));
 }
 
 function markdownConfirmationScript(script) {
@@ -1541,6 +1818,32 @@ function buildResearchHaystack(scan) {
     ]),
     ...results.flatMap((result) => [result.title || "", result.description || "", result.query || ""]),
   ].join("\n");
+}
+
+function keywordSource(scan, keyword) {
+  const needle = String(keyword || "").toLowerCase();
+  const pageMatches = (scan.site?.pages || [])
+    .filter((page) => [
+      page.path || "",
+      page.title || "",
+      page.metaDescription || "",
+      ...(page.headings?.h1 || []),
+      ...(page.headings?.h2 || []),
+    ].join(" ").toLowerCase().includes(needle))
+    .map((page) => page.path || "/");
+
+  const researchMatches = (scan.research?.results || [])
+    .filter((result) => [
+      result.query || "",
+      result.title || "",
+      result.description || "",
+    ].join(" ").toLowerCase().includes(needle))
+    .map((result) => result.query || result.title || "research result");
+
+  const sources = [];
+  if (pageMatches.length) sources.push(`Current site: ${uniqueValues(pageMatches).slice(0, 3).join(", ")}`);
+  if (researchMatches.length) sources.push(`Search: ${uniqueValues(researchMatches).slice(0, 2).join(", ")}`);
+  return sources.length ? sources.join(" | ") : "Inferred from related crawl/search language";
 }
 
 function classifyResearchResult(result, apex) {
@@ -1764,6 +2067,10 @@ function cleanCompetitorName(value) {
     .replace(/\b(best|top)\s+\d+\s+/i, "")
     .replace(/\s+/g, " ")
     .trim() || "Competitor";
+}
+
+function formatFound(values) {
+  return values?.length ? values.join(", ") : "None detected";
 }
 
 function uniqueValues(values) {

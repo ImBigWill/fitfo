@@ -95,7 +95,7 @@ fitfo onboard example.com
 - domain, registrar, DNS, nameserver, hosting, Cloudflare/CDN, email, CMS, analytics, CRM, booking, call tracking, and subdomain checks
 - deep website crawl when the site is reachable
 - Firecrawl-backed market/search research when Firecrawl is configured
-- keyword, competitor, service/location, reputation, launch, and action-plan sections
+- raw evidence sections for URL/redirect inventory, lead capture, tracking/tool footprint, keyword evidence, competitors, service/location, reputation, launch, and action planning
 - Obsidian-ready action-plan note
 - CSV/JSON table exports for planning workflows
 
@@ -194,11 +194,15 @@ The research brief separates:
 It also generates:
 
 - keyword clusters by service, emergency/high-intent, local, informational, and proof/trust themes
+- keyword evidence tables tying terms back to crawl/search signals and mapped pages
 - competitor, directory, review, social, owned, and other result classification
 - top-three local competitor prompts from search/local/review-style research results
 - keyword-to-page mapping for existing pages or suggested new pages
 - prioritized action items with owner labels for client/us follow-up
 - proof-asset requests for reviews, photos, credentials, case studies, offers, and lead-routing evidence
+- URL/redirect inventory for canonical host, robots.txt, XML sitemap, canonical tags, noindex pages, and crawled URLs
+- lead capture inventory for forms, form actions, visible fields, submit labels, phone numbers, email addresses, and CTA labels
+- tracking/tool footprint for visible marketing, CRM, script hosts, and third-party widgets detected across crawled pages
 - content inventory tables for crawled pages, page type, issues, and recommended action
 - competitor-informed structure recommendations for service, review, location, FAQ, and trust pages
 - service and location page recommendations tied to keyword intent, existing pages, and client validation
@@ -351,10 +355,13 @@ Key sections:
 - **Access Needed**: registrar, DNS, hosting, WordPress, email, analytics, and previous developer access.
 - **Handoff Packet**: what FITFO found, what access is needed, what to ask the previous developer, and what to verify before launch.
 - **Previous Developer Request**: a starter message clients can send to whoever currently controls the setup.
-- **Site Intelligence**: when `--deep` is used, sitemap pages, headings, metadata, CTAs, forms, schema, phones, and suggested structure.
+- **Site Intelligence**: when `--deep` is used, sitemap pages, headings, metadata, canonical tags, meta robots/noindex, CTAs, form actions/fields, schema, phones, script hosts, tool signals, and suggested structure.
+- **URL / Redirect Inventory**: canonical host, robots.txt, XML sitemap, canonical tags, noindex pages, and crawled URLs to preserve, improve, redirect, or remove.
+- **Lead Capture Inventory**: forms, form actions, visible fields, submit labels, phone numbers, email addresses, and CTA labels that need routing/tracking confirmation.
+- **Tracking / Tool Footprint**: marketing tags, CRM/booking signals, crawl-level tool fingerprints, and third-party script hosts to confirm with the client.
 - **Kickoff Research Brief**: when using brief mode, current site read, market snapshot, keyword/page opportunities, positioning hypotheses, and kickoff call agenda.
 - **Kickoff Research Game Plan**: when using plan mode, carries market, keyword, and positioning prompts into build planning.
-- **Detailed Action Report**: prioritized next steps, proof-asset requests, content inventory, keyword clusters, competitor research, top local competitors, reputation summary, competitor-informed structure, service/location recommendations, confirmation script, and keyword-to-page mapping for kickoff and build planning.
+- **Detailed Action Report**: prioritized next steps, proof-asset requests, content inventory, keyword clusters, keyword evidence, competitor research, top local competitors, reputation summary, competitor-informed structure, service/location recommendations, confirmation script, and keyword-to-page mapping for kickoff and build planning.
 - **Launch Checklist**: in plan mode, grouped launch checks for canonical host, redirects, DNS, hosting, CMS, email, tracking/CRM, and QA.
 - **Table Exports**: with `--export-tables <dir>`, CSV/JSON sidecars for moving research into Sheets, Obsidian, or client planning docs.
 

@@ -13,7 +13,7 @@ It can:
 - generate a `fitfo brief --deep` site intelligence report from sitemap/robots/pages
 - generate optional Firecrawl-backed market research with `fitfo brief --search`
 - generate a kickoff research brief with observed site facts, search-backed market signals, inferred page/positioning opportunities, and first-call agenda prompts
-- generate keyword clusters, competitor/review/directory classification, top local competitor prompts, keyword-to-page maps, service/location recommendations, proof-asset requests, content inventory, competitor-informed structure, reputation summaries, confirmation scripts, and prioritized action items
+- generate keyword clusters, keyword evidence, URL/redirect inventory, lead capture inventory, tracking/tool footprint, competitor/review/directory classification, top local competitor prompts, keyword-to-page maps, service/location recommendations, proof-asset requests, content inventory, competitor-informed structure, reputation summaries, confirmation scripts, and prioritized action items
 - use either `FIRECRAWL_API_KEY` or an authenticated local Firecrawl CLI for market research
 - generate a `fitfo plan` client build plan from scan, crawl, and research signals
 - run `fitfo onboard` as a one-command full-intake preset that deep-scans, searches, saves an Obsidian action-plan note, and exports CSV/JSON planning tables

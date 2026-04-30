@@ -49,6 +49,9 @@ test("builds a client plan from scan, crawl, and research signals", () => {
   assert.ok(plan.infrastructureSnapshot.some((item) => item.area === "Registrar / Domain Provider" && item.finding === "GoDaddy"));
   assert.ok(plan.loginChecklist.some((item) => item.access === "Cloudflare" && item.status === "No - no obvious Cloudflare"));
   assert.ok(plan.topLocalCompetitors.some((item) => item.name === "Competitor Plumbing Services"));
+  assert.ok(plan.siteEvidence.urlInventory.some((item) => item.area === "Canonical host"));
+  assert.ok(plan.siteEvidence.toolFootprint.some((item) => item.tool === "Marketing tags"));
+  assert.ok(plan.keywordEvidence.some((item) => item.keyword.includes("drain cleaning")));
   assert.ok(plan.workstreams.some((item) => item.name === "Tracking and conversion"));
   assert.ok(plan.launchChecklist.some((item) => item.item === "DNS cutover" && item.phase === "Launch"));
   assert.ok(plan.kickoffResearch.marketSnapshot.some((item) => item.label === "Competitor and market SERP"));
@@ -68,6 +71,10 @@ test("renders a Markdown plan for Obsidian", () => {
   assert.match(markdown, /\| Cloudflare \| No - no obvious Cloudflare \| Low \|/);
   assert.match(markdown, /## Login \/ Access Checklist/);
   assert.match(markdown, /\| Domain registrar \| GoDaddy \|/);
+  assert.match(markdown, /## URL \/ Redirect Inventory/);
+  assert.match(markdown, /\| Area \/ URL \| Extracted Evidence \| Client \/ Launch Question \|/);
+  assert.match(markdown, /## Lead Capture Inventory/);
+  assert.match(markdown, /## Tracking \/ Tool Footprint/);
   assert.match(markdown, /## Evidence Labels/);
   assert.match(markdown, /## Focus First/);
   assert.match(markdown, /## Recommended Structure/);
@@ -86,6 +93,8 @@ test("renders a Markdown plan for Obsidian", () => {
   assert.match(markdown, /\| Priority \| Source \| Owner \| Action \| Detail \|/);
   assert.match(markdown, /## Keyword Page Map/);
   assert.match(markdown, /\| Priority \| Intent \| Keyword \| Page \| Status \|/);
+  assert.match(markdown, /## Keyword Evidence/);
+  assert.match(markdown, /\| Cluster \| Keyword \| Evidence Source \| Mapped Page \| Next Step \|/);
   assert.match(markdown, /## Client Call Next Steps/);
   assert.match(markdown, /## Kickoff Confirmation Script/);
   assert.match(markdown, /Confirm analytics\/Search Console access/);

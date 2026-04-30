@@ -15,6 +15,8 @@ export function buildClientPlan(scan) {
     reputationSummary: brief.reputationSummary,
     serviceLocationRecommendations: brief.serviceLocationRecommendations,
     topLocalCompetitors: brief.actionReport.competitorResearch?.topLocalCompetitors || [],
+    siteEvidence: brief.actionReport.siteEvidence,
+    keywordEvidence: brief.actionReport.keywordEvidence,
     workstreams: buildWorkstreams(scan),
     launchChecklist: buildPlanLaunchChecklist(scan),
     kickoffResearch: brief.kickoffResearch,
@@ -47,6 +49,12 @@ export function renderPlanText(scan, options = {}) {
     "",
     panel(theme, "Login / Access Checklist", formatLoginChecklist(theme, plan.loginChecklist)),
     "",
+    panel(theme, "URL / Redirect Inventory", formatEvidenceRows(theme, plan.siteEvidence?.urlInventory)),
+    "",
+    panel(theme, "Lead Capture Inventory", formatLeadRows(theme, plan.siteEvidence?.leadCaptureInventory)),
+    "",
+    panel(theme, "Tracking / Tool Footprint", formatToolRows(theme, plan.siteEvidence?.toolFootprint)),
+    "",
     panel(theme, "Evidence Labels", [
       `${theme.bullet("›")} ${theme.label("Observed")} ${theme.dim("Found in DNS, HTTP, sitemap/page crawl, or visible site signals.")}`,
       `${theme.bullet("›")} ${theme.label("Research")} ${theme.dim("Found through Firecrawl-backed web/search results.")}`,
@@ -75,6 +83,8 @@ export function renderPlanText(scan, options = {}) {
     panel(theme, "Prioritized Action Report", formatPlanActions(theme, plan.actionReport)),
     "",
     panel(theme, "Keyword Page Map", formatPlanPageMap(theme, plan.actionReport)),
+    "",
+    panel(theme, "Keyword Evidence", formatKeywordEvidence(theme, plan.keywordEvidence)),
     "",
     panel(theme, "Client Call Next Steps", plan.clientCallIntelligence.map((item) => `${theme.bullet("›")} ${theme.label(item.prompt)} ${theme.dim(item.nextStep)}`)),
     "",
@@ -111,6 +121,18 @@ export function renderPlanMarkdown(scan, options = {}) {
     "## Login / Access Checklist",
     "",
     markdownLoginChecklist(plan.loginChecklist),
+    "",
+    "## URL / Redirect Inventory",
+    "",
+    markdownEvidenceRows(["Area / URL", "Extracted Evidence", "Client / Launch Question"], plan.siteEvidence?.urlInventory, ["area", "evidence", "ask"]),
+    "",
+    "## Lead Capture Inventory",
+    "",
+    markdownEvidenceRows(["Page", "Signal", "Extracted Details", "Client / Tracking Question"], plan.siteEvidence?.leadCaptureInventory, ["page", "signal", "details", "ask"]),
+    "",
+    "## Tracking / Tool Footprint",
+    "",
+    markdownEvidenceRows(["Tool Area", "Evidence", "Source", "Client Question"], plan.siteEvidence?.toolFootprint, ["tool", "evidence", "source", "ask"]),
     "",
     "## Evidence Labels",
     "",
@@ -181,6 +203,10 @@ export function renderPlanMarkdown(scan, options = {}) {
     "## Keyword Page Map",
     "",
     ...markdownPlanPageMap(plan.actionReport),
+    "",
+    "## Keyword Evidence",
+    "",
+    markdownEvidenceRows(["Cluster", "Keyword", "Evidence Source", "Mapped Page", "Next Step"], plan.keywordEvidence, ["cluster", "keyword", "evidence", "page", "nextStep"]),
     "",
     "## Client Call Next Steps",
     "",
@@ -265,6 +291,26 @@ function formatTopLocalCompetitors(theme, competitors = []) {
   return competitors.map((item) => `${theme.bullet("›")} ${theme.label(item.name)} ${theme.chip(`[${item.source}]`)} ${theme.dim(`${item.reason} ${item.url}`)}`);
 }
 
+function formatEvidenceRows(theme, rows = []) {
+  if (!rows.length) return [`${theme.bullet("›")} ${theme.label("No evidence yet")} ${theme.dim("Run --deep to extract this section.")}`];
+  return rows.slice(0, 8).map((item) => `${theme.bullet("›")} ${theme.label(item.area || item.tool || item.keyword)} ${theme.dim(`${item.evidence || item.details || ""} | ${item.ask || item.nextStep || ""}`)}`);
+}
+
+function formatLeadRows(theme, rows = []) {
+  if (!rows.length) return [`${theme.bullet("›")} ${theme.label("No lead evidence yet")} ${theme.dim("Run --deep or confirm forms, calls, booking, chat, and CRM manually.")}`];
+  return rows.slice(0, 8).map((item) => `${theme.bullet("›")} ${theme.label(`${item.page} ${item.signal}`)} ${theme.dim(`${item.details} | ${item.ask}`)}`);
+}
+
+function formatToolRows(theme, rows = []) {
+  if (!rows.length) return [`${theme.bullet("›")} ${theme.label("No tool evidence yet")} ${theme.dim("Run --deep or confirm analytics, CRM, and widgets manually.")}`];
+  return rows.map((item) => `${theme.bullet("›")} ${theme.label(item.tool)} ${theme.chip(`[${item.source}]`)} ${theme.dim(`${item.evidence} | ${item.ask}`)}`);
+}
+
+function formatKeywordEvidence(theme, rows = []) {
+  if (!rows.length) return [`${theme.bullet("›")} ${theme.label("No keyword evidence yet")} ${theme.dim("Run --deep --search or confirm service/location priorities manually.")}`];
+  return rows.slice(0, 8).map((item) => `${theme.bullet("›")} ${theme.label(item.keyword)} ${theme.chip(`[${item.cluster}]`)} ${theme.dim(`${item.evidence} -> ${item.page} (${item.nextStep})`)}`);
+}
+
 function markdownInfrastructureSnapshot(rows = []) {
   if (!rows.length) return "- Run a scan to identify registrar, DNS, Cloudflare, hosting, CMS, and email ownership.";
   return markdownTableWithHeaders(["Area", "Public Finding", "Confidence", "Client Needs"], rows.map((item) => [
@@ -292,6 +338,11 @@ function markdownTopLocalCompetitors(competitors = []) {
     item.source,
     item.url,
   ]));
+}
+
+function markdownEvidenceRows(headers, rows = [], keys = []) {
+  if (!rows.length) return "- No extracted evidence yet. Run `--deep --search` where appropriate or confirm manually on the client call.";
+  return markdownTableWithHeaders(headers, rows.map((item) => keys.map((key) => item[key] || "")));
 }
 
 function formatPlanResearch(theme, kickoffResearch) {

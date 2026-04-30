@@ -27,6 +27,8 @@ Initial private version.
 - Infrastructure snapshot and login/access checklist tables at the top of brief, plan, and onboard Markdown/Obsidian exports.
 - Top local competitor prompts in brief/plan reports from search/local/review-style research signals.
 - Table exports for infrastructure snapshot, login checklist, and top local competitors.
+- Richer deep-crawl extraction for canonical tags, meta robots/noindex, form actions/methods/fields, submit labels, script hosts, and crawl-level tool fingerprints.
+- Raw Markdown evidence sections for URL/redirect inventory, lead capture inventory, tracking/tool footprint, and keyword evidence in brief/plan/onboard reports.
 - Likely registrar inference from nameserver patterns when RDAP registrar data is missing.
 - `fitfo brief <domain> --deep` crawl mode for sitemap pages, metadata, headings, CTAs, forms, schema, and suggested site structure.
 - `fitfo brief <domain> --search` optional Firecrawl-backed web research for market, review, and service SERP signals.

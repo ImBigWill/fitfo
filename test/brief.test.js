@@ -111,6 +111,10 @@ test("builds a first-call brief from an existing scan", () => {
   assert.ok(brief.actionReport.competitorResearch.reviewProfiles.some((result) => result.title.includes("Yelp")));
   assert.ok(brief.infrastructureSnapshot.some((item) => item.area === "Registrar / Domain Provider" && item.finding === "GoDaddy"));
   assert.ok(brief.loginChecklist.some((item) => item.access === "Cloudflare" && item.status === "No - no obvious Cloudflare"));
+  assert.ok(brief.actionReport.siteEvidence.urlInventory.some((item) => item.area === "Canonical host"));
+  assert.ok(brief.actionReport.siteEvidence.leadCaptureInventory.some((item) => item.signal === "Form"));
+  assert.ok(brief.actionReport.siteEvidence.toolFootprint.some((item) => item.tool === "Marketing tags"));
+  assert.ok(brief.actionReport.keywordEvidence.some((item) => item.keyword === "drain cleaning"));
   assert.ok(brief.actionReport.pageMap.some((item) => item.keyword === "drain cleaning" && item.status === "Improve existing"));
   assert.ok(brief.actionReport.proofAssets.some((item) => item.asset === "Reviews and testimonials" && item.priority === "High"));
   assert.ok(brief.actionReport.contentInventory.some((item) => item.path === "/services/drain-cleaning/" && item.type === "Service"));
@@ -136,6 +140,11 @@ test("renders a Markdown brief for Obsidian/client prep", () => {
   assert.match(markdown, /\| Cloudflare \| No - no obvious Cloudflare \| Low \|/);
   assert.match(markdown, /## Login \/ Access Checklist/);
   assert.match(markdown, /\| Domain registrar \| GoDaddy \|/);
+  assert.match(markdown, /## URL \/ Redirect Inventory/);
+  assert.match(markdown, /\| Area \/ URL \| Extracted Evidence \| Client \/ Launch Question \|/);
+  assert.match(markdown, /## Lead Capture Inventory/);
+  assert.match(markdown, /\| Page \| Signal \| Extracted Details \| Client \/ Tracking Question \|/);
+  assert.match(markdown, /## Tracking \/ Tool Footprint/);
   assert.match(markdown, /## Confirm On The Call/);
   assert.match(markdown, /## Site Intelligence/);
   assert.match(markdown, /## Market Research/);
@@ -149,6 +158,8 @@ test("renders a Markdown brief for Obsidian/client prep", () => {
   assert.match(markdown, /## Content Inventory/);
   assert.match(markdown, /## Keyword Research/);
   assert.match(markdown, /\| Cluster \| Keywords \|/);
+  assert.match(markdown, /## Keyword Evidence/);
+  assert.match(markdown, /\| Cluster \| Keyword \| Evidence Source \| Mapped Page \| Next Step \|/);
   assert.match(markdown, /## Competitor Research/);
   assert.match(markdown, /## Top Local Competitors To Review/);
   assert.match(markdown, /Emergency Plumbing Repair Richmond VA/);

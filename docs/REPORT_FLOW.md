@@ -65,7 +65,7 @@ domain input
 - `src/lib/site.js` handles local deep crawl/site intelligence extraction.
 - `src/lib/research.js` handles optional Firecrawl-backed market/search research.
 
-Markdown and Obsidian brief/plan exports lead with infrastructure snapshot and login checklist tables so the client call starts with registrar, DNS, Cloudflare, hosting, CMS, email, and access ownership. They also put the action report, proof assets, content inventory, keyword clusters, top local competitors, competitor research, reputation summary, competitor-informed structure, service/location recommendations, confirmation script, and keyword-to-page map into tables so they can be scanned quickly or moved into a client workspace.
+Markdown and Obsidian brief/plan exports lead with infrastructure snapshot and login checklist tables so the client call starts with registrar, DNS, Cloudflare, hosting, CMS, email, and access ownership. They also include raw evidence tables for URL/redirect inventory, lead capture inventory, tracking/tool footprint, keyword evidence, action report, proof assets, content inventory, keyword clusters, top local competitors, competitor research, reputation summary, competitor-informed structure, service/location recommendations, confirmation script, and keyword-to-page map so they can be scanned quickly or moved into a client workspace.
 
 ## Evidence Labels
 
