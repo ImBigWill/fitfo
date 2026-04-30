@@ -1,6 +1,6 @@
 # Project State
 
-Last updated: 2026-04-28, after the service/location, plan checklist, provider fixture, and docs pass.
+Last updated: 2026-04-30, after the Wayback, handoff evidence, and call-one workflow pass.
 
 ## Current State
 
@@ -13,6 +13,7 @@ It can:
 - generate a `fitfo brief --deep` site intelligence report from sitemap/robots/pages
 - generate optional Firecrawl-backed market research with `fitfo brief --search`
 - generate a kickoff research brief with observed site facts, search-backed market signals, inferred page/positioning opportunities, and first-call agenda prompts
+- compare recent Internet Archive/Wayback homepage captures for title, H1, meta, lead-capture, phone, CTA, tracking, and robots/noindex changes
 - generate keyword clusters, keyword evidence, URL/redirect inventory, lead capture inventory, tracking/tool footprint, competitor/review/directory classification, top local competitor prompts, keyword-to-page maps, service/location recommendations, proof-asset requests, content inventory, competitor-informed structure, reputation summaries, confirmation scripts, and prioritized action items
 - use either `FIRECRAWL_API_KEY` or an authenticated local Firecrawl CLI for market research
 - generate a `fitfo plan` client build plan from scan, crawl, and research signals
@@ -22,7 +23,7 @@ It can:
 - render plain output for copying/saving
 - output JSON
 - output Markdown
-- export kickoff action/research tables, infrastructure snapshots, login checklists, and top local competitors to CSV files plus a combined JSON bundle with `--export-tables`
+- export kickoff action/research tables, infrastructure snapshots, login checklists, unknown blockers, call-one workflow, hosting evidence, Wayback evidence, and top local competitors to CSV files plus a combined JSON bundle with `--export-tables`
 - save Obsidian-ready Markdown notes with frontmatter, tags, checklists, and client-call questions
 - save stable Obsidian vault notes with `--vault` or `FITFO_OBSIDIAN_DIR`
 - prompt to save findings after normal interactive terminal scans, defaulting to Desktop Markdown with Obsidian vault/folder and custom path choices
@@ -39,6 +40,9 @@ It can:
 - infer registrar, DNS, hosting, Cloudflare/CDN, CMS, email, analytics, and common subdomain clues
 - infer likely registrar from strong nameserver patterns when RDAP does not expose the registrar, while requiring manual confirmation
 - export a client handoff summary that states public findings, confidence, and what the client needs to provide or confirm
+- generate unknown-blocker and call-one workflow sections using Found / Need / Risk / Ask / Owner / Audience
+- generate direct "go get these logins" and "do not touch until confirmed" sections
+- generate specific previous-developer request items based on what the scan found
 - analyze email safety from MX, SPF, DMARC, DMARC policy, and sender-platform clues before DNS cutover
 - inspect TLS certificate metadata and HTTP/HTTPS redirect behavior
 - inspect apex vs `www` URL structure and recommend the likely primary launch host
@@ -82,6 +86,8 @@ Core should focus on fast onboarding discovery:
 - CRM, booking, call tracking, and field-service clues
 - light site intelligence for first-call prep
 - optional market/search research when Firecrawl is configured by env key or CLI login
+- optional Wayback evidence for recent site-change checks
+- unknown blockers and call-one workflow rows that can become tasks
 - kickoff research sections that clearly label observed facts, research signals, inferred hypotheses, and client-confirmation prompts
 - keyword and competitor intelligence that remains deterministic and client-call oriented
 - proof-asset and content-inventory output for kickoff planning
@@ -108,9 +114,11 @@ These may become separate commands or modules:
 ## Next Sensible Commit Candidates
 
 - Run more real client-domain passes and add fixtures for any missed registrar, DNS, hosting, CRM, or email patterns.
-- Refine Obsidian templates after more real scans, especially saved brief/plan notes.
+- Validate the call-one workflow table against real client reports and tune owner/audience labels where they feel awkward.
+- Refine Obsidian templates after more real scans, especially saved onboard notes and table sidecars.
 - Improve service/location sitemap heuristics after testing more real client sites.
 - Refine keyword clustering and competitor classification with more Firecrawl result sets.
+- Add more provider fixtures for messy GoDaddy, SiteGround, WP Engine, Cloudflare, Hostinger, Namecheap, ServiceTitan, Housecall Pro, Jobber, CallRail, and Google Workspace combinations.
 - Keep tightening the default terminal report so the CLI feels polished while staying copy/paste friendly.
 
 ## Morning Pickup
@@ -122,10 +130,12 @@ Recommended next session:
 
    ```bash
    fitfo clientdomain.com
-   fitfo brief clientdomain.com --deep --search --location "City, ST"
-   fitfo plan clientdomain.com --deep --search --location "City, ST"
+   fitfo brief clientdomain.com --deep --search --wayback --location "City, ST"
+   fitfo plan clientdomain.com --deep --search --wayback --location "City, ST"
+   fitfo onboard clientdomain.com
    ```
 
-3. Save one report to Desktop and one to the Obsidian vault to confirm the save prompts feel obvious.
-4. Turn any missed provider or CRM detection into a focused fixture in `test/fixtures/provider-patterns.js`.
-5. Pick one UX polish task for the opening screen or save flow and commit it separately.
+3. Review whether Unknowns Blocking Work and Call One Workflow answer the call-one question cleanly.
+4. Save one report to Desktop and one to the Obsidian vault to confirm the save prompts feel obvious.
+5. Turn any missed provider or CRM detection into a focused fixture in `test/fixtures/provider-patterns.js`.
+6. Pick one UX polish task for the opening screen or save flow and commit it separately.
