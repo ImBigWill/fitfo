@@ -1,5 +1,5 @@
 import { createTheme } from "./theme.js";
-import { buildClientAccessRequests, buildConfidenceExplanations, buildDoNotTouchWarnings, buildInfrastructureSnapshot, buildLoginChecklist, plainCloudflareStatus } from "./handoff.js";
+import { buildCallOneWorkflow, buildClientAccessRequests, buildConfidenceExplanations, buildDoNotTouchWarnings, buildInfrastructureSnapshot, buildLoginChecklist, buildPreviousDeveloperRequestItems, buildUnknownBlockers, plainCloudflareStatus } from "./handoff.js";
 import { kv, numbered, panel, renderAppHeader, renderSurface } from "./ui.js";
 
 export function buildBrief(scan) {
@@ -20,9 +20,12 @@ export function buildBrief(scan) {
     generatedAt: scan.finishedAt,
     infrastructureSnapshot: buildInfrastructureSnapshot(scan),
     loginChecklist: buildLoginChecklist(scan),
+    unknownBlockers: buildUnknownBlockers(scan),
+    callOneWorkflow: buildCallOneWorkflow(scan),
     confidenceExplanations: buildConfidenceExplanations(scan),
     clientAccessRequests: buildClientAccessRequests(scan),
     doNotTouchWarnings: buildDoNotTouchWarnings(scan),
+    previousDeveloperRequestItems: buildPreviousDeveloperRequestItems(scan),
     snapshot: [
       ["Registrar", `${analysis.registrar || "Unknown"} (${analysis.registrarDetails?.confidence || "Manual"})`],
       ["DNS", `${analysis.dnsProvider || "Unknown"}`],
@@ -77,6 +80,10 @@ export function renderBriefText(scan, options = {}) {
     "",
     panel(theme, "Infrastructure Snapshot", formatInfrastructureSnapshot(theme, brief.infrastructureSnapshot)),
     "",
+    panel(theme, "Unknowns Blocking Work", formatUnknownBlockers(theme, brief.unknownBlockers)),
+    "",
+    panel(theme, "Call One Workflow", formatCallOneWorkflow(theme, brief.callOneWorkflow)),
+    "",
     panel(theme, "Why FITFO Thinks This", formatConfidenceExplanations(theme, brief.confidenceExplanations)),
     "",
     panel(theme, "Login / Access Checklist", formatLoginChecklist(theme, brief.loginChecklist)),
@@ -84,6 +91,8 @@ export function renderBriefText(scan, options = {}) {
     panel(theme, "Go Get These Logins", formatClientAccessRequests(theme, brief.clientAccessRequests)),
     "",
     panel(theme, "Do Not Touch Until Confirmed", formatDoNotTouchWarnings(theme, brief.doNotTouchWarnings)),
+    "",
+    panel(theme, "Previous Developer Request List", formatPreviousDeveloperRequestItems(theme, brief.previousDeveloperRequestItems)),
     "",
     panel(theme, "URL / Redirect Inventory", formatUrlInventory(theme, brief.actionReport.siteEvidence.urlInventory)),
     "",
@@ -175,6 +184,14 @@ export function renderBriefMarkdown(scan, options = {}) {
     "",
     markdownInfrastructureSnapshot(brief.infrastructureSnapshot),
     "",
+    "## Unknowns Blocking Work",
+    "",
+    markdownUnknownBlockers(brief.unknownBlockers),
+    "",
+    "## Call One Workflow",
+    "",
+    markdownCallOneWorkflow(brief.callOneWorkflow),
+    "",
     "## Why FITFO Thinks This",
     "",
     markdownConfidenceExplanations(brief.confidenceExplanations),
@@ -190,6 +207,10 @@ export function renderBriefMarkdown(scan, options = {}) {
     "## Do Not Touch Until Confirmed",
     "",
     markdownDoNotTouchWarnings(brief.doNotTouchWarnings),
+    "",
+    "## Previous Developer Request List",
+    "",
+    ...brief.previousDeveloperRequestItems.map((item) => `- [ ] ${item}`),
     "",
     "## URL / Redirect Inventory",
     "",
@@ -1572,6 +1593,15 @@ function formatInfrastructureSnapshot(theme, rows) {
   return rows.map((item) => `${theme.bullet("›")} ${theme.label(item.area)} ${theme.chip(`[${item.confidence}]`)} ${theme.dim(`${item.finding} | ${item.clientNeed}`)}`);
 }
 
+function formatUnknownBlockers(theme, rows = []) {
+  if (!rows.length) return [`${theme.bullet("›")} ${theme.ok("No major onboarding blockers generated from the public scan.")}`];
+  return rows.map((item) => `${theme.bullet("›")} ${theme.label(item.area)} ${theme.chip(`[${item.severity}]`)} ${theme.dim(`${item.owner}: ${item.evidence} Ask: ${item.ask}`)}`);
+}
+
+function formatCallOneWorkflow(theme, rows = []) {
+  return rows.map((item) => `${theme.bullet("›")} ${theme.label(item.area)} ${theme.chip(`[${item.owner}]`)} ${theme.dim(`${item.audience}: found ${item.found}; need ${item.need}; risk ${item.risk}; ask ${item.ask}`)}`);
+}
+
 function formatConfidenceExplanations(theme, rows = []) {
   return rows.map((item) => `${theme.bullet("›")} ${theme.label(item.area)} ${theme.chip(`[${item.confidence}]`)} ${theme.dim(`${item.finding}. ${item.evidence} Next: ${item.clientFollowUp}`)}`);
 }
@@ -1586,6 +1616,10 @@ function formatClientAccessRequests(theme, rows = []) {
 
 function formatDoNotTouchWarnings(theme, rows = []) {
   return rows.map((item) => `${theme.bullet("›")} ${theme.label(item.area)} ${theme.warn(item.warning)} ${theme.dim(item.reason)}`);
+}
+
+function formatPreviousDeveloperRequestItems(theme, rows = []) {
+  return rows.map((item) => `${theme.bullet("›")} ${theme.dim(item)}`);
 }
 
 function formatUrlInventory(theme, rows) {
@@ -1736,6 +1770,29 @@ function markdownInfrastructureSnapshot(rows) {
   ]));
 }
 
+function markdownUnknownBlockers(rows = []) {
+  if (!rows.length) return "- No major onboarding blockers generated from the public scan.";
+  return markdownTableWithHeaders(["Blocker", "Severity", "Owner", "Evidence", "Ask"], rows.map((item) => [
+    item.area,
+    item.severity,
+    item.owner,
+    item.evidence,
+    item.ask,
+  ]));
+}
+
+function markdownCallOneWorkflow(rows = []) {
+  return markdownTableWithHeaders(["Area", "Found", "Need", "Risk", "Ask", "Owner", "Audience"], rows.map((item) => [
+    item.area,
+    item.found,
+    item.need,
+    item.risk,
+    item.ask,
+    item.owner,
+    item.audience,
+  ]));
+}
+
 function markdownConfidenceExplanations(rows = []) {
   return markdownTableWithHeaders(["Area", "Finding", "Confidence", "Why FITFO Thinks This", "Client Follow-Up"], rows.map((item) => [
     item.area,
@@ -1755,9 +1812,10 @@ function markdownLoginChecklist(rows) {
 }
 
 function markdownClientAccessRequests(rows = []) {
-  return markdownTableWithHeaders(["Login / Access", "Current Public Status", "What Client Needs To Get"], rows.map((item) => [
+  return markdownTableWithHeaders(["Login / Access", "Current Public Status", "Owner", "What Client Needs To Get"], rows.map((item) => [
     item.access,
     item.status,
+    item.owner,
     item.request,
   ]));
 }

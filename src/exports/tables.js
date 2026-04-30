@@ -30,6 +30,8 @@ export function buildTableExportBundle(scan, options = {}) {
     },
     infrastructureSnapshot: normalizeInfrastructureSnapshot(report.infrastructureSnapshot || []),
     loginChecklist: normalizeLoginChecklist(report.loginChecklist || []),
+    unknownBlockers: normalizeUnknownBlockers(report.unknownBlockers || []),
+    callOneWorkflow: normalizeCallOneWorkflow(report.callOneWorkflow || []),
     hostingEvidence: normalizeHostingEvidence(scan.analysis?.hosting || {}),
     waybackVersions: normalizeWaybackVersions(report.waybackEvidence || {}),
     waybackChanges: normalizeWaybackChanges(report.waybackEvidence || {}),
@@ -59,6 +61,8 @@ export async function writeTableExports(scan, options = {}) {
     actionItems: path.join(directory, `${domain}-action-items.csv`),
     infrastructureSnapshot: path.join(directory, `${domain}-infrastructure-snapshot.csv`),
     loginChecklist: path.join(directory, `${domain}-login-checklist.csv`),
+    unknownBlockers: path.join(directory, `${domain}-unknown-blockers.csv`),
+    callOneWorkflow: path.join(directory, `${domain}-call-one-workflow.csv`),
     hostingEvidence: path.join(directory, `${domain}-hosting-evidence.csv`),
     waybackVersions: path.join(directory, `${domain}-wayback-versions.csv`),
     waybackChanges: path.join(directory, `${domain}-wayback-changes.csv`),
@@ -95,6 +99,22 @@ export async function writeTableExports(scan, options = {}) {
       ["access", "Access"],
       ["status", "Public Status"],
       ["needed", "Needed From Client"],
+    ]), "utf8"),
+    writeFile(files.unknownBlockers, toCsv(bundle.unknownBlockers, [
+      ["area", "Blocker"],
+      ["severity", "Severity"],
+      ["owner", "Owner"],
+      ["evidence", "Evidence"],
+      ["ask", "Ask"],
+    ]), "utf8"),
+    writeFile(files.callOneWorkflow, toCsv(bundle.callOneWorkflow, [
+      ["area", "Area"],
+      ["found", "Found"],
+      ["need", "Need"],
+      ["risk", "Risk"],
+      ["ask", "Ask"],
+      ["owner", "Owner"],
+      ["audience", "Audience"],
     ]), "utf8"),
     writeFile(files.hostingEvidence, toCsv(bundle.hostingEvidence, [
       ["provider", "Provider"],
@@ -234,6 +254,28 @@ function normalizeLoginChecklist(items) {
     access: item.access || "",
     status: item.status || "",
     needed: item.needed || "",
+  }));
+}
+
+function normalizeUnknownBlockers(items) {
+  return items.map((item) => ({
+    area: item.area || "",
+    severity: item.severity || "",
+    owner: item.owner || "",
+    evidence: item.evidence || "",
+    ask: item.ask || "",
+  }));
+}
+
+function normalizeCallOneWorkflow(items) {
+  return items.map((item) => ({
+    area: item.area || "",
+    found: item.found || "",
+    need: item.need || "",
+    risk: item.risk || "",
+    ask: item.ask || "",
+    owner: item.owner || "",
+    audience: item.audience || "",
   }));
 }
 

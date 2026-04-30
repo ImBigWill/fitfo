@@ -1,5 +1,5 @@
 import { createTheme } from "../theme.js";
-import { buildClientAccessRequests, buildConfidenceExplanations, buildDoNotTouchWarnings, plainCloudflareStatus } from "../handoff.js";
+import { buildCallOneWorkflow, buildClientAccessRequests, buildConfidenceExplanations, buildDoNotTouchWarnings, buildPreviousDeveloperRequestItems, buildUnknownBlockers, plainCloudflareStatus } from "../handoff.js";
 import { kv, numbered, panel, renderAppHeader, renderSurface } from "../ui.js";
 
 export function renderTextReport(scan, options = {}) {
@@ -52,11 +52,17 @@ export function renderTextReport(scan, options = {}) {
     "",
     panel(theme, "Client Handoff Summary", formatClientHandoffSummary(theme, scan)),
     "",
+    panel(theme, "Unknowns Blocking Work", formatUnknownBlockers(theme, scan)),
+    "",
+    panel(theme, "Call One Workflow", formatCallOneWorkflow(theme, scan)),
+    "",
     panel(theme, "Why FITFO Thinks This", formatConfidenceExplanations(theme, scan)),
     "",
     panel(theme, "Go Get These Logins", formatClientAccessRequests(theme, scan)),
     "",
     panel(theme, "Do Not Touch Until Confirmed", formatDoNotTouchWarnings(theme, scan)),
+    "",
+    panel(theme, "Previous Developer Request List", formatPreviousDeveloperRequestItems(theme, scan)),
     "",
     panel(theme, "Track This Down", analysis.actionPlan.flatMap((action, index) => numbered(theme, index + 1, action.label, action.detail))),
     "",
@@ -197,6 +203,14 @@ export function renderMarkdownReport(scan, options = {}) {
     "",
     markdownClientHandoffSummary(scan),
     "",
+    "## Unknowns Blocking Work",
+    "",
+    markdownUnknownBlockers(scan),
+    "",
+    "## Call One Workflow",
+    "",
+    markdownCallOneWorkflow(scan),
+    "",
     "## Why FITFO Thinks This",
     "",
     markdownConfidenceExplanations(scan),
@@ -208,6 +222,10 @@ export function renderMarkdownReport(scan, options = {}) {
     "## Do Not Touch Until Confirmed",
     "",
     markdownDoNotTouchWarnings(scan),
+    "",
+    "## Previous Developer Request List",
+    "",
+    ...buildPreviousDeveloperRequestItems(scan).map((item) => `- [ ] ${item}`),
     "",
     "## Track This Down",
     "",
@@ -447,6 +465,26 @@ function formatClientHandoffSummary(theme, scan) {
   ]);
 }
 
+function formatUnknownBlockers(theme, scan) {
+  const blockers = buildUnknownBlockers(scan);
+  if (!blockers.length) return [`${theme.bullet("›")} ${theme.ok("No major onboarding blockers generated from the public scan.")}`];
+  return blockers.flatMap((item) => [
+    `${theme.bullet("›")} ${theme.label(item.area)} ${theme.chip(`[${item.severity}]`)} ${theme.dim(item.owner)}`,
+    `  ${theme.dim(`Evidence: ${item.evidence}`)}`,
+    `  ${theme.dim(`Ask: ${item.ask}`)}`,
+  ]);
+}
+
+function formatCallOneWorkflow(theme, scan) {
+  return buildCallOneWorkflow(scan).flatMap((item) => [
+    `${theme.bullet("›")} ${theme.label(item.area)} ${theme.chip(`[${item.owner}]`)} ${theme.dim(item.audience)}`,
+    `  ${theme.dim(`Found: ${item.found}`)}`,
+    `  ${theme.dim(`Need: ${item.need}`)}`,
+    `  ${theme.dim(`Risk: ${item.risk}`)}`,
+    `  ${theme.dim(`Ask: ${item.ask}`)}`,
+  ]);
+}
+
 function formatConfidenceExplanations(theme, scan) {
   return buildConfidenceExplanations(scan).flatMap((item) => [
     `${theme.bullet("›")} ${theme.label(item.area)} ${theme.chip(`[${item.confidence}]`)} ${theme.value(item.finding)}`,
@@ -456,7 +494,7 @@ function formatConfidenceExplanations(theme, scan) {
 }
 
 function formatClientAccessRequests(theme, scan) {
-  return buildClientAccessRequests(scan).map((item) => `${theme.bullet("›")} ${theme.label(item.access)} ${theme.dim(`${item.status}: ${item.request}`)}`);
+  return buildClientAccessRequests(scan).map((item) => `${theme.bullet("›")} ${theme.label(item.access)} ${theme.chip(`[${item.owner}]`)} ${theme.dim(`${item.status}: ${item.request}`)}`);
 }
 
 function formatDoNotTouchWarnings(theme, scan) {
@@ -464,6 +502,10 @@ function formatDoNotTouchWarnings(theme, scan) {
     `${theme.bullet("›")} ${theme.label(item.area)} ${theme.warn(item.warning)}`,
     `  ${theme.dim(item.reason)}`,
   ]);
+}
+
+function formatPreviousDeveloperRequestItems(theme, scan) {
+  return buildPreviousDeveloperRequestItems(scan).map((item) => `${theme.bullet("›")} ${theme.dim(item)}`);
 }
 
 function formatObject(theme, label, values) {
@@ -532,12 +574,16 @@ function formatSubdomains(theme, subdomains) {
 
 function renderDeveloperRequest(scan) {
   const needs = scan.analysis.accessNeeded.map((access) => `- ${access.item}`).join("\n");
+  const specificRequests = buildPreviousDeveloperRequestItems(scan).map((item) => `- ${item}`).join("\n");
   return `Hi,
 
 We're onboarding ${scan.domain.apex} and need to confirm the current domain, DNS, hosting, CMS, and email setup.
 
 Could you please provide or delegate access for:
 ${needs}
+
+Could you also send or confirm:
+${specificRequests}
 
 If any of these are managed under your account, please let us know the best handoff path so we can avoid downtime or email disruption.`;
 }
@@ -626,6 +672,30 @@ function markdownClientHandoffSummary(scan) {
   ]));
 }
 
+function markdownUnknownBlockers(scan) {
+  const blockers = buildUnknownBlockers(scan);
+  if (!blockers.length) return "- No major onboarding blockers generated from the public scan.";
+  return markdownTableWithHeaders(["Blocker", "Severity", "Owner", "Evidence", "Ask"], blockers.map((item) => [
+    item.area,
+    item.severity,
+    item.owner,
+    item.evidence,
+    item.ask,
+  ]));
+}
+
+function markdownCallOneWorkflow(scan) {
+  return markdownTableWithHeaders(["Area", "Found", "Need", "Risk", "Ask", "Owner", "Audience"], buildCallOneWorkflow(scan).map((item) => [
+    item.area,
+    item.found,
+    item.need,
+    item.risk,
+    item.ask,
+    item.owner,
+    item.audience,
+  ]));
+}
+
 function markdownConfidenceExplanations(scan) {
   return markdownTableWithHeaders(["Area", "Finding", "Confidence", "Why FITFO Thinks This", "Client Follow-Up"], buildConfidenceExplanations(scan).map((item) => [
     item.area,
@@ -637,9 +707,10 @@ function markdownConfidenceExplanations(scan) {
 }
 
 function markdownClientAccessRequests(scan) {
-  return markdownTableWithHeaders(["Login / Access", "Current Public Status", "What Client Needs To Get"], buildClientAccessRequests(scan).map((item) => [
+  return markdownTableWithHeaders(["Login / Access", "Current Public Status", "Owner", "What Client Needs To Get"], buildClientAccessRequests(scan).map((item) => [
     item.access,
     item.status,
+    item.owner,
     item.request,
   ]));
 }

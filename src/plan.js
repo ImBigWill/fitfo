@@ -1,5 +1,5 @@
 import { buildBrief } from "./brief.js";
-import { buildClientAccessRequests, buildConfidenceExplanations, buildDoNotTouchWarnings } from "./handoff.js";
+import { buildCallOneWorkflow, buildClientAccessRequests, buildConfidenceExplanations, buildDoNotTouchWarnings, buildPreviousDeveloperRequestItems, buildUnknownBlockers } from "./handoff.js";
 import { createTheme } from "./theme.js";
 import { kv, panel, renderAppHeader, renderSurface } from "./ui.js";
 
@@ -10,9 +10,12 @@ export function buildClientPlan(scan) {
     generatedAt: scan.finishedAt,
     infrastructureSnapshot: brief.infrastructureSnapshot,
     loginChecklist: brief.loginChecklist,
+    unknownBlockers: buildUnknownBlockers(scan),
+    callOneWorkflow: buildCallOneWorkflow(scan),
     confidenceExplanations: buildConfidenceExplanations(scan),
     clientAccessRequests: buildClientAccessRequests(scan),
     doNotTouchWarnings: buildDoNotTouchWarnings(scan),
+    previousDeveloperRequestItems: buildPreviousDeveloperRequestItems(scan),
     priorities: buildPriorities(scan),
     structure: brief.suggestedStructure,
     competitorStructure: brief.competitorStructure,
@@ -52,6 +55,10 @@ export function renderPlanText(scan, options = {}) {
     "",
     panel(theme, "Infrastructure Snapshot", formatInfrastructureSnapshot(theme, plan.infrastructureSnapshot)),
     "",
+    panel(theme, "Unknowns Blocking Work", formatUnknownBlockers(theme, plan.unknownBlockers)),
+    "",
+    panel(theme, "Call One Workflow", formatCallOneWorkflow(theme, plan.callOneWorkflow)),
+    "",
     panel(theme, "Why FITFO Thinks This", formatConfidenceRows(theme, plan.confidenceExplanations)),
     "",
     panel(theme, "Login / Access Checklist", formatLoginChecklist(theme, plan.loginChecklist)),
@@ -59,6 +66,8 @@ export function renderPlanText(scan, options = {}) {
     panel(theme, "Go Get These Logins", formatAccessRequestRows(theme, plan.clientAccessRequests)),
     "",
     panel(theme, "Do Not Touch Until Confirmed", formatWarningRows(theme, plan.doNotTouchWarnings)),
+    "",
+    panel(theme, "Previous Developer Request List", formatPreviousDeveloperRequestItems(theme, plan.previousDeveloperRequestItems)),
     "",
     panel(theme, "URL / Redirect Inventory", formatEvidenceRows(theme, plan.siteEvidence?.urlInventory)),
     "",
@@ -131,6 +140,14 @@ export function renderPlanMarkdown(scan, options = {}) {
     "",
     markdownInfrastructureSnapshot(plan.infrastructureSnapshot),
     "",
+    "## Unknowns Blocking Work",
+    "",
+    markdownUnknownBlockers(plan.unknownBlockers),
+    "",
+    "## Call One Workflow",
+    "",
+    markdownCallOneWorkflow(plan.callOneWorkflow),
+    "",
     "## Why FITFO Thinks This",
     "",
     markdownConfidenceRows(plan.confidenceExplanations),
@@ -146,6 +163,10 @@ export function renderPlanMarkdown(scan, options = {}) {
     "## Do Not Touch Until Confirmed",
     "",
     markdownWarningRows(plan.doNotTouchWarnings),
+    "",
+    "## Previous Developer Request List",
+    "",
+    ...plan.previousDeveloperRequestItems.map((item) => `- [ ] ${item}`),
     "",
     "## URL / Redirect Inventory",
     "",
@@ -307,6 +328,15 @@ function formatInfrastructureSnapshot(theme, rows = []) {
   return rows.map((item) => `${theme.bullet("›")} ${theme.label(item.area)} ${theme.chip(`[${item.confidence}]`)} ${theme.dim(`${item.finding} | ${item.clientNeed}`)}`);
 }
 
+function formatUnknownBlockers(theme, rows = []) {
+  if (!rows.length) return [`${theme.bullet("›")} ${theme.ok("No major onboarding blockers generated from the public scan.")}`];
+  return rows.map((item) => `${theme.bullet("›")} ${theme.label(item.area)} ${theme.chip(`[${item.severity}]`)} ${theme.dim(`${item.owner}: ${item.evidence} Ask: ${item.ask}`)}`);
+}
+
+function formatCallOneWorkflow(theme, rows = []) {
+  return rows.map((item) => `${theme.bullet("›")} ${theme.label(item.area)} ${theme.chip(`[${item.owner}]`)} ${theme.dim(`${item.audience}: found ${item.found}; need ${item.need}; risk ${item.risk}; ask ${item.ask}`)}`);
+}
+
 function formatConfidenceRows(theme, rows = []) {
   if (!rows.length) return [`${theme.bullet("›")} ${theme.label("Evidence")} ${theme.dim("Run a scan to generate finding explanations.")}`];
   return rows.map((item) => `${theme.bullet("›")} ${theme.label(item.area)} ${theme.chip(`[${item.confidence}]`)} ${theme.dim(`${item.finding}. ${item.evidence} Next: ${item.clientFollowUp}`)}`);
@@ -325,6 +355,10 @@ function formatAccessRequestRows(theme, rows = []) {
 function formatWarningRows(theme, rows = []) {
   if (!rows.length) return [`${theme.bullet("›")} ${theme.label("Warnings")} ${theme.dim("No launch safety warnings generated.")}`];
   return rows.map((item) => `${theme.bullet("›")} ${theme.label(item.area)} ${theme.warn(item.warning)} ${theme.dim(item.reason)}`);
+}
+
+function formatPreviousDeveloperRequestItems(theme, rows = []) {
+  return rows.map((item) => `${theme.bullet("›")} ${theme.dim(item)}`);
 }
 
 function formatTopLocalCompetitors(theme, competitors = []) {
@@ -389,6 +423,29 @@ function markdownInfrastructureSnapshot(rows = []) {
   ]));
 }
 
+function markdownUnknownBlockers(rows = []) {
+  if (!rows.length) return "- No major onboarding blockers generated from the public scan.";
+  return markdownTableWithHeaders(["Blocker", "Severity", "Owner", "Evidence", "Ask"], rows.map((item) => [
+    item.area,
+    item.severity,
+    item.owner,
+    item.evidence,
+    item.ask,
+  ]));
+}
+
+function markdownCallOneWorkflow(rows = []) {
+  return markdownTableWithHeaders(["Area", "Found", "Need", "Risk", "Ask", "Owner", "Audience"], rows.map((item) => [
+    item.area,
+    item.found,
+    item.need,
+    item.risk,
+    item.ask,
+    item.owner,
+    item.audience,
+  ]));
+}
+
 function markdownConfidenceRows(rows = []) {
   if (!rows.length) return "- Run a scan to generate finding explanations.";
   return markdownTableWithHeaders(["Area", "Finding", "Confidence", "Why FITFO Thinks This", "Client Follow-Up"], rows.map((item) => [
@@ -411,9 +468,10 @@ function markdownLoginChecklist(rows = []) {
 
 function markdownAccessRequestRows(rows = []) {
   if (!rows.length) return "- Run a scan to generate login requests.";
-  return markdownTableWithHeaders(["Login / Access", "Current Public Status", "What Client Needs To Get"], rows.map((item) => [
+  return markdownTableWithHeaders(["Login / Access", "Current Public Status", "Owner", "What Client Needs To Get"], rows.map((item) => [
     item.access,
     item.status,
+    item.owner,
     item.request,
   ]));
 }

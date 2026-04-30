@@ -170,12 +170,17 @@ test("renders an Obsidian-ready Markdown report with frontmatter, checklists, an
   assert.match(markdown, /\| Area \| Confidence \| Public Signal \| Client Needs To Provide \/ Confirm \|/);
   assert.match(markdown, /Domain \/ Registrar/);
   assert.match(markdown, /Client must provide registrar login/);
+  assert.match(markdown, /## Unknowns Blocking Work/);
+  assert.match(markdown, /\| Blocker \| Severity \| Owner \| Evidence \| Ask \|/);
+  assert.match(markdown, /## Call One Workflow/);
+  assert.match(markdown, /\| Area \| Found \| Need \| Risk \| Ask \| Owner \| Audience \|/);
   assert.match(markdown, /## Why FITFO Thinks This/);
   assert.match(markdown, /\| Area \| Finding \| Confidence \| Why FITFO Thinks This \| Client Follow-Up \|/);
   assert.match(markdown, /## Go Get These Logins/);
-  assert.match(markdown, /\| Login \/ Access \| Current Public Status \| What Client Needs To Get \|/);
+  assert.match(markdown, /\| Login \/ Access \| Current Public Status \| Owner \| What Client Needs To Get \|/);
   assert.match(markdown, /## Do Not Touch Until Confirmed/);
   assert.match(markdown, /\| Area \| Do Not Touch \| Why It Matters \|/);
+  assert.match(markdown, /## Previous Developer Request List/);
   assert.match(markdown, /## Email Safety/);
   assert.match(markdown, /Google Workspace has MX, SPF, and DMARC records/);
   assert.match(markdown, /## Handoff Packet/);

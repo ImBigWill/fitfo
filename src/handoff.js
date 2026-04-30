@@ -217,7 +217,179 @@ export function buildClientAccessRequests(scan) {
     access: item.access,
     status: item.status,
     request: item.needed,
+    owner: ownerForAccess(item.access, item.status),
   }));
+}
+
+export function buildUnknownBlockers(scan) {
+  const analysis = scan.analysis || {};
+  const dns = scan.dns || {};
+  const blockers = [];
+
+  if (!analysis.registrar || analysis.registrar === "Unknown") {
+    blockers.push(blocker("Domain ownership", "High", "Client", "Registrar is unknown.", "Find the registrar login, billing owner, or prior developer who controls the domain."));
+  }
+
+  if (!analysis.dnsProvider || analysis.dnsProvider === "Unknown") {
+    blockers.push(blocker("DNS control", "High", "Client / Previous Developer", "DNS owner is unknown.", "Identify who can export and edit DNS before website, email, or launch work."));
+  }
+
+  if (isCloudflareInUse(scan)) {
+    blockers.push(blocker("Cloudflare account", "High", "Client / Previous Developer", plainCloudflareStatus(scan), "Get Cloudflare owner/admin access or confirm it is host-managed only."));
+  }
+
+  if (!analysis.hosting?.provider || analysis.hosting.provider === "Unknown" || analysis.hosting.provider === "Hidden behind Cloudflare") {
+    blockers.push(blocker("Origin hosting", "High", "Client / Previous Developer", analysis.hosting?.provider || "Hosting is unknown.", "Confirm where files, backups, deployment, and emergency restore access live."));
+  }
+
+  if (!analysis.urlStructure?.canonicalStyle || analysis.urlStructure.canonicalStyle === "Unknown") {
+    blockers.push(blocker("Canonical launch URL", "Medium", "Us + Client", "FITFO could not confirm www vs apex/non-www.", "Confirm the intended launch host before redirects, Search Console, sitemap, and analytics setup."));
+  }
+
+  if (analysis.email?.provider === "Unknown" || analysis.emailSafety?.riskLevel === "High") {
+    blockers.push(blocker("Email safety", "High", "Client", analysis.emailSafety?.summary || "Email provider is unclear.", "Confirm email provider and preserve MX, SPF, DKIM, and DMARC before DNS changes."));
+  }
+
+  if (analysis.cms?.platform === "Unknown") {
+    blockers.push(blocker("Website admin", "Medium", "Client / Previous Developer", "CMS/admin system is unknown.", "Confirm CMS, admin login, staging access, and who last managed the website."));
+  }
+
+  if (!(analysis.marketing?.found || []).length) {
+    blockers.push(blocker("Measurement access", "Medium", "Client", "No analytics or marketing tags were detected publicly.", "Confirm GA4, GTM, Search Console, ads, pixels, call tracking, and reporting access."));
+  }
+
+  if (!(analysis.operations?.found || []).length) {
+    blockers.push(blocker("Lead routing / CRM", "Medium", "Client", "No CRM, booking, or field-service tool was detected publicly.", "Confirm where form fills, calls, bookings, estimates, and notifications go."));
+  }
+
+  if (dns.subdomains?.length) {
+    blockers.push(blocker("Subdomain inventory", "Medium", "Client / Previous Developer", `${dns.subdomains.length} common subdomain(s) resolved.`, "Confirm whether staging, portals, booking, mail, app, shop, or CRM subdomains are active."));
+  }
+
+  for (const warning of scan.wayback?.warnings || []) {
+    blockers.push(blocker("Recent site changes", "Medium", "Us + Client", warning, "Compare current lead capture, phone visibility, tracking, and homepage messaging against recent archived versions."));
+  }
+
+  return blockers.slice(0, 10);
+}
+
+export function buildCallOneWorkflow(scan) {
+  const analysis = scan.analysis || {};
+  const accessRequests = buildClientAccessRequests(scan);
+  const warnings = buildDoNotTouchWarnings(scan);
+
+  return [
+    workflowRow({
+      area: "Domain",
+      found: analysis.registrar || "Unknown",
+      need: accessRequests.find((item) => item.access === "Domain registrar")?.request,
+      risk: "No ownership, renewal, transfer lock, or nameserver changes without registrar access.",
+      ask: analysis.registrar === "Unknown" ? "Who pays for the domain renewal?" : `Who owns the ${stripLikely(analysis.registrar)} account?`,
+      owner: "Client",
+      audience: "Client-facing",
+    }),
+    workflowRow({
+      area: "DNS",
+      found: analysis.dnsProvider || "Unknown",
+      need: accessRequests.find((item) => item.access === "DNS / nameserver control")?.request,
+      risk: warnings.find((item) => item.area === "DNS zone")?.warning,
+      ask: "Who can export and safely edit the full DNS zone?",
+      owner: analysis.dnsProvider === "Unknown" ? "Client / Previous Developer" : "Client",
+      audience: "Client-facing",
+    }),
+    workflowRow({
+      area: "Cloudflare / CDN",
+      found: plainCloudflareStatus(scan),
+      need: accessRequests.find((item) => item.access === "Cloudflare")?.request,
+      risk: warnings.find((item) => item.area === "Cloudflare / CDN")?.warning || "Hidden CDN settings may exist even when Cloudflare is not obvious.",
+      ask: "Is there any Cloudflare, host-managed CDN, page rule, redirect, worker, WAF, or SSL setting in use?",
+      owner: isCloudflareInUse(scan) ? "Client / Previous Developer" : "Client",
+      audience: "Client-facing",
+    }),
+    workflowRow({
+      area: "Hosting",
+      found: analysis.hosting?.provider || "Unknown",
+      need: accessRequests.find((item) => item.access === "Hosting")?.request,
+      risk: warnings.find((item) => item.area === "Hosting origin")?.warning || "Launch and rollback planning need confirmed hosting/backups.",
+      ask: "Where are the live files, backups, deployment path, and emergency restore access?",
+      owner: "Client / Previous Developer",
+      audience: "Client-facing",
+    }),
+    workflowRow({
+      area: "Website admin / CMS",
+      found: analysis.cms?.platform || "Unknown",
+      need: accessRequests.find((item) => item.access === "Website admin / CMS")?.request,
+      risk: "Without admin access we cannot verify users, forms, plugins, theme, backups, or update ownership.",
+      ask: "Can we get a fresh admin account and confirm who last managed the site?",
+      owner: "Client / Previous Developer",
+      audience: "Client-facing",
+    }),
+    workflowRow({
+      area: "Email",
+      found: analysis.email?.provider || "Unknown",
+      need: accessRequests.find((item) => item.access === "Email")?.request,
+      risk: warnings.find((item) => item.area === "Email")?.warning,
+      ask: "Who owns email admin access and which sender platforms are approved?",
+      owner: "Client",
+      audience: "Client-facing",
+    }),
+    workflowRow({
+      area: "Tracking / analytics",
+      found: formatFound(analysis.marketing?.found),
+      need: accessRequests.find((item) => item.access === "Analytics / Search / Marketing")?.request,
+      risk: "Lead attribution and launch validation are weak without GA4, GTM, Search Console, ads, pixels, and call tracking access.",
+      ask: "Who can invite us to GA4, GTM, Search Console, ads, call tracking, and reporting?",
+      owner: "Client",
+      audience: "Client-facing",
+    }),
+    workflowRow({
+      area: "CRM / lead routing",
+      found: formatFound(analysis.operations?.found),
+      need: accessRequests.find((item) => item.access === "CRM / Booking / Operations")?.request,
+      risk: "Forms, calls, bookings, and quote requests can break silently if routing is not mapped.",
+      ask: "Where do leads go today after calls, forms, booking widgets, and quote requests?",
+      owner: "Client",
+      audience: "Client-facing",
+    }),
+    workflowRow({
+      area: "Internal next step",
+      found: "Public scan complete",
+      need: "Turn unknowns into assigned follow-up tasks before proposal, sitemap, or launch planning.",
+      risk: "Planning based on assumptions can miss DNS/email/lead-routing dependencies.",
+      ask: "Which items block our next milestone, and who is responsible for chasing them?",
+      owner: "Us",
+      audience: "Internal",
+    }),
+  ];
+}
+
+export function buildPreviousDeveloperRequestItems(scan) {
+  const analysis = scan.analysis || {};
+  const items = [
+    "Full DNS zone export, including MX, SPF, DKIM, DMARC, verification TXT records, CNAMEs, redirects, and service records.",
+    "Current hosting account, server/dashboard access, SFTP/SSH details where applicable, deployment process, backups, and rollback path.",
+    "CMS administrator access, staging URL, plugin/theme ownership, form routing, users, update history, and backup schedule.",
+    "Analytics, Search Console, Tag Manager, pixels, call tracking, form notifications, CRM/booking widgets, and reporting access.",
+    "Current redirects, canonical host preference, sitemap/robots notes, launch notes, and known fragile dependencies.",
+  ];
+
+  if (analysis.registrar === "Unknown") {
+    items.unshift("Registrar/domain account owner, renewal/billing owner, transfer-lock status, and any delegated access path.");
+  }
+
+  if (isCloudflareInUse(scan)) {
+    items.push("Cloudflare account owner/admin access, DNS export, proxy status, SSL/TLS settings, page rules, redirects, workers, WAF rules, and origin details.");
+  }
+
+  if (analysis.hosting?.provider === "Unknown" || analysis.hosting?.provider === "Hidden behind Cloudflare") {
+    items.push("The real origin hosting provider, origin IP/hostname if shareable, and who can grant access without disrupting the live site.");
+  }
+
+  if (scan.dns?.subdomains?.length) {
+    items.push("Purpose and owner for active subdomains, especially staging, portal, booking, mail, app, shop, CRM, or admin records.");
+  }
+
+  return items;
 }
 
 export function buildDoNotTouchWarnings(scan) {
@@ -324,4 +496,34 @@ function stripLikely(value) {
 
 function formatFound(values) {
   return values?.length ? values.join(", ") : "None detected";
+}
+
+function ownerForAccess(access, status) {
+  if (access === "Previous developer") return "Client";
+  if (status === "Unknown" || status === "Hidden behind Cloudflare" || status === "Not publicly identifiable") return "Client / Previous Developer";
+  if (access.includes("Analytics") || access.includes("CRM") || access === "Email") return "Client";
+  if (access === "Hosting" || access.includes("Website admin")) return "Client / Previous Developer";
+  return "Client";
+}
+
+function blocker(area, severity, owner, evidence, ask) {
+  return {
+    area,
+    severity,
+    owner,
+    evidence,
+    ask,
+  };
+}
+
+function workflowRow(row) {
+  return {
+    area: row.area,
+    found: row.found || "Unknown",
+    need: row.need || "Confirm manually.",
+    risk: row.risk || "Risk needs manual review.",
+    ask: row.ask || "Confirm on the client call.",
+    owner: row.owner || "Client",
+    audience: row.audience || "Client-facing",
+  };
 }
