@@ -1,4 +1,5 @@
 import { buildBrief } from "./brief.js";
+import { buildClientAccessRequests, buildConfidenceExplanations, buildDoNotTouchWarnings } from "./handoff.js";
 import { createTheme } from "./theme.js";
 import { kv, panel, renderAppHeader, renderSurface } from "./ui.js";
 
@@ -9,6 +10,9 @@ export function buildClientPlan(scan) {
     generatedAt: scan.finishedAt,
     infrastructureSnapshot: brief.infrastructureSnapshot,
     loginChecklist: brief.loginChecklist,
+    confidenceExplanations: buildConfidenceExplanations(scan),
+    clientAccessRequests: buildClientAccessRequests(scan),
+    doNotTouchWarnings: buildDoNotTouchWarnings(scan),
     priorities: buildPriorities(scan),
     structure: brief.suggestedStructure,
     competitorStructure: brief.competitorStructure,
@@ -48,7 +52,13 @@ export function renderPlanText(scan, options = {}) {
     "",
     panel(theme, "Infrastructure Snapshot", formatInfrastructureSnapshot(theme, plan.infrastructureSnapshot)),
     "",
+    panel(theme, "Why FITFO Thinks This", formatConfidenceRows(theme, plan.confidenceExplanations)),
+    "",
     panel(theme, "Login / Access Checklist", formatLoginChecklist(theme, plan.loginChecklist)),
+    "",
+    panel(theme, "Go Get These Logins", formatAccessRequestRows(theme, plan.clientAccessRequests)),
+    "",
+    panel(theme, "Do Not Touch Until Confirmed", formatWarningRows(theme, plan.doNotTouchWarnings)),
     "",
     panel(theme, "URL / Redirect Inventory", formatEvidenceRows(theme, plan.siteEvidence?.urlInventory)),
     "",
@@ -121,9 +131,21 @@ export function renderPlanMarkdown(scan, options = {}) {
     "",
     markdownInfrastructureSnapshot(plan.infrastructureSnapshot),
     "",
+    "## Why FITFO Thinks This",
+    "",
+    markdownConfidenceRows(plan.confidenceExplanations),
+    "",
     "## Login / Access Checklist",
     "",
     markdownLoginChecklist(plan.loginChecklist),
+    "",
+    "## Go Get These Logins",
+    "",
+    markdownAccessRequestRows(plan.clientAccessRequests),
+    "",
+    "## Do Not Touch Until Confirmed",
+    "",
+    markdownWarningRows(plan.doNotTouchWarnings),
     "",
     "## URL / Redirect Inventory",
     "",
@@ -285,9 +307,24 @@ function formatInfrastructureSnapshot(theme, rows = []) {
   return rows.map((item) => `${theme.bullet("›")} ${theme.label(item.area)} ${theme.chip(`[${item.confidence}]`)} ${theme.dim(`${item.finding} | ${item.clientNeed}`)}`);
 }
 
+function formatConfidenceRows(theme, rows = []) {
+  if (!rows.length) return [`${theme.bullet("›")} ${theme.label("Evidence")} ${theme.dim("Run a scan to generate finding explanations.")}`];
+  return rows.map((item) => `${theme.bullet("›")} ${theme.label(item.area)} ${theme.chip(`[${item.confidence}]`)} ${theme.dim(`${item.finding}. ${item.evidence} Next: ${item.clientFollowUp}`)}`);
+}
+
 function formatLoginChecklist(theme, rows = []) {
   if (!rows.length) return [`${theme.bullet("›")} ${theme.label("Access")} ${theme.dim("Run a scan to generate the day-one login checklist.")}`];
   return rows.map((item) => `${theme.bullet("›")} ${theme.label(item.access)} ${theme.dim(`${item.status}: ${item.needed}`)}`);
+}
+
+function formatAccessRequestRows(theme, rows = []) {
+  if (!rows.length) return [`${theme.bullet("›")} ${theme.label("Logins")} ${theme.dim("Run a scan to generate login requests.")}`];
+  return rows.map((item) => `${theme.bullet("›")} ${theme.label(item.access)} ${theme.dim(`${item.status}: ${item.request}`)}`);
+}
+
+function formatWarningRows(theme, rows = []) {
+  if (!rows.length) return [`${theme.bullet("›")} ${theme.label("Warnings")} ${theme.dim("No launch safety warnings generated.")}`];
+  return rows.map((item) => `${theme.bullet("›")} ${theme.label(item.area)} ${theme.warn(item.warning)} ${theme.dim(item.reason)}`);
 }
 
 function formatTopLocalCompetitors(theme, competitors = []) {
@@ -352,12 +389,41 @@ function markdownInfrastructureSnapshot(rows = []) {
   ]));
 }
 
+function markdownConfidenceRows(rows = []) {
+  if (!rows.length) return "- Run a scan to generate finding explanations.";
+  return markdownTableWithHeaders(["Area", "Finding", "Confidence", "Why FITFO Thinks This", "Client Follow-Up"], rows.map((item) => [
+    item.area,
+    item.finding,
+    item.confidence,
+    item.evidence,
+    item.clientFollowUp,
+  ]));
+}
+
 function markdownLoginChecklist(rows = []) {
   if (!rows.length) return "- Run a scan to generate the day-one login checklist.";
   return markdownTableWithHeaders(["Access", "Public Status", "Needed From Client"], rows.map((item) => [
     item.access,
     item.status,
     item.needed,
+  ]));
+}
+
+function markdownAccessRequestRows(rows = []) {
+  if (!rows.length) return "- Run a scan to generate login requests.";
+  return markdownTableWithHeaders(["Login / Access", "Current Public Status", "What Client Needs To Get"], rows.map((item) => [
+    item.access,
+    item.status,
+    item.request,
+  ]));
+}
+
+function markdownWarningRows(rows = []) {
+  if (!rows.length) return "- No launch safety warnings generated.";
+  return markdownTableWithHeaders(["Area", "Do Not Touch", "Why It Matters"], rows.map((item) => [
+    item.area,
+    item.warning,
+    item.reason,
   ]));
 }
 

@@ -1,5 +1,5 @@
 import { createTheme } from "../theme.js";
-import { plainCloudflareStatus } from "../handoff.js";
+import { buildClientAccessRequests, buildConfidenceExplanations, buildDoNotTouchWarnings, plainCloudflareStatus } from "../handoff.js";
 import { kv, numbered, panel, renderAppHeader, renderSurface } from "../ui.js";
 
 export function renderTextReport(scan, options = {}) {
@@ -51,6 +51,12 @@ export function renderTextReport(scan, options = {}) {
     ]),
     "",
     panel(theme, "Client Handoff Summary", formatClientHandoffSummary(theme, scan)),
+    "",
+    panel(theme, "Why FITFO Thinks This", formatConfidenceExplanations(theme, scan)),
+    "",
+    panel(theme, "Go Get These Logins", formatClientAccessRequests(theme, scan)),
+    "",
+    panel(theme, "Do Not Touch Until Confirmed", formatDoNotTouchWarnings(theme, scan)),
     "",
     panel(theme, "Track This Down", analysis.actionPlan.flatMap((action, index) => numbered(theme, index + 1, action.label, action.detail))),
     "",
@@ -190,6 +196,18 @@ export function renderMarkdownReport(scan, options = {}) {
     "## Client Handoff Summary",
     "",
     markdownClientHandoffSummary(scan),
+    "",
+    "## Why FITFO Thinks This",
+    "",
+    markdownConfidenceExplanations(scan),
+    "",
+    "## Go Get These Logins",
+    "",
+    markdownClientAccessRequests(scan),
+    "",
+    "## Do Not Touch Until Confirmed",
+    "",
+    markdownDoNotTouchWarnings(scan),
     "",
     "## Track This Down",
     "",
@@ -429,6 +447,25 @@ function formatClientHandoffSummary(theme, scan) {
   ]);
 }
 
+function formatConfidenceExplanations(theme, scan) {
+  return buildConfidenceExplanations(scan).flatMap((item) => [
+    `${theme.bullet("›")} ${theme.label(item.area)} ${theme.chip(`[${item.confidence}]`)} ${theme.value(item.finding)}`,
+    `  ${theme.dim(`Why: ${item.evidence}`)}`,
+    `  ${theme.dim(`Next: ${item.clientFollowUp}`)}`,
+  ]);
+}
+
+function formatClientAccessRequests(theme, scan) {
+  return buildClientAccessRequests(scan).map((item) => `${theme.bullet("›")} ${theme.label(item.access)} ${theme.dim(`${item.status}: ${item.request}`)}`);
+}
+
+function formatDoNotTouchWarnings(theme, scan) {
+  return buildDoNotTouchWarnings(scan).flatMap((item) => [
+    `${theme.bullet("›")} ${theme.label(item.area)} ${theme.warn(item.warning)}`,
+    `  ${theme.dim(item.reason)}`,
+  ]);
+}
+
 function formatObject(theme, label, values) {
   const entries = Object.entries(values || {});
   if (!entries.length) return kv(theme, label, theme.dim("None captured"));
@@ -586,6 +623,32 @@ function markdownClientHandoffSummary(scan) {
     item.confidence,
     item.found,
     item.need,
+  ]));
+}
+
+function markdownConfidenceExplanations(scan) {
+  return markdownTableWithHeaders(["Area", "Finding", "Confidence", "Why FITFO Thinks This", "Client Follow-Up"], buildConfidenceExplanations(scan).map((item) => [
+    item.area,
+    item.finding,
+    item.confidence,
+    item.evidence,
+    item.clientFollowUp,
+  ]));
+}
+
+function markdownClientAccessRequests(scan) {
+  return markdownTableWithHeaders(["Login / Access", "Current Public Status", "What Client Needs To Get"], buildClientAccessRequests(scan).map((item) => [
+    item.access,
+    item.status,
+    item.request,
+  ]));
+}
+
+function markdownDoNotTouchWarnings(scan) {
+  return markdownTableWithHeaders(["Area", "Do Not Touch", "Why It Matters"], buildDoNotTouchWarnings(scan).map((item) => [
+    item.area,
+    item.warning,
+    item.reason,
   ]));
 }
 

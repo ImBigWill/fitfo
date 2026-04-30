@@ -1,4 +1,5 @@
 import { createTheme } from "../theme.js";
+import { plainCloudflareStatus } from "../handoff.js";
 import { commandHint, kv, panel, renderSurface } from "../ui.js";
 
 export function renderRunStart(domain, options = {}) {
@@ -30,4 +31,28 @@ export function renderRunStart(domain, options = {}) {
 export function renderSavedMessage(outputPath, options = {}) {
   const theme = createTheme(options.color !== false);
   return theme.surface(`${theme.blue("saved")} ${theme.value(outputPath)}`);
+}
+
+export function renderRunRecap(scan, result = {}, options = {}) {
+  const theme = createTheme(options.color !== false);
+  const analysis = scan.analysis || {};
+  const unknowns = [
+    analysis.registrar === "Unknown" ? "registrar" : null,
+    analysis.dnsProvider === "Unknown" ? "DNS owner" : null,
+    !analysis.hosting?.provider || analysis.hosting.provider === "Unknown" || analysis.hosting.provider === "Hidden behind Cloudflare" ? "origin hosting" : null,
+    analysis.email?.provider === "Unknown" ? "email provider" : null,
+    analysis.urlStructure?.canonicalStyle === "Unknown" ? "canonical launch URL" : null,
+  ].filter(Boolean);
+
+  return renderSurface(theme, [
+    panel(theme, "Run Recap", [
+      kv(theme, "Report", result.reportPath ? theme.value(result.reportPath) : theme.dim("Terminal only")),
+      kv(theme, "Tables", result.tablePath ? theme.value(result.tablePath) : theme.dim("Not exported")),
+      kv(theme, "Cloudflare", analysis.cloudflare ? `${plainCloudflareStatus(scan)} (${analysis.cloudflare.confidence})` : "Unknown"),
+      kv(theme, "Top unknowns", unknowns.length ? unknowns.join(", ") : theme.ok("No major ownership unknowns in public scan")),
+      kv(theme, "Next", unknowns.length
+        ? "Use the Go Get These Logins and Do Not Touch sections before changing DNS or launch settings."
+        : "Confirm access ownership with the client before making changes."),
+    ]),
+  ].join("\n"));
 }

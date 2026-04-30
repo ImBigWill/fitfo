@@ -107,7 +107,9 @@ export function buildLoginChecklist(scan) {
     {
       access: "Email",
       status: email,
-      needed: email !== "Unknown"
+      needed: email === "No mail configured"
+        ? "Confirm the domain truly does not send or receive email, and preserve intentional Null MX or no-mail DNS records."
+        : email !== "Unknown"
         ? `Confirm ${email} admin owner and preserve MX, SPF, DKIM, and DMARC records.`
         : "Identify the email provider before touching DNS.",
     },
@@ -129,6 +131,154 @@ export function buildLoginChecklist(scan) {
   ];
 
   return rows;
+}
+
+export function buildConfidenceExplanations(scan) {
+  const analysis = scan.analysis || {};
+  const dns = scan.dns || {};
+  const rdap = scan.rdap || {};
+  const http = scan.http || {};
+  const hosting = analysis.hosting || {};
+
+  return [
+    {
+      area: "Registrar",
+      finding: analysis.registrar || "Unknown",
+      confidence: analysis.registrarDetails?.confidence || confidenceForValue(analysis.registrar),
+      evidence: analysis.registrar === "Unknown"
+        ? "RDAP/WHOIS-style lookup did not return a usable registrar."
+        : analysis.registrarDetails?.note || `Public domain records identify ${analysis.registrar}.`,
+      clientFollowUp: analysis.registrar === "Unknown"
+        ? "Ask the client who pays for the domain renewal or who can log in to the registrar."
+        : `Ask for ${stripLikely(analysis.registrar)} owner/admin access or a delegated invite.`,
+    },
+    {
+      area: "DNS",
+      finding: analysis.dnsProvider || "Unknown",
+      confidence: confidenceForValue(analysis.dnsProvider),
+      evidence: dns.nameservers?.length
+        ? `Nameservers: ${dns.nameservers.join(", ")}.`
+        : "No nameservers were detected in the public DNS pass.",
+      clientFollowUp: "Confirm who can export and edit the full DNS zone before launch planning.",
+    },
+    {
+      area: "Cloudflare",
+      finding: plainCloudflareStatus(scan),
+      confidence: analysis.cloudflare?.confidence || "Manual",
+      evidence: formatFound(analysis.cloudflare?.signals),
+      clientFollowUp: cloudflareClientNeed(scan),
+    },
+    {
+      area: "Hosting",
+      finding: hosting.provider || "Unknown",
+      confidence: hosting.confidence || confidenceForValue(hosting.provider),
+      evidence: formatFound(hosting.evidence),
+      clientFollowUp: hosting.provider && hosting.provider !== "Unknown" && hosting.provider !== "Hidden behind Cloudflare"
+        ? `Confirm ${hosting.provider} account ownership, backups, deployment process, and billing owner.`
+        : "Ask the client or previous developer where the origin site files, backups, and deployment process live.",
+    },
+    {
+      area: "Launch URL",
+      finding: analysis.urlStructure?.canonicalStyle || "Unknown",
+      confidence: analysis.urlStructure?.canonicalStyle === "Unknown" ? "Manual" : "Medium",
+      evidence: http.finalUrl ? `Final reachable URL: ${http.finalUrl}.` : "No reachable canonical URL was detected.",
+      clientFollowUp: analysis.urlStructure?.recommendation || "Confirm whether launch should use www or apex/non-www.",
+    },
+    {
+      area: "CMS",
+      finding: analysis.cms?.platform || "Unknown",
+      confidence: analysis.cms?.confidence || confidenceForValue(analysis.cms?.platform),
+      evidence: formatFound(analysis.cms?.signals),
+      clientFollowUp: analysis.cms?.platform && analysis.cms.platform !== "Unknown"
+        ? `Get ${analysis.cms.platform} admin access and confirm update, plugin, forms, and backup ownership.`
+        : "Confirm whether there is a CMS, staging environment, or developer-managed admin account.",
+    },
+    {
+      area: "Email",
+      finding: analysis.email?.provider || "Unknown",
+      confidence: analysis.email?.provider && analysis.email.provider !== "Unknown" ? "Medium" : "Manual",
+      evidence: dns.mx?.length
+        ? `MX records: ${dns.mx.map((record) => `${record.priority} ${record.exchange}`).join(", ")}.`
+        : "No MX records were detected.",
+      clientFollowUp: "Confirm email admin owner and preserve MX, SPF, DKIM, and DMARC before DNS changes.",
+    },
+    {
+      area: "Previous Developer",
+      finding: "Not publicly identifiable",
+      confidence: "Manual",
+      evidence: rdap.entities?.length ? "RDAP may list registrar/registry entities, but not the prior web developer." : "Public records generally do not expose the prior developer.",
+      clientFollowUp: "Ask the client who last managed domain, DNS, hosting, CMS, forms, tracking, and launch notes.",
+    },
+  ];
+}
+
+export function buildClientAccessRequests(scan) {
+  return buildLoginChecklist(scan).map((item) => ({
+    access: item.access,
+    status: item.status,
+    request: item.needed,
+  }));
+}
+
+export function buildDoNotTouchWarnings(scan) {
+  const analysis = scan.analysis || {};
+  const dns = scan.dns || {};
+  const warnings = [
+    {
+      area: "DNS zone",
+      warning: "Do not change nameservers or delete records until the full DNS zone is documented.",
+      reason: "Website, email, verification, tracking, booking, and CRM services may depend on records that are easy to miss.",
+    },
+    {
+      area: "Email",
+      warning: "Do not change MX, SPF, DKIM, or DMARC until the email provider and sender platforms are confirmed.",
+      reason: analysis.emailSafety?.summary || "Email continuity depends on DNS records that may not be obvious to the client.",
+    },
+    {
+      area: "Lead tracking",
+      warning: "Do not remove call tracking, forms, booking widgets, thank-you pages, or tracking scripts until lead routing is confirmed.",
+      reason: "Trades clients often rely on phone attribution, CRM routing, and hidden form notifications.",
+    },
+    {
+      area: "Canonical host",
+      warning: "Do not launch on www or apex/non-www until current redirects and Search Console expectations are confirmed.",
+      reason: analysis.urlStructure?.recommendation || "Canonical host was not confidently detected.",
+    },
+  ];
+
+  if (plainCloudflareStatus(scan).startsWith("Yes") || plainCloudflareStatus(scan).startsWith("Likely")) {
+    warnings.push({
+      area: "Cloudflare / CDN",
+      warning: "Do not bypass or disable Cloudflare/CDN settings until redirects, SSL, WAF, workers, and DNS records are reviewed.",
+      reason: "Cloudflare can hide origin hosting and contain launch-critical rules.",
+    });
+  }
+
+  if (analysis.hosting?.provider === "Unknown" || analysis.hosting?.provider === "Hidden behind Cloudflare") {
+    warnings.push({
+      area: "Hosting origin",
+      warning: "Do not migrate or point DNS until the real origin host, backups, and rollback path are known.",
+      reason: "Public records did not confidently identify where the website files actually live.",
+    });
+  }
+
+  if (dns.subdomains?.length) {
+    warnings.push({
+      area: "Subdomains",
+      warning: "Do not remove or overwrite subdomain records until the client confirms what each one does.",
+      reason: `${dns.subdomains.length} common subdomain(s) resolved during the scan.`,
+    });
+  }
+
+  for (const warning of scan.wayback?.warnings || []) {
+    warnings.push({
+      area: "Archived site changes",
+      warning: "Do not assume the current homepage preserved the previous lead/tracking setup.",
+      reason: warning,
+    });
+  }
+
+  return warnings;
 }
 
 export function plainCloudflareStatus(scan) {

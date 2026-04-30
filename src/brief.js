@@ -1,5 +1,5 @@
 import { createTheme } from "./theme.js";
-import { buildInfrastructureSnapshot, buildLoginChecklist, plainCloudflareStatus } from "./handoff.js";
+import { buildClientAccessRequests, buildConfidenceExplanations, buildDoNotTouchWarnings, buildInfrastructureSnapshot, buildLoginChecklist, plainCloudflareStatus } from "./handoff.js";
 import { kv, numbered, panel, renderAppHeader, renderSurface } from "./ui.js";
 
 export function buildBrief(scan) {
@@ -20,6 +20,9 @@ export function buildBrief(scan) {
     generatedAt: scan.finishedAt,
     infrastructureSnapshot: buildInfrastructureSnapshot(scan),
     loginChecklist: buildLoginChecklist(scan),
+    confidenceExplanations: buildConfidenceExplanations(scan),
+    clientAccessRequests: buildClientAccessRequests(scan),
+    doNotTouchWarnings: buildDoNotTouchWarnings(scan),
     snapshot: [
       ["Registrar", `${analysis.registrar || "Unknown"} (${analysis.registrarDetails?.confidence || "Manual"})`],
       ["DNS", `${analysis.dnsProvider || "Unknown"}`],
@@ -74,7 +77,13 @@ export function renderBriefText(scan, options = {}) {
     "",
     panel(theme, "Infrastructure Snapshot", formatInfrastructureSnapshot(theme, brief.infrastructureSnapshot)),
     "",
+    panel(theme, "Why FITFO Thinks This", formatConfidenceExplanations(theme, brief.confidenceExplanations)),
+    "",
     panel(theme, "Login / Access Checklist", formatLoginChecklist(theme, brief.loginChecklist)),
+    "",
+    panel(theme, "Go Get These Logins", formatClientAccessRequests(theme, brief.clientAccessRequests)),
+    "",
+    panel(theme, "Do Not Touch Until Confirmed", formatDoNotTouchWarnings(theme, brief.doNotTouchWarnings)),
     "",
     panel(theme, "URL / Redirect Inventory", formatUrlInventory(theme, brief.actionReport.siteEvidence.urlInventory)),
     "",
@@ -166,9 +175,21 @@ export function renderBriefMarkdown(scan, options = {}) {
     "",
     markdownInfrastructureSnapshot(brief.infrastructureSnapshot),
     "",
+    "## Why FITFO Thinks This",
+    "",
+    markdownConfidenceExplanations(brief.confidenceExplanations),
+    "",
     "## Login / Access Checklist",
     "",
     markdownLoginChecklist(brief.loginChecklist),
+    "",
+    "## Go Get These Logins",
+    "",
+    markdownClientAccessRequests(brief.clientAccessRequests),
+    "",
+    "## Do Not Touch Until Confirmed",
+    "",
+    markdownDoNotTouchWarnings(brief.doNotTouchWarnings),
     "",
     "## URL / Redirect Inventory",
     "",
@@ -1551,8 +1572,20 @@ function formatInfrastructureSnapshot(theme, rows) {
   return rows.map((item) => `${theme.bullet("›")} ${theme.label(item.area)} ${theme.chip(`[${item.confidence}]`)} ${theme.dim(`${item.finding} | ${item.clientNeed}`)}`);
 }
 
+function formatConfidenceExplanations(theme, rows = []) {
+  return rows.map((item) => `${theme.bullet("›")} ${theme.label(item.area)} ${theme.chip(`[${item.confidence}]`)} ${theme.dim(`${item.finding}. ${item.evidence} Next: ${item.clientFollowUp}`)}`);
+}
+
 function formatLoginChecklist(theme, rows) {
   return rows.map((item) => `${theme.bullet("›")} ${theme.label(item.access)} ${theme.dim(`${item.status}: ${item.needed}`)}`);
+}
+
+function formatClientAccessRequests(theme, rows = []) {
+  return rows.map((item) => `${theme.bullet("›")} ${theme.label(item.access)} ${theme.dim(`${item.status}: ${item.request}`)}`);
+}
+
+function formatDoNotTouchWarnings(theme, rows = []) {
+  return rows.map((item) => `${theme.bullet("›")} ${theme.label(item.area)} ${theme.warn(item.warning)} ${theme.dim(item.reason)}`);
 }
 
 function formatUrlInventory(theme, rows) {
@@ -1703,11 +1736,37 @@ function markdownInfrastructureSnapshot(rows) {
   ]));
 }
 
+function markdownConfidenceExplanations(rows = []) {
+  return markdownTableWithHeaders(["Area", "Finding", "Confidence", "Why FITFO Thinks This", "Client Follow-Up"], rows.map((item) => [
+    item.area,
+    item.finding,
+    item.confidence,
+    item.evidence,
+    item.clientFollowUp,
+  ]));
+}
+
 function markdownLoginChecklist(rows) {
   return markdownTableWithHeaders(["Access", "Public Status", "Needed From Client"], rows.map((item) => [
     item.access,
     item.status,
     item.needed,
+  ]));
+}
+
+function markdownClientAccessRequests(rows = []) {
+  return markdownTableWithHeaders(["Login / Access", "Current Public Status", "What Client Needs To Get"], rows.map((item) => [
+    item.access,
+    item.status,
+    item.request,
+  ]));
+}
+
+function markdownDoNotTouchWarnings(rows = []) {
+  return markdownTableWithHeaders(["Area", "Do Not Touch", "Why It Matters"], rows.map((item) => [
+    item.area,
+    item.warning,
+    item.reason,
   ]));
 }
 

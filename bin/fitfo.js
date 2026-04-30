@@ -8,7 +8,7 @@ import { renderOutput } from "../src/cli/output.js";
 import { hasProvidedOption, parseArgs } from "../src/cli/options.js";
 import { defaultDesktopReportPath, normalizeSaveDestination, normalizeSaveFormat, promptedReportFileName, resolvePromptedOutputPath, shouldPromptForReportSave } from "../src/cli/post-scan.js";
 import { absoluteOutputPath, resolveOutputPath, writeReport } from "../src/cli/reports.js";
-import { renderRunStart, renderSavedMessage } from "../src/cli/status.js";
+import { renderRunRecap, renderRunStart, renderSavedMessage } from "../src/cli/status.js";
 import { applyWizardIntent, normalizeWizardIntent, shouldAskForWizardLocation, WIZARD_INTENTS } from "../src/cli/wizard.js";
 import { renderDoctor } from "../src/doctor.js";
 import { writeTableExports } from "../src/exports/tables.js";
@@ -106,11 +106,14 @@ try {
   }
 
   const outputPath = resolveOutputPath(scan, options);
+  let savedReportPath = null;
+  let tableExportPath = null;
   if (outputPath) {
     const savedPath = await saveReport(scan, outputPath, options);
+    savedReportPath = savedPath;
     console.log(options.quiet ? `Saved FITFO report to ${savedPath}` : `\n${renderSavedMessage(savedPath, { color: !noColor })}`);
   } else if (shouldPromptForReportSave(options)) {
-    await promptForReportSave(scan, options, { color: !noColor });
+    savedReportPath = await promptForReportSave(scan, options, { color: !noColor });
   }
 
   if (options.exportTables) {
@@ -118,7 +121,16 @@ try {
       dir: options.exportTables,
       report: options.command,
     });
+    tableExportPath = exportResult.directory;
     console.log(options.quiet ? `Saved FITFO table exports to ${exportResult.directory}` : renderSavedMessage(exportResult.directory, { color: !noColor }));
+  }
+
+  if (!options.quiet) {
+    console.log("");
+    console.log(renderRunRecap(scan, {
+      reportPath: savedReportPath,
+      tablePath: tableExportPath,
+    }, { color: !noColor }));
   }
 } catch (error) {
   console.error(`\nFITFO failed: ${error.message}`);
@@ -296,10 +308,11 @@ async function promptForReportSave(scan, options = {}, display = {}) {
 
     const savedPath = await saveReport(scan, outputPath, saveOptions);
     console.log(`\n${renderSavedMessage(savedPath, { color: display.color !== false })}`);
+    return savedPath;
   } catch (error) {
     if (error.code === "ABORT_ERR") {
       console.log(`\n${theme.dim("FITFO save prompt cancelled.")}`);
-      return;
+      return null;
     }
     throw error;
   } finally {

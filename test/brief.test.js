@@ -158,6 +158,9 @@ test("builds a first-call brief from an existing scan", () => {
   assert.ok(brief.actionReport.competitorResearch.reviewProfiles.some((result) => result.title.includes("Yelp")));
   assert.ok(brief.infrastructureSnapshot.some((item) => item.area === "Registrar / Domain Provider" && item.finding === "GoDaddy"));
   assert.ok(brief.loginChecklist.some((item) => item.access === "Cloudflare" && item.status === "No - no obvious Cloudflare"));
+  assert.ok(brief.confidenceExplanations.some((item) => item.area === "Registrar" && item.finding === "GoDaddy"));
+  assert.ok(brief.clientAccessRequests.some((item) => item.access === "Domain registrar"));
+  assert.ok(brief.doNotTouchWarnings.some((item) => item.area === "Email"));
   assert.ok(brief.actionReport.siteEvidence.urlInventory.some((item) => item.area === "Canonical host"));
   assert.ok(brief.actionReport.siteEvidence.leadCaptureInventory.some((item) => item.signal === "Form"));
   assert.ok(brief.actionReport.siteEvidence.toolFootprint.some((item) => item.tool === "Marketing tags"));
@@ -185,8 +188,13 @@ test("renders a Markdown brief for Obsidian/client prep", () => {
   assert.match(markdown, /## Infrastructure Snapshot/);
   assert.match(markdown, /\| Registrar \/ Domain Provider \| GoDaddy \| High \|/);
   assert.match(markdown, /\| Cloudflare \| No - no obvious Cloudflare \| Low \|/);
+  assert.match(markdown, /## Why FITFO Thinks This/);
+  assert.match(markdown, /\| Area \| Finding \| Confidence \| Why FITFO Thinks This \| Client Follow-Up \|/);
   assert.match(markdown, /## Login \/ Access Checklist/);
   assert.match(markdown, /\| Domain registrar \| GoDaddy \|/);
+  assert.match(markdown, /## Go Get These Logins/);
+  assert.match(markdown, /## Do Not Touch Until Confirmed/);
+  assert.match(markdown, /\| Area \| Do Not Touch \| Why It Matters \|/);
   assert.match(markdown, /## URL \/ Redirect Inventory/);
   assert.match(markdown, /\| Area \/ URL \| Extracted Evidence \| Client \/ Launch Question \|/);
   assert.match(markdown, /## Wayback Recent Versions/);

@@ -84,6 +84,9 @@ test("builds a client plan from scan, crawl, and research signals", () => {
   assert.ok(plan.serviceLocationRecommendations.some((item) => item.page === "/services/drain-cleaning/"));
   assert.ok(plan.infrastructureSnapshot.some((item) => item.area === "Registrar / Domain Provider" && item.finding === "GoDaddy"));
   assert.ok(plan.loginChecklist.some((item) => item.access === "Cloudflare" && item.status === "No - no obvious Cloudflare"));
+  assert.ok(plan.confidenceExplanations.some((item) => item.area === "Registrar" && item.finding === "GoDaddy"));
+  assert.ok(plan.clientAccessRequests.some((item) => item.access === "Domain registrar"));
+  assert.ok(plan.doNotTouchWarnings.some((item) => item.area === "Email"));
   assert.ok(plan.topLocalCompetitors.some((item) => item.name === "Competitor Plumbing Services"));
   assert.ok(plan.siteEvidence.urlInventory.some((item) => item.area === "Canonical host"));
   assert.equal(plan.waybackEvidence.versions.length, 2);
@@ -106,8 +109,12 @@ test("renders a Markdown plan for Obsidian", () => {
   assert.match(markdown, /## Infrastructure Snapshot/);
   assert.match(markdown, /\| Registrar \/ Domain Provider \| GoDaddy \| High \|/);
   assert.match(markdown, /\| Cloudflare \| No - no obvious Cloudflare \| Low \|/);
+  assert.match(markdown, /## Why FITFO Thinks This/);
+  assert.match(markdown, /\| Area \| Finding \| Confidence \| Why FITFO Thinks This \| Client Follow-Up \|/);
   assert.match(markdown, /## Login \/ Access Checklist/);
   assert.match(markdown, /\| Domain registrar \| GoDaddy \|/);
+  assert.match(markdown, /## Go Get These Logins/);
+  assert.match(markdown, /## Do Not Touch Until Confirmed/);
   assert.match(markdown, /## URL \/ Redirect Inventory/);
   assert.match(markdown, /\| Area \/ URL \| Extracted Evidence \| Client \/ Launch Question \|/);
   assert.match(markdown, /## Wayback Recent Versions/);
