@@ -30,6 +30,7 @@ export function buildTableExportBundle(scan, options = {}) {
     },
     infrastructureSnapshot: normalizeInfrastructureSnapshot(report.infrastructureSnapshot || []),
     loginChecklist: normalizeLoginChecklist(report.loginChecklist || []),
+    hostingEvidence: normalizeHostingEvidence(scan.analysis?.hosting || {}),
     actionItems: normalizeActionItems(actionReport.priorityActions || []),
     proofAssets: normalizeProofAssets(actionReport.proofAssets || []),
     contentInventory: normalizeContentInventory(actionReport.contentInventory || []),
@@ -56,6 +57,7 @@ export async function writeTableExports(scan, options = {}) {
     actionItems: path.join(directory, `${domain}-action-items.csv`),
     infrastructureSnapshot: path.join(directory, `${domain}-infrastructure-snapshot.csv`),
     loginChecklist: path.join(directory, `${domain}-login-checklist.csv`),
+    hostingEvidence: path.join(directory, `${domain}-hosting-evidence.csv`),
     proofAssets: path.join(directory, `${domain}-proof-assets.csv`),
     contentInventory: path.join(directory, `${domain}-content-inventory.csv`),
     competitorStructure: path.join(directory, `${domain}-competitor-structure.csv`),
@@ -89,6 +91,13 @@ export async function writeTableExports(scan, options = {}) {
       ["access", "Access"],
       ["status", "Public Status"],
       ["needed", "Needed From Client"],
+    ]), "utf8"),
+    writeFile(files.hostingEvidence, toCsv(bundle.hostingEvidence, [
+      ["provider", "Provider"],
+      ["confidence", "Confidence"],
+      ["edge", "Edge / Proxy Note"],
+      ["evidence", "Evidence"],
+      ["note", "Note"],
     ]), "utf8"),
     writeFile(files.proofAssets, toCsv(bundle.proofAssets, [
       ["priority", "Priority"],
@@ -203,6 +212,17 @@ function normalizeLoginChecklist(items) {
     access: item.access || "",
     status: item.status || "",
     needed: item.needed || "",
+  }));
+}
+
+function normalizeHostingEvidence(hosting) {
+  const evidence = hosting.evidence?.length ? hosting.evidence : ["No hosting evidence captured"];
+  return evidence.map((item) => ({
+    provider: hosting.provider || "Unknown",
+    confidence: hosting.confidence || "Manual",
+    edge: hosting.edge || "",
+    evidence: item,
+    note: hosting.note || "",
   }));
 }
 
