@@ -31,6 +31,8 @@ export function buildTableExportBundle(scan, options = {}) {
     infrastructureSnapshot: normalizeInfrastructureSnapshot(report.infrastructureSnapshot || []),
     loginChecklist: normalizeLoginChecklist(report.loginChecklist || []),
     hostingEvidence: normalizeHostingEvidence(scan.analysis?.hosting || {}),
+    waybackVersions: normalizeWaybackVersions(report.waybackEvidence || {}),
+    waybackChanges: normalizeWaybackChanges(report.waybackEvidence || {}),
     actionItems: normalizeActionItems(actionReport.priorityActions || []),
     proofAssets: normalizeProofAssets(actionReport.proofAssets || []),
     contentInventory: normalizeContentInventory(actionReport.contentInventory || []),
@@ -58,6 +60,8 @@ export async function writeTableExports(scan, options = {}) {
     infrastructureSnapshot: path.join(directory, `${domain}-infrastructure-snapshot.csv`),
     loginChecklist: path.join(directory, `${domain}-login-checklist.csv`),
     hostingEvidence: path.join(directory, `${domain}-hosting-evidence.csv`),
+    waybackVersions: path.join(directory, `${domain}-wayback-versions.csv`),
+    waybackChanges: path.join(directory, `${domain}-wayback-changes.csv`),
     proofAssets: path.join(directory, `${domain}-proof-assets.csv`),
     contentInventory: path.join(directory, `${domain}-content-inventory.csv`),
     competitorStructure: path.join(directory, `${domain}-competitor-structure.csv`),
@@ -98,6 +102,24 @@ export async function writeTableExports(scan, options = {}) {
       ["edge", "Edge / Proxy Note"],
       ["evidence", "Evidence"],
       ["note", "Note"],
+    ]), "utf8"),
+    writeFile(files.waybackVersions, toCsv(bundle.waybackVersions, [
+      ["capturedAt", "Captured"],
+      ["original", "URL"],
+      ["title", "Title"],
+      ["h1", "H1"],
+      ["wordCount", "Words"],
+      ["formCount", "Forms"],
+      ["phones", "Phones"],
+      ["toolSignals", "Tools"],
+      ["archiveUrl", "Archive URL"],
+    ]), "utf8"),
+    writeFile(files.waybackChanges, toCsv(bundle.waybackChanges, [
+      ["signal", "Signal"],
+      ["previous", "Previous Capture"],
+      ["latest", "Latest Capture"],
+      ["note", "Note"],
+      ["warning", "Warning"],
     ]), "utf8"),
     writeFile(files.proofAssets, toCsv(bundle.proofAssets, [
       ["priority", "Priority"],
@@ -224,6 +246,41 @@ function normalizeHostingEvidence(hosting) {
     evidence: item,
     note: hosting.note || "",
   }));
+}
+
+function normalizeWaybackVersions(evidence) {
+  return (evidence.versions || []).map((version) => ({
+    capturedAt: version.capturedAt || "",
+    original: version.original || "",
+    title: version.title || "",
+    h1: version.h1 || "",
+    wordCount: version.wordCount || 0,
+    formCount: version.formCount || 0,
+    phones: (version.phones || []).join(", "),
+    toolSignals: (version.toolSignals || []).join(", "),
+    archiveUrl: version.archiveUrl || "",
+  }));
+}
+
+function normalizeWaybackChanges(evidence) {
+  const changes = (evidence.changes || []).map((item) => ({
+    signal: item.signal || "",
+    previous: item.previous || "",
+    latest: item.latest || "",
+    note: item.note || "",
+    warning: "",
+  }));
+
+  return [
+    ...changes,
+    ...(evidence.warnings || []).map((warning) => ({
+      signal: "Risk note",
+      previous: "",
+      latest: "",
+      note: "",
+      warning,
+    })),
+  ];
 }
 
 function normalizeProofAssets(items) {

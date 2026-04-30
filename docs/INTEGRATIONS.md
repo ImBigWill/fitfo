@@ -23,6 +23,14 @@ Keep these in core because they are public, low-friction, and do not require use
 - shallow/deep local crawl
 - static page extraction for forms, scripts, schema, headings, canonicals, and meta robots
 
+## Free Optional Enrichment
+
+These checks are still free/public, but should stay behind explicit modes because they call third-party services or add runtime.
+
+| Provider | Flag / Mode | Best Use |
+| --- | --- | --- |
+| Internet Archive Wayback CDX API | `--wayback`; enabled by `fitfo onboard` | Compare recent homepage captures to spot title, H1, meta, form, phone, CTA, and tracking changes after agency/site handoffs. |
+
 ## Already Optional
 
 Firecrawl-backed research belongs behind `--search` because it is about market context, competitor prompts, and kickoff planning rather than basic domain ownership.
@@ -51,6 +59,7 @@ When an optional provider is added, FITFO should label the source clearly:
 
 - `Observed`: direct DNS/HTTP/crawl evidence
 - `Research`: Firecrawl/search result
+- `Archived`: Internet Archive/Wayback evidence
 - `Enriched`: optional paid/API provider
 - `Ask Client`: not knowable from public records
 

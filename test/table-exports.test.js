@@ -32,6 +32,42 @@ const scan = {
       },
     ],
   },
+  wayback: {
+    enabled: true,
+    provider: "internet-archive",
+    snapshotsFound: 2,
+    versions: [
+      {
+        capturedAt: "2026-04-01 12:00 UTC",
+        original: "https://client.example/",
+        title: "Client Plumbing",
+        h1: "Client Plumbing",
+        wordCount: 400,
+        formCount: 0,
+        phones: ["555-123-4567"],
+        toolSignals: ["Google Tag Manager"],
+        archiveUrl: "https://web.archive.org/web/20260401120000/https://client.example/",
+      },
+      {
+        capturedAt: "2025-12-01 12:00 UTC",
+        original: "https://client.example/",
+        title: "Old Client Plumbing",
+        h1: "Old Client Plumbing",
+        wordCount: 650,
+        formCount: 1,
+        phones: ["555-123-4567"],
+        toolSignals: ["Google Tag Manager", "CallRail"],
+        archiveUrl: "https://web.archive.org/web/20251201120000/https://client.example/",
+      },
+    ],
+    comparison: {
+      changes: [
+        { signal: "Forms", previous: "1", latest: "0", note: "-1 from previous capture." },
+      ],
+    },
+    warnings: ["Earlier archived homepage had forms but the latest archived version does not. Confirm current lead capture paths."],
+    errors: [],
+  },
   analysis: {
     registrar: "GoDaddy",
     registrarDetails: { confidence: "High" },
@@ -63,6 +99,8 @@ test("builds table export rows for research sidecars", () => {
   assert.ok(bundle.infrastructureSnapshot.some((item) => item.area === "Registrar / Domain Provider" && item.finding === "GoDaddy"));
   assert.ok(bundle.loginChecklist.some((item) => item.access === "Cloudflare" && item.status === "No - no obvious Cloudflare"));
   assert.ok(bundle.hostingEvidence.some((item) => item.provider === "WP Engine" && item.evidence.includes("CNAME")));
+  assert.ok(bundle.waybackVersions.some((item) => item.title === "Client Plumbing"));
+  assert.ok(bundle.waybackChanges.some((item) => item.signal === "Forms"));
   assert.ok(bundle.actionItems.some((item) => item.action === "Map keywords to pages" && item.source === "Inferred"));
   assert.ok(bundle.contentInventory.some((item) => item.path === "/services/drain-cleaning/"));
   assert.ok(bundle.competitorStructure.some((item) => item.path.startsWith("/services/")));
@@ -97,6 +135,8 @@ test("writes CSV and JSON table exports", async () => {
   const infrastructure = await readFile(result.files.infrastructureSnapshot, "utf8");
   const logins = await readFile(result.files.loginChecklist, "utf8");
   const hosting = await readFile(result.files.hostingEvidence, "utf8");
+  const waybackVersions = await readFile(result.files.waybackVersions, "utf8");
+  const waybackChanges = await readFile(result.files.waybackChanges, "utf8");
   const topLocal = await readFile(result.files.topLocalCompetitors, "utf8");
   const script = await readFile(result.files.confirmationScript, "utf8");
   const serviceLocation = await readFile(result.files.serviceLocationRecommendations, "utf8");
@@ -110,11 +150,17 @@ test("writes CSV and JSON table exports", async () => {
   assert.match(logins, /Cloudflare,No - no obvious Cloudflare/);
   assert.match(hosting, /Provider,Confidence,Edge \/ Proxy Note,Evidence,Note/);
   assert.match(hosting, /WP Engine,Medium/);
+  assert.match(waybackVersions, /Captured,URL,Title,H1,Words,Forms,Phones,Tools,Archive URL/);
+  assert.match(waybackVersions, /2026-04-01 12:00 UTC/);
+  assert.match(waybackChanges, /Signal,Previous Capture,Latest Capture,Note,Warning/);
+  assert.match(waybackChanges, /Forms,1,0/);
   assert.match(topLocal, /Competitor,Why It Surfaced,Source Query,URL/);
   assert.match(script, /Topic,Ask,Why/);
   assert.match(serviceLocation, /Priority,Type,Page,Focus,Recommendation/);
   assert.equal(json.metadata.domain, "client.example");
   assert.ok(json.hostingEvidence.some((item) => item.evidence.includes("WP Engine")));
+  assert.ok(json.waybackVersions.some((item) => item.title === "Client Plumbing"));
+  assert.ok(json.waybackChanges.some((item) => item.warning.includes("forms")));
   assert.ok(json.topLocalCompetitors.some((item) => item.name === "Competitor Plumbing"));
   assert.ok(json.competitors.some((item) => item.title === "Competitor Plumbing"));
   assert.ok(json.confirmationScript.some((item) => item.topic === "Structure approval"));

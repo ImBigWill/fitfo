@@ -96,6 +96,7 @@ fitfo onboard example.com
 - domain, registrar, DNS, nameserver, hosting, Cloudflare/CDN, email, CMS, analytics, CRM, booking, call tracking, and subdomain checks
 - deep website crawl when the site is reachable
 - Firecrawl-backed market/search research when Firecrawl is configured
+- recent Wayback homepage snapshot comparison through the Internet Archive
 - raw evidence sections for URL/redirect inventory, lead capture, tracking/tool footprint, keyword evidence, competitors, service/location, reputation, launch, and action planning
 - Obsidian-ready action-plan note
 - CSV/JSON table exports for planning workflows
@@ -185,6 +186,14 @@ fitfo brief example.com --deep --search --location "Richmond, VA"
 
 FITFO uses `FIRECRAWL_API_KEY` when it is set. If no key is present, it falls back to the authenticated Firecrawl CLI, so `firecrawl login` and `firecrawl --status` are enough for local use.
 
+Recent site-change check:
+
+```bash
+fitfo brief example.com --deep --wayback
+```
+
+`--wayback` checks a small number of recent Internet Archive homepage captures and compares title, H1, meta description, word count, forms, phone numbers, CTAs, robots/noindex, and visible tracking/tool signals. Use this when you suspect the site changed hands and something important disappeared.
+
 The research brief separates:
 
 - **Observed**: found on the current site, DNS, or public page crawl
@@ -202,6 +211,7 @@ It also generates:
 - prioritized action items with owner labels for client/us follow-up
 - proof-asset requests for reviews, photos, credentials, case studies, offers, and lead-routing evidence
 - URL/redirect inventory for canonical host, robots.txt, XML sitemap, canonical tags, noindex pages, and crawled URLs
+- Wayback recent-version evidence for spotting homepage copy, lead-capture, phone, and tracking changes across recent archived versions
 - lead capture inventory for forms, form actions, visible fields, submit labels, phone numbers, email addresses, and CTA labels
 - tracking/tool footprint for visible marketing, CRM, script hosts, and third-party widgets detected across crawled pages
 - content inventory tables for crawled pages, page type, issues, and recommended action
@@ -217,7 +227,7 @@ Export the kickoff tables as CSV files plus a JSON bundle:
 fitfo brief example.com --deep --search --location "Richmond, VA" --export-tables fitfo-exports
 ```
 
-This writes sidecar files for infrastructure snapshot, login checklist, action items, proof assets, content inventory, competitor structure, top local competitors, service/location recommendations, reputation summary, launch checklist, confirmation script, keyword clusters, competitors, keyword-to-page maps, raw research results, and a combined `example.com-research-tables.json` bundle.
+This writes sidecar files for infrastructure snapshot, login checklist, hosting evidence, Wayback versions/changes, action items, proof assets, content inventory, competitor structure, top local competitors, service/location recommendations, reputation summary, launch checklist, confirmation script, keyword clusters, competitors, keyword-to-page maps, raw research results, and a combined `example.com-research-tables.json` bundle.
 
 Client build plan:
 
@@ -333,6 +343,7 @@ fitfo brief example.com --obsidian --out ~/Obsidian/Clients/example.com-brief.md
 - email safety risk from missing SPF/DMARC and sender-platform clues
 - TLS certificate trust, issuer, and expiration
 - HTTP/HTTPS redirect behavior
+- optional Internet Archive Wayback recent-version comparison for homepage changes
 - Cloudflare or Cloudflare-like CDN signals
 - hosting fingerprints from DNS, reverse DNS, ASN/network owner, headers, and page data
 - WordPress and common CMS/page-builder signals
@@ -359,6 +370,7 @@ Key sections:
 - **Previous Developer Request**: a starter message clients can send to whoever currently controls the setup.
 - **Site Intelligence**: when `--deep` is used, sitemap pages, headings, metadata, canonical tags, meta robots/noindex, CTAs, form actions/fields, schema, phones, script hosts, tool signals, and suggested structure.
 - **URL / Redirect Inventory**: canonical host, robots.txt, XML sitemap, canonical tags, noindex pages, and crawled URLs to preserve, improve, redirect, or remove.
+- **Wayback Recent Versions**: when `--wayback` is used, recent archived homepage versions, visible change flags, and risk notes for forms, phone visibility, tracking/tool signals, titles, H1s, and meta robots.
 - **Lead Capture Inventory**: forms, form actions, visible fields, submit labels, phone numbers, email addresses, and CTA labels that need routing/tracking confirmation.
 - **Tracking / Tool Footprint**: marketing tags, CRM/booking signals, crawl-level tool fingerprints, and third-party script hosts to confirm with the client.
 - **Kickoff Research Brief**: when using brief mode, current site read, market snapshot, keyword/page opportunities, positioning hypotheses, and kickoff call agenda.

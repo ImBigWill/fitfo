@@ -14,6 +14,7 @@ FITFO will:
 - scan domain, DNS, email, subdomains, redirects, TLS, CMS, analytics, CRM, and hosting clues
 - crawl the site when reachable
 - run Firecrawl-backed search research when available
+- compare recent Wayback homepage captures
 - save an Obsidian-ready plan note
 - export CSV/JSON planning tables to `fitfo-exports/`
 
@@ -56,6 +57,19 @@ tags:
 - **Inferred:** Reasonable planning hypothesis that needs validation.
 - **Ask Client:** Do not assume; confirm with client or previous developer.
 
+## Wayback Recent Versions
+
+| Captured | URL | Title | H1 | Words | Forms | Phones | Tools |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-04-01 12:00 UTC | https://example-plumbing.test/ | Example Plumbing | Example Plumbing | 420 | 0 | 555-123-4567 | Google Tag Manager |
+| 2025-12-01 12:00 UTC | https://example-plumbing.test/ | Old Example Plumbing | Emergency Plumbing | 650 | 1 | 555-123-4567 | Google Tag Manager, CallRail |
+
+### Wayback Change Flags
+
+| Signal | Previous Capture | Latest Capture | Note |
+| --- | --- | --- | --- |
+| Forms | 1 | 0 | -1 from previous capture. |
+
 ## Focus First
 
 - **Access and ownership:** Secure domain, DNS, hosting, CMS, email, analytics, forms, and previous-developer handoff before changing anything.
@@ -81,6 +95,8 @@ fitfo-exports/
   example-plumbing.test-hosting-evidence.csv
   example-plumbing.test-infrastructure-snapshot.csv
   example-plumbing.test-login-checklist.csv
+  example-plumbing.test-wayback-changes.csv
+  example-plumbing.test-wayback-versions.csv
   example-plumbing.test-keyword-page-map.csv
   example-plumbing.test-launch-checklist.csv
   example-plumbing.test-top-local-competitors.csv

@@ -67,7 +67,7 @@ fitfo onboard clientdomain.com
 
 ## Brief Mode Ideas
 
-`fitfo brief` prepares for the first client call. The current version can scaffold from scan signals, crawl a small set of sitemap pages with `--deep`, optionally add Firecrawl-backed search research with `--search`, and turn those signals into a kickoff research packet. Research can use `FIRECRAWL_API_KEY` or the authenticated local Firecrawl CLI.
+`fitfo brief` prepares for the first client call. The current version can scaffold from scan signals, crawl a small set of sitemap pages with `--deep`, optionally add Firecrawl-backed search research with `--search`, optionally compare recent Wayback captures with `--wayback`, and turn those signals into a kickoff research packet. Research can use `FIRECRAWL_API_KEY` or the authenticated local Firecrawl CLI.
 
 Current kickoff research sections:
 
@@ -81,6 +81,7 @@ Current kickoff research sections:
 - content inventory by page type
 - keyword clusters
 - competitor/review/directory classification
+- Wayback recent-version evidence and change flags
 - competitor-informed structure suggestions
 - service/location page recommendations
 - review/reputation summary
