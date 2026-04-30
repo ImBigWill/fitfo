@@ -24,6 +24,7 @@ test("parses default scan command with a domain", () => {
     search: false,
     searchLimit: 5,
     location: null,
+    vertical: null,
     vault: null,
     version: false,
     wayback: false,
@@ -96,6 +97,7 @@ test("parses markdown and json aliases", () => {
   assert.equal(parseArgs(["brief", "example.com", "--wayback-versions", "2"]).waybackVersions, 2);
   assert.equal(parseArgs(["brief", "example.com", "--export-tables", "exports"]).exportTables, "exports");
   assert.equal(parseArgs(["brief", "example.com", "--location", "Richmond, VA"]).location, "Richmond, VA");
+  assert.equal(parseArgs(["plan", "example.com", "--vertical", "Plumbing"]).vertical, "plumbing");
   assert.equal(parseArgs(["version"]).version, true);
   assert.equal(parseArgs(["help"]).help, true);
 });

@@ -98,6 +98,7 @@ try {
     wayback: options.wayback,
     waybackLimit: options.waybackLimit,
     waybackVersions: options.waybackVersions,
+    vertical: options.vertical,
   });
   const terminalOutput = renderOutput(scan, terminalRenderOptions(options, !noColor));
 

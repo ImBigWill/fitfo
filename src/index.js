@@ -7,10 +7,12 @@ import { getResearchProfile } from "./lib/research.js";
 import { getWaybackProfile } from "./lib/wayback.js";
 import { analyzeProfile } from "./lib/analyze.js";
 import { APP_VERSION } from "./meta.js";
+import { buildVerticalContext, normalizeVertical } from "./verticals/index.js";
 
 export async function scanDomain(input, options = {}) {
   const startedAt = new Date().toISOString();
   const domain = normalizeDomainInput(input);
+  const verticalSlug = normalizeVertical(options.vertical);
 
   const [rdap, dns, http] = await Promise.all([
     getRdapProfile(domain.apex),
@@ -36,7 +38,7 @@ export async function scanDomain(input, options = {}) {
     versions: options.waybackVersions,
   });
 
-  return {
+  const scan = {
     tool: "FITFO",
     scanVersion: APP_VERSION,
     startedAt,
@@ -49,5 +51,10 @@ export async function scanDomain(input, options = {}) {
     research,
     wayback,
     analysis,
+  };
+
+  return {
+    ...scan,
+    vertical: buildVerticalContext(scan, { vertical: verticalSlug }),
   };
 }
