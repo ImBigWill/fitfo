@@ -39,7 +39,7 @@ export async function writeReport(outputPath, content) {
 }
 
 function obsidianFileName(scan, options) {
-  const suffix = options.command === "brief" ? "-brief" : options.command === "plan" ? "-plan" : options.command === "onboard" ? "-onboard" : "";
+  const suffix = options.command === "snapshot" ? "-snapshot" : options.command === "brief" ? "-brief" : options.command === "plan" ? "-plan" : options.command === "onboard" ? "-onboard" : "";
   return `${scan.domain.apex}${suffix}.md`;
 }
 

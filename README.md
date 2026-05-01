@@ -14,6 +14,13 @@ FITFO is a command-line onboarding scanner for figuring out the first layer of a
 
 Motto: **Kickstarting onboarding.**
 
+FITFO has multiple report modes:
+
+- `snapshot`: a light first-call walkthrough for site positioning, what is working, what is holding the site back, and how an agency can help.
+- `brief`: a deeper first-call prep packet with research queues, evidence, client confirmations, and opportunity areas.
+- `plan`: a build-planning report with structure, workstreams, launch checks, and keyword/page mapping.
+- `onboard`: the full intake path with saved planning notes and table exports.
+
 ## Quick Start
 
 From this folder:
@@ -169,6 +176,7 @@ Use this when you want FITFO to ask what to make:
 
 - quick domain scan
 - client onboarding handoff
+- FitFo Snapshot
 - kickoff research brief
 - client build plan
 
@@ -177,6 +185,14 @@ Fast technical scan:
 ```bash
 fitfo example.com
 ```
+
+Light first-call site walkthrough:
+
+```bash
+fitfo snapshot example.com --deep --search --location "Richmond, VA"
+```
+
+`fitfo snapshot` is built for a sales or discovery conversation. It keeps the output focused on what the site is doing right, what may be holding it back, opportunity angles, how an agency can help, a simple walkthrough flow, talk track, and questions to ask. It is intentionally less deep than `brief` or `plan`.
 
 First-call prep brief:
 
@@ -329,10 +345,22 @@ Save a first-call brief:
 fitfo brief example.com --obsidian --out ~/Obsidian/Clients/example.com-brief.md
 ```
 
+Save a FitFo Snapshot:
+
+```bash
+fitfo snapshot example.com --obsidian --out ~/Obsidian/Clients/example.com-snapshot.md
+```
+
 Save into an Obsidian vault folder with a stable filename:
 
 ```bash
 fitfo brief example.com --obsidian --vault ~/Obsidian/Clients
+```
+
+For snapshots, the stable vault filename is `example.com-snapshot.md`:
+
+```bash
+fitfo snapshot example.com --obsidian --vault ~/Obsidian/Clients
 ```
 
 Or set a default vault folder:
@@ -398,6 +426,7 @@ Key sections:
 - **Wayback Recent Versions**: when `--wayback` is used, recent archived homepage versions, visible change flags, and risk notes for forms, phone visibility, tracking/tool signals, titles, H1s, and meta robots.
 - **Lead Capture Inventory**: forms, form actions, visible fields, submit labels, phone numbers, email addresses, and CTA labels that need routing/tracking confirmation.
 - **Tracking / Tool Footprint**: marketing tags, CRM/booking signals, crawl-level tool fingerprints, and third-party script hosts to confirm with the client.
+- **FitFo Snapshot**: when using snapshot mode, a light walkthrough with positioning read, what is working, friction points, opportunity angles, agency help areas, talk track, and client questions.
 - **Kickoff Research Brief**: when using brief mode, current site read, market snapshot, keyword/page opportunities, positioning hypotheses, and kickoff call agenda.
 - **Kickoff Research Game Plan**: when using plan mode, carries market, keyword, and positioning prompts into build planning.
 - **Detailed Action Report**: prioritized next steps, proof-asset requests, content inventory, keyword clusters, keyword evidence, competitor research, top local competitors, reputation summary, competitor-informed structure, service/location recommendations, confirmation script, and keyword-to-page mapping for kickoff and build planning.
@@ -437,17 +466,26 @@ Practical fallback coverage includes common and client-facing TLDs such as:
 
 See [docs/ROADMAP.md](docs/ROADMAP.md) and [docs/FEATURE_REQUESTS.md](docs/FEATURE_REQUESTS.md).
 
-The important future split is:
+The main mode split is:
 
 ```bash
+fitfo snapshot clientdomain.com
 fitfo brief clientdomain.com
 ```
 
-`fitfo brief` is the first-call prep mode. Today it scaffolds public-signal observations, research queues, opportunity areas, and questions for the client to confirm or correct. Deeper crawling, keyword ideas, copy notes, and local SEO checks can build on this command.
+`fitfo snapshot` is the lighter first-call walkthrough mode. It is designed for a quick website and positioning conversation without overwhelming the client.
 
-Brief and plan reports also include client-call intelligence prompts that translate scan facts into follow-up decisions: lead flow, CRM/booking ownership, canonical launch host, priority services/markets, analytics/Search Console access, and previous developer handoff.
+`fitfo brief` is the deeper first-call prep mode. It scaffolds public-signal observations, research queues, opportunity areas, and questions for the client to confirm or correct. Deeper crawling, keyword ideas, copy notes, and local SEO checks build on this command.
 
-For kickoff prep, run:
+Snapshot, brief, and plan reports also include client-call intelligence prompts that translate scan facts into follow-up decisions: lead flow, CRM/booking ownership, canonical launch host, priority services/markets, analytics/Search Console access, and previous developer handoff.
+
+For a light first-call walkthrough, run:
+
+```bash
+fitfo snapshot clientdomain.com --deep --search --location "City, ST" --obsidian
+```
+
+For deeper kickoff prep, run:
 
 ```bash
 fitfo brief clientdomain.com --deep --search --location "City, ST" --obsidian

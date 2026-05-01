@@ -43,6 +43,15 @@ test("parses brief command with Obsidian output path", () => {
   assert.equal(options.out, "notes/example.md");
 });
 
+test("parses snapshot command", () => {
+  const options = parseArgs(["snapshot", "example.com", "--deep", "--search"]);
+
+  assert.equal(options.command, "snapshot");
+  assert.equal(options.domain, "example.com");
+  assert.equal(options.deep, true);
+  assert.equal(options.search, true);
+});
+
 test("parses plan command", () => {
   const options = parseArgs(["plan", "example.com", "--deep"]);
 

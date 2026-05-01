@@ -18,8 +18,17 @@ export const WIZARD_INTENTS = [
     search: false,
   },
   {
-    key: "kickoff",
+    key: "snapshot",
     choice: "3",
+    label: "FitFo Snapshot",
+    description: "Light first-call walkthrough for site positioning, gaps, and next-step opportunities.",
+    command: "snapshot",
+    deep: true,
+    search: true,
+  },
+  {
+    key: "kickoff",
+    choice: "4",
     label: "Kickoff research brief",
     description: "Deep crawl, market research, positioning prompts, and first-call agenda.",
     command: "brief",
@@ -28,7 +37,7 @@ export const WIZARD_INTENTS = [
   },
   {
     key: "plan",
-    choice: "4",
+    choice: "5",
     label: "Client build plan",
     description: "Deep crawl, market research, recommended structure, and build workstreams.",
     command: "plan",
@@ -37,7 +46,7 @@ export const WIZARD_INTENTS = [
   },
 ];
 
-export function normalizeWizardIntent(value, fallback = "kickoff") {
+export function normalizeWizardIntent(value, fallback = "snapshot") {
   const normalized = String(value || "").trim().toLowerCase();
   if (!normalized) return getWizardIntent(fallback);
 
@@ -48,7 +57,7 @@ export function normalizeWizardIntent(value, fallback = "kickoff") {
   ));
 
   if (!match) {
-    throw new Error(`Unsupported FITFO intent "${value}". Choose 1, 2, 3, or 4.`);
+    throw new Error(`Unsupported FITFO intent "${value}". Choose 1, 2, 3, 4, or 5.`);
   }
 
   return match;

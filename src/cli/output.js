@@ -1,6 +1,7 @@
 import { buildBrief, renderBriefMarkdown, renderBriefText } from "../brief.js";
 import { buildClientPlan, renderPlanMarkdown, renderPlanText } from "../plan.js";
 import { renderMarkdownReport, renderTextReport } from "../report.js";
+import { buildSnapshot, renderSnapshotMarkdown, renderSnapshotText } from "../snapshot.js";
 
 export function renderOutput(scan, options) {
   const report = options.report === "onboard" ? "plan" : options.report;
@@ -8,6 +9,9 @@ export function renderOutput(scan, options) {
   if (options.format === "json") {
     if (report === "brief") {
       return `${JSON.stringify({ scan, brief: buildBrief(scan) }, null, 2)}\n`;
+    }
+    if (report === "snapshot") {
+      return `${JSON.stringify({ scan, snapshot: buildSnapshot(scan) }, null, 2)}\n`;
     }
     if (report === "plan") {
       return `${JSON.stringify({ scan, plan: buildClientPlan(scan) }, null, 2)}\n`;
@@ -19,6 +23,9 @@ export function renderOutput(scan, options) {
     if (report === "brief") {
       return renderBriefMarkdown(scan, { obsidian: options.obsidian });
     }
+    if (report === "snapshot") {
+      return renderSnapshotMarkdown(scan, { obsidian: options.obsidian });
+    }
     if (report === "plan") {
       return renderPlanMarkdown(scan, { obsidian: options.obsidian });
     }
@@ -27,6 +34,9 @@ export function renderOutput(scan, options) {
 
   if (report === "brief") {
     return `${renderBriefText(scan, { color: options.color })}\n`;
+  }
+  if (report === "snapshot") {
+    return `${renderSnapshotText(scan, { color: options.color })}\n`;
   }
   if (report === "plan") {
     return `${renderPlanText(scan, { color: options.color })}\n`;

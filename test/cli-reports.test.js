@@ -40,6 +40,19 @@ test("uses a stable Obsidian vault path when a vault directory is configured", (
   assert.equal(outputPath, "/vault/Clients/example.com-brief.md");
 });
 
+test("uses a stable snapshot Obsidian vault path", () => {
+  const outputPath = resolveOutputPath(scan, {
+    command: "snapshot",
+    out: null,
+    save: false,
+    obsidian: true,
+    format: "obsidian",
+    vault: "/vault/Clients",
+  });
+
+  assert.equal(outputPath, "/vault/Clients/example.com-snapshot.md");
+});
+
 test("uses a stable full-onboarding path for onboard reports", () => {
   const vaultPath = resolveOutputPath(scan, {
     command: "onboard",

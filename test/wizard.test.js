@@ -3,11 +3,12 @@ import test from "node:test";
 import { applyWizardIntent, normalizeWizardIntent, shouldAskForWizardLocation } from "../src/cli/wizard.js";
 
 test("normalizes wizard intent choices", () => {
-  assert.equal(normalizeWizardIntent("").key, "kickoff");
+  assert.equal(normalizeWizardIntent("").key, "snapshot");
   assert.equal(normalizeWizardIntent("1").key, "scan");
   assert.equal(normalizeWizardIntent("2").key, "handoff");
-  assert.equal(normalizeWizardIntent("3").key, "kickoff");
-  assert.equal(normalizeWizardIntent("4").key, "plan");
+  assert.equal(normalizeWizardIntent("3").key, "snapshot");
+  assert.equal(normalizeWizardIntent("4").key, "kickoff");
+  assert.equal(normalizeWizardIntent("5").key, "plan");
   assert.equal(normalizeWizardIntent("plan").key, "plan");
   assert.throws(() => normalizeWizardIntent("nope"), /Unsupported FITFO intent/);
 });
@@ -19,7 +20,7 @@ test("applies wizard presets to existing options", () => {
     search: false,
     format: "text",
   };
-  const options = applyWizardIntent(base, normalizeWizardIntent("3"));
+  const options = applyWizardIntent(base, normalizeWizardIntent("4"));
 
   assert.equal(options.command, "brief");
   assert.equal(options.deep, true);

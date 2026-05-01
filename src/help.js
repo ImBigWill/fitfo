@@ -28,6 +28,7 @@ export function renderHelp(options = {}) {
     "",
     panel(theme, "Commands", [
       kv(theme, "scan", `${theme.value("fitfo lght.co")} ${theme.dim("- styled Domain Brief")}`),
+      kv(theme, "snapshot", `${theme.value("fitfo snapshot lght.co --deep --search")} ${theme.dim("- light first-call walkthrough")}`),
       kv(theme, "brief", `${theme.value("fitfo brief lght.co")} ${theme.dim("- first-call prep")}`),
       kv(theme, "plan", `${theme.value("fitfo plan lght.co --deep")} ${theme.dim("- build plan")}`),
       kv(theme, "onboard", `${theme.value("fitfo onboard lght.co")} ${theme.dim("- full intake note + tables")}`),
@@ -57,6 +58,7 @@ export function renderHelp(options = {}) {
       `${theme.bullet("›")} Nameservers, DNS, MX, SPF, DMARC, DNSSEC`,
       `${theme.bullet("›")} Cloudflare, hosting, CMS, and email hints`,
       `${theme.bullet("›")} Optional Wayback comparison for recent site changes`,
+      `${theme.bullet("›")} FitFo Snapshot for a light client-facing walkthrough`,
       `${theme.bullet("›")} First-call brief scaffold for research and client questions`,
       `${theme.bullet("›")} Client access checklist and previous-developer request`,
     ]),
