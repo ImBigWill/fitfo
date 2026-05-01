@@ -1,5 +1,6 @@
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
+import { getVerticalProfile } from "../verticals/index.js";
 
 const FIRECRAWL_SEARCH_URL = "https://api.firecrawl.dev/v2/search";
 const execFileAsync = promisify(execFile);
@@ -84,6 +85,7 @@ export async function getResearchProfile(domain, http, site, options = {}) {
 export function buildResearchQueries(domain, http, site, options = {}) {
   const brand = cleanTitle(http?.title) || domain.apex;
   const serviceHints = extractServiceHints(site).slice(0, 3);
+  const verticalServices = extractVerticalServiceHints(options.vertical).slice(0, 4);
   const location = options.location;
   const category = inferServiceCategory(http, site);
   const base = location ? `${brand} ${location}` : brand;
@@ -97,7 +99,7 @@ export function buildResearchQueries(domain, http, site, options = {}) {
     queries.push(`${category} ${location}`);
   }
 
-  for (const service of serviceHints) {
+  for (const service of [...serviceHints, ...verticalServices]) {
     queries.push(`${service} ${location || domain.apex}`);
   }
 
@@ -110,7 +112,16 @@ export function buildResearchQueries(domain, http, site, options = {}) {
     queries.push(`best ${serviceHints[0]} ${location}`);
   }
 
+  if (verticalServices.length > 0 && location) {
+    queries.push(`best ${verticalServices[0]} ${location}`);
+  }
+
   return [...new Set(queries)].slice(0, options.queryLimit || 6);
+}
+
+function extractVerticalServiceHints(vertical) {
+  if (!vertical) return [];
+  return getVerticalProfile(vertical)?.services || [];
 }
 
 async function firecrawlApiSearch(query, options) {

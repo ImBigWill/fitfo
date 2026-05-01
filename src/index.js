@@ -31,6 +31,7 @@ export async function scanDomain(input, options = {}) {
     searchLimit: options.searchLimit,
     location: options.location,
     country: options.country,
+    vertical: verticalSlug,
   });
   const wayback = await getWaybackProfile(domain, http, {
     enabled: options.wayback,

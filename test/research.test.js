@@ -37,6 +37,20 @@ test("returns a clear unavailable profile when Firecrawl key is missing and CLI 
   assert.match(profile.errors[0], /FIRECRAWL_API_KEY/);
 });
 
+test("adds vertical service queries when a vertical is provided", () => {
+  const queries = buildResearchQueries(
+    { apex: "client.example" },
+    { title: "Client Services" },
+    { pages: [] },
+    { location: "Richmond VA", queryLimit: 12, vertical: "plumbing" },
+  );
+
+  assert.ok(queries.includes("emergency plumbing Richmond VA"));
+  assert.ok(queries.includes("drain cleaning Richmond VA"));
+  assert.ok(queries.includes("sewer line repair Richmond VA"));
+  assert.ok(queries.includes("best emergency plumbing Richmond VA"));
+});
+
 test("uses authenticated Firecrawl CLI fallback when the API key is missing", async () => {
   const calls = [];
   const profile = await getResearchProfile(
