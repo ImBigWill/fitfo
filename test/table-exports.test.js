@@ -12,7 +12,7 @@ const scan = {
   http: { reachable: true, title: "Client Plumbing" },
   site: {
     enabled: true,
-    summary: { pagesScanned: 2, formsDetected: 1, phonesDetected: ["555-123-4567"], ctas: ["Book Now"] },
+    summary: { pagesScanned: 2, formsDetected: 1, phonesDetected: ["555-123-4567"], addressesDetected: ["123 Main St Richmond VA 23220"], ctas: ["Book Now"] },
     pages: [
       { path: "/", title: "Client Plumbing", metaDescription: "Local plumber.", headings: { h1: ["Client Plumbing"] }, forms: [], phones: ["555-123-4567"], ctas: ["Book Now"] },
       { path: "/services/drain-cleaning/", title: "Drain Cleaning", headings: { h1: ["Drain Cleaning"] }, forms: [], phones: [], ctas: [] },
@@ -29,6 +29,12 @@ const scan = {
         title: "Competitor Plumbing",
         description: "Emergency plumbing repair",
         url: "https://competitor.example",
+      },
+      {
+        query: "Client Plumbing reviews",
+        title: "Client Plumbing Yelp Reviews",
+        description: "Client Plumbing at 123 Main St Richmond VA 23220. Call 555-123-4567.",
+        url: "https://www.yelp.com/biz/client-plumbing",
       },
     ],
   },
@@ -100,6 +106,7 @@ test("builds table export rows for research sidecars", () => {
   assert.ok(bundle.loginChecklist.some((item) => item.access === "Cloudflare" && item.status === "No - no obvious Cloudflare"));
   assert.ok(bundle.unknownBlockers.some((item) => item.area === "Measurement access"));
   assert.ok(bundle.callOneWorkflow.some((item) => item.area === "Internal next step" && item.owner === "Us"));
+  assert.ok(bundle.citationBaseline.some((item) => item.source === "yelp" && item.matchStatus === "Consistent candidate"));
   assert.ok(bundle.hostingEvidence.some((item) => item.provider === "WP Engine" && item.evidence.includes("CNAME")));
   assert.ok(bundle.waybackVersions.some((item) => item.title === "Client Plumbing"));
   assert.ok(bundle.waybackChanges.some((item) => item.signal === "Forms"));
@@ -138,6 +145,7 @@ test("writes CSV and JSON table exports", async () => {
   const logins = await readFile(result.files.loginChecklist, "utf8");
   const unknownBlockers = await readFile(result.files.unknownBlockers, "utf8");
   const callOneWorkflow = await readFile(result.files.callOneWorkflow, "utf8");
+  const citationBaseline = await readFile(result.files.citationBaseline, "utf8");
   const hosting = await readFile(result.files.hostingEvidence, "utf8");
   const waybackVersions = await readFile(result.files.waybackVersions, "utf8");
   const waybackChanges = await readFile(result.files.waybackChanges, "utf8");
@@ -156,6 +164,8 @@ test("writes CSV and JSON table exports", async () => {
   assert.match(unknownBlockers, /Measurement access,Medium,Client/);
   assert.match(callOneWorkflow, /Area,Found,Need,Risk,Ask,Owner,Audience/);
   assert.match(callOneWorkflow, /Internal next step,Public scan complete/);
+  assert.match(citationBaseline, /Source,Type,Found Name,Found Address,Found Phone,Match Status,Risk,Action,URL/);
+  assert.match(citationBaseline, /yelp/);
   assert.match(hosting, /Provider,Confidence,Edge \/ Proxy Note,Evidence,Note/);
   assert.match(hosting, /WP Engine,Medium/);
   assert.match(waybackVersions, /Captured,URL,Title,H1,Words,Forms,Phones,Tools,Archive URL/);
@@ -169,6 +179,7 @@ test("writes CSV and JSON table exports", async () => {
   assert.ok(json.hostingEvidence.some((item) => item.evidence.includes("WP Engine")));
   assert.ok(json.unknownBlockers.some((item) => item.area === "Lead routing / CRM"));
   assert.ok(json.callOneWorkflow.some((item) => item.audience === "Internal"));
+  assert.ok(json.citationBaseline.some((item) => item.source === "yelp"));
   assert.ok(json.waybackVersions.some((item) => item.title === "Client Plumbing"));
   assert.ok(json.waybackChanges.some((item) => item.warning.includes("forms")));
   assert.ok(json.topLocalCompetitors.some((item) => item.name === "Competitor Plumbing"));

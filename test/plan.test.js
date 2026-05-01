@@ -10,7 +10,7 @@ const scan = {
   http: { reachable: true, title: "Client Plumbing" },
   site: {
     enabled: true,
-    summary: { pagesScanned: 2 },
+    summary: { pagesScanned: 2, phonesDetected: ["555-123-4567"], addressesDetected: ["123 Main St Richmond VA 23220"] },
     pages: [{ path: "/" }, { path: "/services/drain-cleaning/" }],
   },
   research: {
@@ -18,7 +18,10 @@ const scan = {
     available: true,
     location: "Richmond, VA",
     queries: ["Client Plumbing services Richmond VA"],
-    results: [{ query: "Client Plumbing services Richmond VA", title: "Competitor Plumbing Services", description: "Drain repair and emergency plumbing", url: "https://competitor.example" }],
+    results: [
+      { query: "Client Plumbing services Richmond VA", title: "Competitor Plumbing Services", description: "Drain repair and emergency plumbing", url: "https://competitor.example" },
+      { query: "Client Plumbing reviews", title: "Client Plumbing Yelp Reviews", description: "Client Plumbing at 123 Main St Richmond VA 23220. Call 555-123-4567.", url: "https://www.yelp.com/biz/client-plumbing" },
+    ],
   },
   wayback: {
     enabled: true,
@@ -93,6 +96,7 @@ test("builds a client plan from scan, crawl, and research signals", () => {
   assert.ok(plan.clientAccessRequests.some((item) => item.access === "Domain registrar" && item.owner === "Client"));
   assert.ok(plan.doNotTouchWarnings.some((item) => item.area === "Email"));
   assert.ok(plan.previousDeveloperRequestItems.some((item) => item.includes("Full DNS zone export")));
+  assert.ok(plan.citationBaseline.rows.some((item) => item.source === "yelp"));
   assert.ok(plan.topLocalCompetitors.some((item) => item.name === "Competitor Plumbing Services"));
   assert.equal(plan.vertical.slug, "plumbing");
   assert.ok(plan.vertical.homeownerUx.some((item) => item.area === "Emergency contact path"));
@@ -129,6 +133,9 @@ test("renders a Markdown plan for Obsidian", () => {
   assert.match(markdown, /\| Login \/ Access \| Current Public Status \| Owner \| What Client Needs To Get \|/);
   assert.match(markdown, /## Do Not Touch Until Confirmed/);
   assert.match(markdown, /## Previous Developer Request List/);
+  assert.match(markdown, /## Citation \/ NAP Baseline/);
+  assert.match(markdown, /Canonical NAP candidate only/);
+  assert.match(markdown, /yelp/);
   assert.match(markdown, /## URL \/ Redirect Inventory/);
   assert.match(markdown, /\| Area \/ URL \| Extracted Evidence \| Client \/ Launch Question \|/);
   assert.match(markdown, /## Wayback Recent Versions/);

@@ -224,6 +224,7 @@ export function extractPageProfile(url, html, origin) {
     ctas: extractCtas(html),
     forms: extractForms(html, origin),
     phones: extractPhones(text),
+    addresses: extractAddresses(text),
     emails: extractEmails(text),
     schemaTypes: extractSchemaTypes(html),
     toolSignals: extractToolSignals(html),
@@ -372,6 +373,11 @@ function extractPhones(text) {
   return [...new Set((text.match(/\(?\b\d{3}\)?[-.\s]\d{3}[-.\s]\d{4}\b/g) || []).map((value) => value.trim()))].slice(0, 10);
 }
 
+function extractAddresses(text) {
+  const matches = String(text || "").replace(/\s+/g, " ").match(/\b\d{2,6}\s+[A-Z0-9][A-Z0-9 .'-]{2,80}\s+(?:St|Street|Ave|Avenue|Rd|Road|Dr|Drive|Blvd|Boulevard|Ln|Lane|Ct|Court|Way|Pkwy|Parkway|Pl|Place|Hwy|Highway)\b(?:[ ,]+[A-Z][A-Za-z .'-]{2,40})?[ ,]+[A-Z]{2}[ ,]+\d{5}(?:-\d{4})?|\b\d{2,6}\s+[A-Z0-9][A-Z0-9 .'-]{2,80}\s+(?:St|Street|Ave|Avenue|Rd|Road|Dr|Drive|Blvd|Boulevard|Ln|Lane|Ct|Court|Way|Pkwy|Parkway|Pl|Place|Hwy|Highway)\b(?:[ ,]+[A-Z][A-Za-z .'-]{2,40})?(?:[ ,]+[A-Z]{2})?/gi) || [];
+  return [...new Set(matches.map((value) => value.replace(/[.,\s]+$/g, "").replace(/\s+/g, " ").trim()))].slice(0, 10);
+}
+
 function extractEmails(text) {
   return [...new Set((text.match(/\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi) || []).map((value) => value.trim()))].slice(0, 10);
 }
@@ -445,6 +451,7 @@ export function summarizePages(pages) {
     pagesWithMultipleH1: pages.filter((page) => page.headings.h1.length > 1).length,
     formsDetected: pages.reduce((sum, page) => sum + page.forms.length, 0),
     phonesDetected: [...new Set(pages.flatMap((page) => page.phones))],
+    addressesDetected: [...new Set(pages.flatMap((page) => page.addresses || []))],
     emailsDetected: [...new Set(pages.flatMap((page) => page.emails))],
     schemaTypes: [...new Set(pages.flatMap((page) => page.schemaTypes))].sort(),
     toolSignals: [...new Set(pages.flatMap((page) => page.toolSignals))].sort(),

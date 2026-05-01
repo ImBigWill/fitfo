@@ -15,6 +15,7 @@ It can:
 - generate a kickoff research brief with observed site facts, search-backed market signals, inferred page/positioning opportunities, and first-call agenda prompts
 - compare recent Internet Archive/Wayback homepage captures for title, H1, meta, lead-capture, phone, CTA, tracking, and robots/noindex changes
 - generate keyword clusters, keyword evidence, URL/redirect inventory, lead capture inventory, tracking/tool footprint, competitor/review/directory classification, top local competitor prompts, keyword-to-page maps, service/location recommendations, proof-asset requests, content inventory, competitor-informed structure, reputation summaries, confirmation scripts, and prioritized action items
+- generate a Citation / NAP baseline in brief/plan/onboard reports, including canonical NAP candidates, directory/profile rows, mismatch risk, and cleanup actions
 - use either `FIRECRAWL_API_KEY` or an authenticated local Firecrawl CLI for market research
 - generate a `fitfo plan` client build plan from scan, crawl, and research signals
 - add a plumber/home-services planning lens with `--vertical plumbing`, including plumber-aware service research queries, homeowner emergency UX checks, plumbing proof assets, and role-specific kickoff questions
@@ -91,6 +92,7 @@ Core should focus on fast onboarding discovery:
 - unknown blockers and call-one workflow rows that can become tasks
 - kickoff research sections that clearly label observed facts, research signals, inferred hypotheses, and client-confirmation prompts
 - keyword and competitor intelligence that remains deterministic and client-call oriented
+- citation / NAP baseline checks for name, address/service-area, phone, directory/profile consistency, and cleanup queues
 - proof-asset and content-inventory output for kickoff planning
 - service/location page recommendations for kickoff and build planning
 - open-source-safe vertical profiles that add market-specific research and planning prompts without committing real client scan data

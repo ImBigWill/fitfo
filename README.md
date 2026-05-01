@@ -100,6 +100,7 @@ fitfo onboard example.com
 - Firecrawl-backed market/search research when Firecrawl is configured
 - recent Wayback homepage snapshot comparison through the Internet Archive
 - raw evidence sections for URL/redirect inventory, lead capture, tracking/tool footprint, keyword evidence, competitors, service/location, reputation, launch, and action planning
+- Citation / NAP baseline for public name, address/service-area, phone, and directory/profile consistency checks
 - Obsidian-ready action-plan note
 - CSV/JSON table exports for planning workflows
 
@@ -112,6 +113,7 @@ It also adds a plain evidence layer near the top:
 - **Why FITFO Thinks This**: the public signal behind each finding, plus what to confirm with the client.
 - **Go Get These Logins**: a direct list of the accounts/access the client needs to track down.
 - **Do Not Touch Until Confirmed**: DNS, email, Cloudflare/CDN, redirects, lead tracking, hosting, and subdomain warnings before launch work.
+- **Citation / NAP Baseline**: the canonical NAP candidate from public signals, plus directory/profile rows that may be consistent, partial, missing, or conflicting.
 
 When run in an interactive terminal, `fitfo onboard` asks for missing full-intake details before scanning:
 

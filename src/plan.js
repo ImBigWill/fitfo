@@ -16,6 +16,7 @@ export function buildClientPlan(scan) {
     clientAccessRequests: buildClientAccessRequests(scan),
     doNotTouchWarnings: buildDoNotTouchWarnings(scan),
     previousDeveloperRequestItems: buildPreviousDeveloperRequestItems(scan),
+    citationBaseline: brief.citationBaseline,
     priorities: buildPriorities(scan),
     structure: brief.suggestedStructure,
     competitorStructure: brief.competitorStructure,
@@ -69,6 +70,8 @@ export function renderPlanText(scan, options = {}) {
     panel(theme, "Do Not Touch Until Confirmed", formatWarningRows(theme, plan.doNotTouchWarnings)),
     "",
     panel(theme, "Previous Developer Request List", formatPreviousDeveloperRequestItems(theme, plan.previousDeveloperRequestItems)),
+    "",
+    panel(theme, "Citation / NAP Baseline", formatCitationBaseline(theme, plan.citationBaseline)),
     "",
     panel(theme, "URL / Redirect Inventory", formatEvidenceRows(theme, plan.siteEvidence?.urlInventory)),
     "",
@@ -170,6 +173,10 @@ export function renderPlanMarkdown(scan, options = {}) {
     "## Previous Developer Request List",
     "",
     ...plan.previousDeveloperRequestItems.map((item) => `- [ ] ${item}`),
+    "",
+    "## Citation / NAP Baseline",
+    "",
+    markdownCitationBaseline(plan.citationBaseline),
     "",
     "## URL / Redirect Inventory",
     "",
@@ -362,6 +369,22 @@ function formatVerticalAudienceQuestions(theme, questions = []) {
   return questions.map((item) => `${theme.bullet("›")} ${theme.label(item.audience)} ${theme.dim(item.question)}`);
 }
 
+function formatCitationBaseline(theme, baseline = {}) {
+  const canonical = baseline.canonical || {};
+  const rows = baseline.rows || [];
+  const lines = [
+    `${theme.bullet("›")} ${theme.label("Canonical candidate")} ${theme.chip(`[${canonical.confidence || "Low"}]`)} ${theme.dim(`${canonical.name || "Unknown"} | ${canonical.address || "Unknown"} | ${canonical.phone || "Unknown"}`)}`,
+    `${theme.bullet("›")} ${theme.label("Summary")} ${theme.dim(baseline.summary?.label || "No citation sources reviewed yet.")}`,
+    `${theme.bullet("›")} ${theme.label("Ask")} ${theme.dim(baseline.confirmationQuestion || "Confirm official NAP before citation cleanup.")}`,
+  ];
+
+  for (const row of rows.slice(0, 8)) {
+    lines.push(`${theme.bullet("›")} ${theme.label(row.source)} ${theme.chip(`[${row.matchStatus}]`)} ${theme.dim(`${row.foundName} | ${row.foundAddress} | ${row.foundPhone}. ${row.action}`)}`);
+  }
+
+  return lines;
+}
+
 function markdownVerticalSections(vertical = {}) {
   if (!vertical.slug) return [];
 
@@ -395,6 +418,33 @@ function markdownVerticalSections(vertical = {}) {
     ])),
     "",
   ];
+}
+
+function markdownCitationBaseline(baseline = {}) {
+  const canonical = baseline.canonical || {};
+  return [
+    markdownTableWithHeaders(["Candidate", "Value", "Source"], [
+      ["Name", canonical.name || "Unknown", canonical.nameSource || "Ask Client"],
+      ["Address / Service Area", canonical.address || "Unknown", canonical.addressSource || "Ask Client"],
+      ["Phone", canonical.phone || "Unknown", canonical.phoneSource || "Ask Client"],
+      ["Confidence", canonical.confidence || "Low", canonical.note || "Client must confirm official NAP."],
+    ]),
+    "",
+    `- **Summary:** ${baseline.summary?.label || "No citation sources reviewed yet."}`,
+    `- **Confirm:** ${baseline.confirmationQuestion || "Confirm official NAP before citation cleanup."}`,
+    "",
+    markdownTableWithHeaders(["Source", "Type", "Found Name", "Found Address", "Found Phone", "Match Status", "Risk", "Action", "URL"], (baseline.rows || []).map((row) => [
+      row.source,
+      row.type,
+      row.foundName,
+      row.foundAddress,
+      row.foundPhone,
+      row.matchStatus,
+      row.risk,
+      row.action,
+      row.url,
+    ])),
+  ].join("\n");
 }
 
 function formatInfrastructureSnapshot(theme, rows = []) {

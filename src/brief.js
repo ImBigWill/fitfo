@@ -1,5 +1,6 @@
 import { createTheme } from "./theme.js";
 import { buildCallOneWorkflow, buildClientAccessRequests, buildConfidenceExplanations, buildDoNotTouchWarnings, buildInfrastructureSnapshot, buildLoginChecklist, buildPreviousDeveloperRequestItems, buildUnknownBlockers, plainCloudflareStatus } from "./handoff.js";
+import { buildCitationBaseline } from "./lib/citations.js";
 import { kv, numbered, panel, renderAppHeader, renderSurface } from "./ui.js";
 
 export function buildBrief(scan) {
@@ -10,6 +11,7 @@ export function buildBrief(scan) {
   const site = scan.site || {};
   const siteSummary = site.summary || {};
   const actionReport = buildActionReport(scan);
+  const citationBaseline = buildCitationBaseline(scan);
   const waybackEvidence = buildWaybackEvidence(scan);
   const competitorStructure = buildCompetitorStructure(scan, actionReport);
   const reputationSummary = buildReputationSummary(scan, actionReport);
@@ -26,6 +28,7 @@ export function buildBrief(scan) {
     clientAccessRequests: buildClientAccessRequests(scan),
     doNotTouchWarnings: buildDoNotTouchWarnings(scan),
     previousDeveloperRequestItems: buildPreviousDeveloperRequestItems(scan),
+    citationBaseline,
     snapshot: [
       ["Registrar", `${analysis.registrar || "Unknown"} (${analysis.registrarDetails?.confidence || "Manual"})`],
       ["DNS", `${analysis.dnsProvider || "Unknown"}`],
@@ -93,6 +96,8 @@ export function renderBriefText(scan, options = {}) {
     panel(theme, "Do Not Touch Until Confirmed", formatDoNotTouchWarnings(theme, brief.doNotTouchWarnings)),
     "",
     panel(theme, "Previous Developer Request List", formatPreviousDeveloperRequestItems(theme, brief.previousDeveloperRequestItems)),
+    "",
+    panel(theme, "Citation / NAP Baseline", formatCitationBaseline(theme, brief.citationBaseline)),
     "",
     panel(theme, "URL / Redirect Inventory", formatUrlInventory(theme, brief.actionReport.siteEvidence.urlInventory)),
     "",
@@ -211,6 +216,10 @@ export function renderBriefMarkdown(scan, options = {}) {
     "## Previous Developer Request List",
     "",
     ...brief.previousDeveloperRequestItems.map((item) => `- [ ] ${item}`),
+    "",
+    "## Citation / NAP Baseline",
+    "",
+    markdownCitationBaseline(brief.citationBaseline),
     "",
     "## URL / Redirect Inventory",
     "",
@@ -1955,6 +1964,49 @@ function markdownKeywordEvidence(rows) {
     item.page,
     item.nextStep,
   ]));
+}
+
+function formatCitationBaseline(theme, baseline = {}) {
+  const canonical = baseline.canonical || {};
+  const rows = baseline.rows || [];
+  const lines = [
+    `${theme.bullet("›")} ${theme.label("Canonical candidate")} ${theme.chip(`[${canonical.confidence || "Low"}]`)} ${theme.dim(`${canonical.name || "Unknown"} | ${canonical.address || "Unknown"} | ${canonical.phone || "Unknown"}`)}`,
+    `${theme.bullet("›")} ${theme.label("Summary")} ${theme.dim(baseline.summary?.label || "No citation sources reviewed yet.")}`,
+    `${theme.bullet("›")} ${theme.label("Ask")} ${theme.dim(baseline.confirmationQuestion || "Confirm official NAP before citation cleanup.")}`,
+  ];
+
+  for (const row of rows.slice(0, 8)) {
+    lines.push(`${theme.bullet("›")} ${theme.label(row.source)} ${theme.chip(`[${row.matchStatus}]`)} ${theme.dim(`${row.foundName} | ${row.foundAddress} | ${row.foundPhone}. ${row.action}`)}`);
+  }
+
+  return lines;
+}
+
+function markdownCitationBaseline(baseline = {}) {
+  const canonical = baseline.canonical || {};
+  return [
+    markdownTableWithHeaders(["Candidate", "Value", "Source"], [
+      ["Name", canonical.name || "Unknown", canonical.nameSource || "Ask Client"],
+      ["Address / Service Area", canonical.address || "Unknown", canonical.addressSource || "Ask Client"],
+      ["Phone", canonical.phone || "Unknown", canonical.phoneSource || "Ask Client"],
+      ["Confidence", canonical.confidence || "Low", canonical.note || "Client must confirm official NAP."],
+    ]),
+    "",
+    `- **Summary:** ${baseline.summary?.label || "No citation sources reviewed yet."}`,
+    `- **Confirm:** ${baseline.confirmationQuestion || "Confirm official NAP before citation cleanup."}`,
+    "",
+    markdownTableWithHeaders(["Source", "Type", "Found Name", "Found Address", "Found Phone", "Match Status", "Risk", "Action", "URL"], (baseline.rows || []).map((row) => [
+      row.source,
+      row.type,
+      row.foundName,
+      row.foundAddress,
+      row.foundPhone,
+      row.matchStatus,
+      row.risk,
+      row.action,
+      row.url,
+    ])),
+  ].join("\n");
 }
 
 function markdownConfirmationScript(script) {

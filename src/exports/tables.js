@@ -32,6 +32,7 @@ export function buildTableExportBundle(scan, options = {}) {
     loginChecklist: normalizeLoginChecklist(report.loginChecklist || []),
     unknownBlockers: normalizeUnknownBlockers(report.unknownBlockers || []),
     callOneWorkflow: normalizeCallOneWorkflow(report.callOneWorkflow || []),
+    citationBaseline: normalizeCitationBaseline(report.citationBaseline || {}),
     hostingEvidence: normalizeHostingEvidence(scan.analysis?.hosting || {}),
     waybackVersions: normalizeWaybackVersions(report.waybackEvidence || {}),
     waybackChanges: normalizeWaybackChanges(report.waybackEvidence || {}),
@@ -63,6 +64,7 @@ export async function writeTableExports(scan, options = {}) {
     loginChecklist: path.join(directory, `${domain}-login-checklist.csv`),
     unknownBlockers: path.join(directory, `${domain}-unknown-blockers.csv`),
     callOneWorkflow: path.join(directory, `${domain}-call-one-workflow.csv`),
+    citationBaseline: path.join(directory, `${domain}-citation-nap-baseline.csv`),
     hostingEvidence: path.join(directory, `${domain}-hosting-evidence.csv`),
     waybackVersions: path.join(directory, `${domain}-wayback-versions.csv`),
     waybackChanges: path.join(directory, `${domain}-wayback-changes.csv`),
@@ -115,6 +117,17 @@ export async function writeTableExports(scan, options = {}) {
       ["ask", "Ask"],
       ["owner", "Owner"],
       ["audience", "Audience"],
+    ]), "utf8"),
+    writeFile(files.citationBaseline, toCsv(bundle.citationBaseline, [
+      ["source", "Source"],
+      ["type", "Type"],
+      ["foundName", "Found Name"],
+      ["foundAddress", "Found Address"],
+      ["foundPhone", "Found Phone"],
+      ["matchStatus", "Match Status"],
+      ["risk", "Risk"],
+      ["action", "Action"],
+      ["url", "URL"],
     ]), "utf8"),
     writeFile(files.hostingEvidence, toCsv(bundle.hostingEvidence, [
       ["provider", "Provider"],
@@ -276,6 +289,20 @@ function normalizeCallOneWorkflow(items) {
     ask: item.ask || "",
     owner: item.owner || "",
     audience: item.audience || "",
+  }));
+}
+
+function normalizeCitationBaseline(baseline) {
+  return (baseline.rows || []).map((item) => ({
+    source: item.source || "",
+    type: item.type || "",
+    foundName: item.foundName || "",
+    foundAddress: item.foundAddress || "",
+    foundPhone: item.foundPhone || "",
+    matchStatus: item.matchStatus || "",
+    risk: item.risk || "",
+    action: item.action || "",
+    url: item.url || "",
   }));
 }
 

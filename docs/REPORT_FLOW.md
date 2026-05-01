@@ -39,6 +39,7 @@ domain input
       -> content inventory
       -> keyword clusters
       -> competitor research
+      -> citation / NAP baseline
       -> review/reputation summary
       -> competitor-informed structure
       -> service/location recommendations
@@ -50,6 +51,7 @@ domain input
     -> client questions
   -> plan report
     -> evidence labels
+    -> citation / NAP baseline
     -> focus priorities
     -> recommended structure
     -> service/location recommendations
@@ -82,6 +84,17 @@ FITFO should make the source of each recommendation obvious:
 - **Ask Client**: something FITFO should not pretend to know; confirm with the client or previous developer.
 
 Action-plan items and kickoff research sections should use these labels consistently so the first call separates facts from assumptions.
+
+## Citation / NAP Baseline
+
+The Citation / NAP baseline is part of phase-zero onboarding. It should identify the best public candidate for:
+
+- business name
+- address or service-area signal
+- public phone number
+- directory, review, social, and map/profile rows surfaced in research
+
+FITFO should label this as a candidate, not truth. The client must confirm the official business name, public phone, address/service-area policy, Google Business Profile owner, and whether tracking numbers are intentionally used in citations. FITFO should generate a cleanup queue; it should not manage or modify listings.
 
 ## Client Handoff Summary
 
