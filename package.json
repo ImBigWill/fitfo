@@ -9,7 +9,13 @@
     "rdap",
     "whois",
     "onboarding",
-    "wordpress"
+    "wordpress",
+    "client-onboarding",
+    "website-audit",
+    "technical-seo",
+    "local-seo",
+    "home-services",
+    "plumbing"
   ],
   "homepage": "https://github.com/ImBigWill/fitfo#readme",
   "repository": {

@@ -15,9 +15,9 @@ FITFO can stay private while this checklist hardens the project for a later publ
 
 ## Public Project Readiness
 
-- [ ] Issue templates exist for bug reports, provider misses, and feature requests.
-- [ ] Security policy tells users not to send credentials or private client reports.
-- [ ] Contributing guide explains fixture-driven provider improvements.
+- [x] Issue templates exist for bug reports, provider misses, and feature requests.
+- [x] Security policy tells users not to send credentials or private client reports.
+- [x] Contributing guide explains fixture-driven provider improvements.
 - [ ] Changelog explains the initial public feature set.
 - [ ] Example output uses fake domains and fake client data.
 

@@ -35,6 +35,8 @@ FITFO is licensed as **GPL-2.0-or-later**.
 
 The repository can still start private. The GPL matters when the project is distributed or opened up. This keeps the project aligned with the WordPress ecosystem from the beginning.
 
+Package metadata also declares `GPL-2.0-or-later` so GitHub, npm, and automated scanners can read the license consistently.
+
 ## Data Hygiene
 
 Do not commit scan output, client reports, secrets, API keys, credentials, or `.env` files.
