@@ -192,6 +192,14 @@ Firecrawl-backed market research:
 fitfo brief example.com --deep --search --location "Richmond, VA"
 ```
 
+Plumber/home-services planning lens:
+
+```bash
+fitfo plan example-plumbing.test --deep --search --location "Richmond, VA" --vertical plumbing
+```
+
+`--vertical plumbing` keeps the core scan intact, then adds plumber-aware research queries and plan sections for homeowner emergency UX, plumbing proof assets, service priorities, and role-specific kickoff questions. FITFO may also detect a plumbing lens from public site/search signals, but explicit `--vertical plumbing` is the safest way to force that context.
+
 FITFO uses `FIRECRAWL_API_KEY` when it is set. If no key is present, it falls back to the authenticated Firecrawl CLI, so `firecrawl login` and `firecrawl --status` are enough for local use.
 
 Recent site-change check:

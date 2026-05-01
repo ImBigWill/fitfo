@@ -17,6 +17,7 @@ It can:
 - generate keyword clusters, keyword evidence, URL/redirect inventory, lead capture inventory, tracking/tool footprint, competitor/review/directory classification, top local competitor prompts, keyword-to-page maps, service/location recommendations, proof-asset requests, content inventory, competitor-informed structure, reputation summaries, confirmation scripts, and prioritized action items
 - use either `FIRECRAWL_API_KEY` or an authenticated local Firecrawl CLI for market research
 - generate a `fitfo plan` client build plan from scan, crawl, and research signals
+- add a plumber/home-services planning lens with `--vertical plumbing`, including plumber-aware service research queries, homeowner emergency UX checks, plumbing proof assets, and role-specific kickoff questions
 - run `fitfo onboard` as a one-command full-intake preset that deep-scans, searches, saves an Obsidian action-plan note, and exports CSV/JSON planning tables
 - prompt for missing `fitfo onboard` location and vault/folder details when running interactively
 - render a styled onboarding report
@@ -92,6 +93,7 @@ Core should focus on fast onboarding discovery:
 - keyword and competitor intelligence that remains deterministic and client-call oriented
 - proof-asset and content-inventory output for kickoff planning
 - service/location page recommendations for kickoff and build planning
+- open-source-safe vertical profiles that add market-specific research and planning prompts without committing real client scan data
 - competitor-informed structure, review/reputation summary, and kickoff confirmation-script output
 - plan-mode launch checklist output
 - table sidecar exports for Sheets, Obsidian, and client planning workflows
@@ -114,6 +116,7 @@ These may become separate commands or modules:
 ## Next Sensible Commit Candidates
 
 - Run more real client-domain passes and add fixtures for any missed registrar, DNS, hosting, CRM, or email patterns.
+- Run more real plumber-domain passes and fold generic misses into `--vertical plumbing` services, proof prompts, tool detection, and fake fixtures.
 - Validate the call-one workflow table against real client reports and tune owner/audience labels where they feel awkward.
 - Refine Obsidian templates after more real scans, especially saved onboard notes and table sidecars.
 - Improve service/location sitemap heuristics after testing more real client sites.

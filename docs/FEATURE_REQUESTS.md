@@ -37,6 +37,13 @@ Items here are not commitments. They need shaping before implementation.
 - Add richer competitor-informed copy patterns.
 - Add client-ready agenda templates by vertical.
 
+## Verticals
+
+- Expand `--vertical plumbing` after private real-domain passes.
+- Add vertical profiles for HVAC, electrical, roofing, legal, and local healthcare only after plumbing proves the profile contract.
+- Add more fake fixtures for emergency CTA, call tracking, field-service widgets, service-area pages, and review-proof patterns.
+- Keep vertical profiles in core until repeated extension points are obvious; do not build a public plugin system yet.
+
 ## CLI / UX
 
 - Add compact report mode.
