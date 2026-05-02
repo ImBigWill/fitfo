@@ -63,18 +63,26 @@ export async function getHttpProfile(hostname, apex = hostname) {
 async function getUrlStructure(hostname, apex) {
   const hosts = [...new Set([hostname, apex, apex.startsWith("www.") ? apex : `www.${apex}`])].filter(Boolean);
   const checks = await Promise.all(hosts.map((host) => getHostUrlChecks(host)));
+  return buildUrlStructureProfile(apex, checks);
+}
+
+export function buildUrlStructureProfile(apex, checks = []) {
   const reachableChecks = checks.flatMap((check) => check.variants).filter((variant) => variant.reachable && variant.finalUrl);
   const finalHosts = reachableChecks.map((variant) => safeHost(variant.finalUrl)).filter(Boolean);
   const finalProtocols = reachableChecks.map((variant) => safeProtocol(variant.finalUrl)).filter(Boolean);
   const preferredHost = mostCommon(finalHosts);
   const preferredProtocol = mostCommon(finalProtocols);
+  const matrix = buildRedirectMatrix(checks, preferredHost, preferredProtocol);
+  const issues = buildUrlStructureIssues({ apex, checks, reachableChecks, matrix, preferredHost, preferredProtocol });
 
   return {
     checkedHosts: checks,
+    matrix,
+    issues,
     preferredHost: preferredHost || null,
     preferredProtocol: preferredProtocol || null,
     www: preferredHost ? preferredHost.startsWith("www.") : null,
-    recommendation: buildUrlRecommendation(apex, preferredHost, preferredProtocol, reachableChecks),
+    recommendation: buildUrlRecommendation(apex, preferredHost, preferredProtocol, reachableChecks, issues),
   };
 }
 
@@ -121,7 +129,105 @@ async function fetchRedirectCheck(url) {
   }
 }
 
-function buildUrlRecommendation(apex, preferredHost, preferredProtocol, checks) {
+function buildRedirectMatrix(checks, preferredHost, preferredProtocol) {
+  return checks.flatMap((hostCheck) => (hostCheck.variants || []).map((variant) => {
+    const finalHost = safeHost(variant.finalUrl);
+    const finalProtocol = safeProtocol(variant.finalUrl);
+
+    return {
+      startUrl: variant.startUrl,
+      startHost: safeHost(variant.startUrl) || hostCheck.host,
+      startProtocol: safeProtocol(variant.startUrl),
+      reachable: Boolean(variant.reachable),
+      finalUrl: variant.finalUrl || null,
+      finalHost,
+      finalProtocol,
+      status: variant.status || null,
+      hops: variant.hops || [],
+      redirects: (variant.hops || []).length,
+      error: variant.error || null,
+      canonical: Boolean(
+        variant.reachable
+        && finalHost
+        && finalProtocol
+        && preferredHost
+        && preferredProtocol
+        && finalHost === preferredHost
+        && finalProtocol === preferredProtocol
+      ),
+    };
+  }));
+}
+
+function buildUrlStructureIssues({ checks, matrix, preferredHost, preferredProtocol }) {
+  const issues = [];
+  const reachableRows = matrix.filter((row) => row.reachable && row.finalUrl);
+  const reachableFinalHosts = new Set(reachableRows.map((row) => row.finalHost).filter(Boolean));
+  const reachableFinalProtocols = new Set(reachableRows.map((row) => row.finalProtocol).filter(Boolean));
+  const deadRows = matrix.filter((row) => !row.reachable);
+  const httpRows = matrix.filter((row) => row.startProtocol === "http:");
+  const httpStillHttpRows = httpRows.filter((row) => row.reachable && row.finalProtocol === "http:");
+  const nonCanonicalRows = reachableRows.filter((row) => preferredHost && preferredProtocol && !row.canonical);
+  const hostCount = checks.length;
+
+  if (!reachableRows.length) {
+    issues.push({
+      code: "no_reachable_variants",
+      severity: "High",
+      summary: "No apex/www HTTP or HTTPS variant reached a final URL.",
+      detail: "Confirm the live host, DNS records, SSL state, and whether the domain is parked or down.",
+    });
+  }
+
+  if (deadRows.length) {
+    issues.push({
+      code: "dead_variants",
+      severity: deadRows.length >= Math.max(1, hostCount) ? "Medium" : "Low",
+      summary: `${deadRows.length} apex/www URL variant(s) failed during redirect checks.`,
+      detail: "Confirm whether failed variants should redirect to the primary launch URL or remain intentionally unavailable.",
+    });
+  }
+
+  if (reachableFinalHosts.size > 1) {
+    issues.push({
+      code: "split_hosts",
+      severity: "Medium",
+      summary: "Apex/www variants resolve to more than one final host.",
+      detail: "Choose one canonical launch host and redirect the other variants to it before launch, Search Console, sitemap, and analytics setup.",
+    });
+  }
+
+  if (reachableFinalProtocols.has("http:")) {
+    issues.push({
+      code: "insecure_final_url",
+      severity: "High",
+      summary: "At least one reachable variant finishes on HTTP instead of HTTPS.",
+      detail: "Force HTTPS before launch and confirm SSL coverage for the chosen canonical host.",
+    });
+  }
+
+  if (httpStillHttpRows.length) {
+    issues.push({
+      code: "http_not_forced",
+      severity: "High",
+      summary: `${httpStillHttpRows.length} HTTP variant(s) did not upgrade to HTTPS.`,
+      detail: "Confirm HTTP-to-HTTPS redirects before launch, analytics, Search Console, and client handoff.",
+    });
+  }
+
+  if (nonCanonicalRows.length) {
+    issues.push({
+      code: "noncanonical_variants",
+      severity: "Medium",
+      summary: `${nonCanonicalRows.length} reachable variant(s) do not finish on the likely canonical URL.`,
+      detail: "Map redirect rules so apex, www, HTTP, and HTTPS variants converge on one final launch URL.",
+    });
+  }
+
+  return issues;
+}
+
+function buildUrlRecommendation(apex, preferredHost, preferredProtocol, checks, issues = []) {
   if (!preferredHost) {
     return "No reachable canonical URL was detected. Confirm launch host manually.";
   }
@@ -136,6 +242,14 @@ function buildUrlRecommendation(apex, preferredHost, preferredProtocol, checks) 
 
   if (splitHosts) {
     return `Launch planning should preserve ${hostLabel} as the likely primary URL, but redirect behavior is split. Confirm canonical redirects before launch.`;
+  }
+
+  if (issues.some((issue) => ["insecure_final_url", "http_not_forced"].includes(issue.code))) {
+    return `Likely primary launch host is ${hostLabel}, but HTTPS behavior needs cleanup. Force HTTPS before launch and preserve ${hostLabel} as the canonical host unless the client intentionally changes it.`;
+  }
+
+  if (issues.some((issue) => issue.code === "dead_variants" || issue.code === "noncanonical_variants")) {
+    return `Likely primary launch URL is ${protocolLabel} on ${hostLabel}, but apex/www variants need redirect QA before launch.`;
   }
 
   return `Likely primary launch URL is ${protocolLabel} on ${hostLabel}. Preserve this choice unless the client intentionally wants to change canonical host.`;
