@@ -40,6 +40,7 @@ export function buildSnapshot(scan) {
       ["Domain registrar", confidenceValue(analysis.registrar || "Unknown", analysis.registrarDetails?.confidence)],
       ["DNS host", analysis.dnsProvider || "Unknown"],
       ["Website host", confidenceValue(analysis.hosting?.provider || "Unknown", analysis.hosting?.confidence)],
+      ["Launch URL", launchUrlSummary(analysis.urlStructure)],
       ["Cloudflare", cloudflareSummary(analysis.cloudflare)],
       ["Google Workspace", googleWorkspaceSummary(analysis)],
       ["Connected services", summarizeServiceSignals({ connectedServices, marketingTags, operationsTools })],
@@ -363,6 +364,13 @@ function buildReadinessVerdict(scan, { analysis = {}, siteSummary = {}, subdomai
     cautions.push(makeItem("Cloudflare/CDN needs owner", "Confirm whether this is client-owned Cloudflare, host-managed edge, or another CDN/security layer."));
   }
 
+  const launchIssues = (analysis.urlStructure?.issues || []).filter((issue) => issue.severity === "High" || issue.severity === "Medium");
+  if (launchIssues.length) {
+    cautions.push(makeItem("Launch URL needs redirect QA", `${launchIssues[0].summary} Confirm apex, www, HTTP, and HTTPS behavior before launch work.`));
+  } else if (analysis.urlStructure?.canonicalStyle && analysis.urlStructure.canonicalStyle !== "Unknown") {
+    positives.push(makeItem("Canonical launch host has a likely direction", `${analysis.urlStructure.canonicalStyle} appears to be the primary style. Confirm before Search Console, sitemap, analytics, and redirects.`));
+  }
+
   if (subdomains.length) {
     cautions.push(makeItem("Subdomains need verification", `${subdomains.length} common subdomain(s) resolved. Confirm staging, portals, shops, booking, CRM, mail, and legacy uses.`));
   }
@@ -396,6 +404,7 @@ function buildReadinessVerdict(scan, { analysis = {}, siteSummary = {}, subdomai
 function buildDnsChangeChecklist(scan, { analysis = {}, subdomains = [] }) {
   const items = [
     makeItem("Confirm DNS owner", `${analysis.dnsProvider && analysis.dnsProvider !== "Unknown" ? `Public signals point to ${analysis.dnsProvider}. ` : ""}Get admin access or a delegated invite before changing records.`),
+    makeItem("Confirm canonical launch URL", canonicalDnsChecklistDetail(analysis.urlStructure)),
     makeItem("Protect email first", emailDnsChecklistDetail(analysis)),
     makeItem("Confirm website host and rollback path", hostingDnsChecklistDetail(analysis)),
     analysis.cloudflare?.status === "Yes" || analysis.cloudflare?.status === "Likely"
@@ -412,6 +421,19 @@ function buildDnsChangeChecklist(scan, { analysis = {}, subdomains = [] }) {
   }
 
   return items.slice(0, 6);
+}
+
+function canonicalDnsChecklistDetail(urlStructure = {}) {
+  if (!urlStructure?.preferredHost || urlStructure.preferredHost === "Unknown") {
+    return "No clear apex/www canonical host was detected. Confirm launch host before Search Console, sitemap, analytics, and redirects.";
+  }
+
+  const issue = (urlStructure.issues || []).find((item) => item.severity === "High" || item.severity === "Medium");
+  if (issue) {
+    return `${issue.summary} ${issue.detail}`;
+  }
+
+  return `${urlStructure.preferredProtocol || "Unknown"} ${urlStructure.preferredHost} appears likely. Confirm before changing DNS, redirects, sitemap, Search Console, or analytics settings.`;
 }
 
 function buildClientConversation({ siteSummary = {}, marketingTags = [], operationsTools = [], subdomains = [] }) {
@@ -465,6 +487,16 @@ function hostingDnsChecklistDetail(analysis = {}) {
 function confidenceValue(value, confidence) {
   const cleaned = String(value || "Unknown");
   return confidence ? `${cleaned} (${confidence})` : cleaned;
+}
+
+function launchUrlSummary(urlStructure = {}) {
+  if (!urlStructure?.preferredHost || urlStructure.preferredHost === "Unknown") {
+    return "Unknown";
+  }
+
+  const issueCount = (urlStructure.issues || []).length;
+  const suffix = issueCount ? `; ${issueCount} redirect issue(s)` : "; first-pass redirects look consistent";
+  return `${urlStructure.preferredProtocol || "Unknown"} ${urlStructure.preferredHost} (${urlStructure.canonicalStyle || "Unknown"})${suffix}`;
 }
 
 function cloudflareSummary(cloudflare = {}) {

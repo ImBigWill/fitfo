@@ -105,6 +105,20 @@ const scan = {
       provider: "Unknown",
       confidence: "Low",
     },
+    urlStructure: {
+      preferredHost: "www.client.example",
+      preferredProtocol: "HTTPS",
+      canonicalStyle: "www",
+      recommendation: "Likely primary launch URL is HTTPS on www.",
+      issues: [
+        {
+          code: "split_hosts",
+          severity: "Medium",
+          summary: "Apex/www variants resolve to more than one final host.",
+          detail: "Choose one canonical launch host and redirect the other variants to it before launch.",
+        },
+      ],
+    },
     email: {
       provider: "Google Workspace",
     },
@@ -123,9 +137,12 @@ test("builds a light first-call snapshot", () => {
 
   assert.equal(snapshot.subject, "client.example");
   assert.ok(snapshot.accessSignals.some(([label, value]) => label === "Website host" && value.includes("Unknown")));
+  assert.ok(snapshot.accessSignals.some(([label, value]) => label === "Launch URL" && value.includes("redirect issue")));
   assert.ok(snapshot.accessSignals.some(([label, value]) => label === "Google Workspace" && value.includes("Detected")));
   assert.equal(snapshot.readinessVerdict.level, "caution");
   assert.ok(snapshot.readinessVerdict.reasons.some((item) => item.label === "Hosting needs confirmation"));
+  assert.ok(snapshot.readinessVerdict.reasons.some((item) => item.label === "Launch URL needs redirect QA"));
+  assert.ok(snapshot.dnsChangeChecklist.some((item) => item.label === "Confirm canonical launch URL"));
   assert.ok(snapshot.dnsChangeChecklist.some((item) => item.label === "Protect email first" && item.detail.includes("Google Workspace")));
   assert.ok(snapshot.serviceSignals.some((item) => item.label === "CRM / booking / field service" && item.detail.includes("ServiceTitan")));
   assert.ok(snapshot.subdomainsToVerify.some((item) => item.label === "staging.client.example" && item.detail.includes("wpengine")));
@@ -147,6 +164,7 @@ test("renders a generic Markdown snapshot", () => {
   assert.match(markdown, /# FitFo Snapshot - client\.example/);
   assert.match(markdown, /A light first-call walkthrough/);
   assert.match(markdown, /## Access Signals/);
+  assert.match(markdown, /\| Launch URL \| HTTPS www\.client\.example \(www\); 1 redirect issue\(s\) \|/);
   assert.match(markdown, /\| Google Workspace \| Detected via MX \|/);
   assert.match(markdown, /## First-Call Readiness/);
   assert.match(markdown, /Good for a first call, but access-risky/);
