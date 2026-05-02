@@ -26,6 +26,7 @@ export function buildClientPlan(scan) {
     siteEvidence: brief.actionReport.siteEvidence,
     waybackEvidence: brief.waybackEvidence,
     keywordEvidence: brief.actionReport.keywordEvidence,
+    architecturalStateMap: buildArchitecturalStateMap(scan, brief),
     workstreams: buildWorkstreams(scan),
     launchChecklist: buildPlanLaunchChecklist(scan),
     kickoffResearch: brief.kickoffResearch,
@@ -87,6 +88,8 @@ export function renderPlanText(scan, options = {}) {
       `${theme.bullet("›")} ${theme.label("Inferred")} ${theme.dim("Reasonable planning hypothesis that needs validation.")}`,
       `${theme.bullet("›")} ${theme.label("Ask Client")} ${theme.dim("Do not assume; confirm with client or previous developer.")}`,
     ]),
+    "",
+    panel(theme, "Architectural State Map", formatArchitecturalStateMap(theme, plan.architecturalStateMap)),
     "",
     panel(theme, "Focus First", plan.priorities.map((item) => `${theme.bullet("›")} ${theme.label(item.label)} ${theme.dim(item.reason)}`)),
     "",
@@ -200,6 +203,10 @@ export function renderPlanMarkdown(scan, options = {}) {
     "- **Research:** Found through Firecrawl-backed web/search results.",
     "- **Inferred:** Reasonable planning hypothesis that needs validation.",
     "- **Ask Client:** Do not assume; confirm with client or previous developer.",
+    "",
+    "## Architectural State Map",
+    "",
+    markdownArchitecturalStateMap(plan.architecturalStateMap),
     "",
     "## Focus First",
     "",
@@ -537,6 +544,37 @@ function formatKeywordEvidence(theme, rows = []) {
   return rows.slice(0, 8).map((item) => `${theme.bullet("›")} ${theme.label(item.keyword)} ${theme.chip(`[${item.cluster}]`)} ${theme.dim(`${item.evidence} -> ${item.page} (${item.nextStep})`)}`);
 }
 
+function formatArchitecturalStateMap(theme, map = {}) {
+  const rows = map.rows || [];
+  if (!rows.length) {
+    return [`${theme.bullet("›")} ${theme.label("State map")} ${theme.dim("Run --deep to map current pages, redirects, subdomains, and future-state handling decisions.")}`];
+  }
+
+  return [
+    `${theme.bullet("›")} ${theme.label("Current state")} ${theme.dim(map.summary || "Current domain structure reviewed from public signals.")}`,
+    ...rows.slice(0, 10).map((item) => `${theme.bullet("›")} ${theme.label(item.target)} ${theme.chip(`[${item.decision}]`)} ${theme.chip(`[${item.phase}]`)} ${theme.dim(`${item.currentState} Redesign: ${item.redesignAction} Launch: ${item.launchHandling}`)}`),
+  ];
+}
+
+function markdownArchitecturalStateMap(map = {}) {
+  const rows = map.rows || [];
+  if (!rows.length) return "- Run `fitfo plan domain.com --deep` to map current pages, redirects, subdomains, and future-state handling decisions.";
+
+  return [
+    `- **Summary:** ${map.summary || "Current domain structure reviewed from public signals."}`,
+    "",
+    markdownTableWithHeaders(["Area", "Target", "Current State", "Decision", "Redesign Phase", "Launch / Post-Launch Handling", "Evidence"], rows.map((item) => [
+      item.area,
+      item.target,
+      item.currentState,
+      item.decision,
+      item.redesignAction,
+      item.launchHandling,
+      item.evidence,
+    ])),
+  ].join("\n");
+}
+
 function markdownInfrastructureSnapshot(rows = []) {
   if (!rows.length) return "- Run a scan to identify registrar, DNS, Cloudflare, hosting, CMS, and email ownership.";
   return markdownTableWithHeaders(["Area", "Public Finding", "Confidence", "Client Needs"], rows.map((item) => [
@@ -702,6 +740,131 @@ function markdownPlanResearch(kickoffResearch) {
     ...(items.length ? items.slice(0, 4).map((item) => `- **${item.label}** _${item.source}_: ${item.detail}`) : ["- Run deep/search mode to generate this section."]),
     "",
   ]);
+}
+
+function buildArchitecturalStateMap(scan, brief = {}) {
+  const rows = [];
+  const urlStructure = scan.analysis?.urlStructure || {};
+  const sitePages = scan.site?.pages || [];
+  const pageMap = brief.actionReport?.pageMap || [];
+  const subdomains = scan.dns?.subdomains || [];
+  const preferredHost = urlStructure.preferredHost && urlStructure.preferredHost !== "Unknown" ? urlStructure.preferredHost : null;
+  const preferredProtocol = urlStructure.preferredProtocol || "Unknown";
+  const launchIssues = urlStructure.issues || [];
+
+  rows.push({
+    area: "Domain architecture",
+    target: preferredHost || scan.domain?.apex || "Canonical host",
+    currentState: preferredHost ? `${preferredProtocol} ${preferredHost} (${urlStructure.canonicalStyle || "Unknown"})` : "Canonical host not confirmed from public checks.",
+    decision: launchIssues.length ? "Confirm" : "Keep",
+    phase: "Pre-launch",
+    redesignAction: launchIssues.length ? "Resolve apex/www and HTTPS behavior before final sitemap, Search Console, and analytics assumptions." : "Preserve canonical host unless client intentionally changes it.",
+    launchHandling: urlStructure.recommendation || "Confirm canonical host manually before launch.",
+    evidence: launchIssues.length ? launchIssues.map((issue) => issue.summary).join(" ") : "No first-pass redirect issues found in apex/www checks.",
+  });
+
+  for (const issue of launchIssues.slice(0, 4)) {
+    rows.push({
+      area: "Redirect strategy",
+      target: issue.code,
+      currentState: issue.summary,
+      decision: issue.severity === "High" ? "Redirect" : "Confirm",
+      phase: issue.severity === "High" ? "Pre-launch" : "Launch",
+      redesignAction: "Decide the future canonical target before rebuild URLs are finalized.",
+      launchHandling: issue.detail,
+      evidence: issue.summary,
+    });
+  }
+
+  for (const page of sitePages.slice(0, 8)) {
+    const path = page.path || "/";
+    const pageType = classifyPlanPage(path);
+    rows.push({
+      area: "Current URL",
+      target: path,
+      currentState: `${pageType} page found in crawl.`,
+      decision: pageType === "Homepage" || pageType === "Service" || pageType === "Contact" ? "Rework" : "Confirm",
+      phase: "Redesign",
+      redesignAction: redesignActionForPageType(pageType),
+      launchHandling: path === "/" ? "Preserve as homepage; verify canonical, tracking, forms, and primary CTA at launch." : "Keep URL if useful, or map to the closest future-state URL before launch.",
+      evidence: [
+        page.title ? `title: ${page.title}` : null,
+        page.canonicalUrl ? `canonical: ${page.canonicalUrl}` : null,
+        page.ctas?.length ? `CTA: ${page.ctas.slice(0, 3).join(", ")}` : null,
+      ].filter(Boolean).join("; ") || "Crawled URL inventory.",
+    });
+  }
+
+  for (const item of pageMap.filter((entry) => entry.status === "Create new" || entry.status === "Improve existing").slice(0, 5)) {
+    rows.push({
+      area: "Future URL",
+      target: item.page,
+      currentState: item.status === "Create new" ? "No matching current page was mapped from keyword evidence." : "Existing page mapped from keyword evidence.",
+      decision: item.status === "Create new" ? "Create" : "Rework",
+      phase: "Redesign",
+      redesignAction: `${item.intent || "Intent"} page for ${item.keyword}.`,
+      launchHandling: item.status === "Create new" ? "Add to sitemap and internal links; no redirect unless replacing an old URL." : "Preserve or redirect old URL based on final slug choice.",
+      evidence: item.evidence || item.status,
+    });
+  }
+
+  for (const subdomain of subdomains.slice(0, 6)) {
+    rows.push({
+      area: "Subdomain",
+      target: subdomain.name,
+      currentState: formatSubdomainState(subdomain),
+      decision: "Confirm",
+      phase: "Pre-launch",
+      redesignAction: "Identify whether this is staging, portal, booking, CRM, shop, mail, legacy, or safe to ignore.",
+      launchHandling: "Do not remove DNS or redirect until owner, purpose, and replacement path are confirmed.",
+      evidence: formatSubdomainState(subdomain),
+    });
+  }
+
+  return {
+    summary: buildArchitecturalStateSummary(rows),
+    rows,
+  };
+}
+
+function classifyPlanPage(path = "") {
+  if (path === "/" || path === "") return "Homepage";
+  if (/\bcontact|quote|estimate|schedule|book/i.test(path)) return "Contact";
+  if (/\bservices?|repair|install|emergency|drain|plumb|hvac|roof|electric/i.test(path)) return "Service";
+  if (/\blocation|areas?-served|city|near-me/i.test(path)) return "Location";
+  if (/\breviews?|testimonials?|case-studies?|gallery|projects?/i.test(path)) return "Proof";
+  if (/\bfaq|questions|pricing|process/i.test(path)) return "Support";
+  return "Content";
+}
+
+function redesignActionForPageType(pageType) {
+  if (pageType === "Homepage") return "Clarify offer, service area, proof, and primary conversion path.";
+  if (pageType === "Service") return "Improve service intent, proof, FAQs, CTA, internal links, and metadata.";
+  if (pageType === "Contact") return "Verify forms, phone routing, tracking, booking expectations, and response owner.";
+  if (pageType === "Location") return "Confirm real service area and add local proof before keeping or expanding.";
+  if (pageType === "Proof") return "Refresh reviews, project proof, credentials, usage rights, and schema opportunities.";
+  return "Confirm whether this page supports the future sitemap, should be consolidated, or should redirect.";
+}
+
+function formatSubdomainState(subdomain = {}) {
+  const parts = [
+    subdomain.cnames?.length ? `CNAME ${subdomain.cnames.join(", ")}` : null,
+    subdomain.addresses?.length ? `A ${subdomain.addresses.join(", ")}` : null,
+  ].filter(Boolean);
+
+  return parts.length ? parts.join("; ") : "Resolved in common subdomain checks.";
+}
+
+function buildArchitecturalStateSummary(rows = []) {
+  const counts = rows.reduce((totals, row) => {
+    totals[row.decision] = (totals[row.decision] || 0) + 1;
+    return totals;
+  }, {});
+  const parts = ["Keep", "Rework", "Create", "Redirect", "Confirm"]
+    .map((key) => counts[key] ? `${counts[key]} ${key.toLowerCase()}` : null)
+    .filter(Boolean);
+
+  return parts.length ? `Current state map generated with ${parts.join(", ")} decision(s).` : "Current state map needs a deep crawl and redirect checks.";
 }
 
 function buildPriorities(scan) {

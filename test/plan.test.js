@@ -6,7 +6,16 @@ import { buildVerticalContext } from "../src/verticals/index.js";
 const scan = {
   finishedAt: "2026-04-27T00:01:00.000Z",
   domain: { apex: "client.example" },
-  dns: { nameservers: ["ns1.domaincontrol.com", "ns2.domaincontrol.com"], subdomains: [] },
+  dns: {
+    nameservers: ["ns1.domaincontrol.com", "ns2.domaincontrol.com"],
+    subdomains: [
+      {
+        name: "staging.client.example",
+        cnames: ["client-staging.wpengine.com"],
+        addresses: [],
+      },
+    ],
+  },
   http: { reachable: true, title: "Client Plumbing" },
   site: {
     enabled: true,
@@ -69,6 +78,20 @@ const scan = {
     email: { provider: "Google Workspace" },
     connectedServices: [],
     marketing: { found: [] },
+    urlStructure: {
+      preferredHost: "www.client.example",
+      preferredProtocol: "HTTPS",
+      canonicalStyle: "www",
+      recommendation: "Likely primary launch URL is HTTPS on www, but apex/www variants need redirect QA before launch.",
+      issues: [
+        {
+          code: "split_hosts",
+          severity: "Medium",
+          summary: "Apex/www variants resolve to more than one final host.",
+          detail: "Choose one canonical launch host and redirect the other variants to it before launch.",
+        },
+      ],
+    },
     launchChecklist: [
       { item: "Canonical host", detail: "Preserve HTTPS on www." },
       { item: "DNS cutover", detail: "Confirm TTLs and rollback path." },
@@ -106,6 +129,9 @@ test("builds a client plan from scan, crawl, and research signals", () => {
   assert.equal(plan.waybackEvidence.versions.length, 2);
   assert.ok(plan.siteEvidence.toolFootprint.some((item) => item.tool === "Marketing tags"));
   assert.ok(plan.keywordEvidence.some((item) => item.keyword.includes("drain cleaning")));
+  assert.ok(plan.architecturalStateMap.rows.some((item) => item.area === "Domain architecture" && item.target === "www.client.example"));
+  assert.ok(plan.architecturalStateMap.rows.some((item) => item.area === "Current URL" && item.target === "/services/drain-cleaning/" && item.decision === "Rework"));
+  assert.ok(plan.architecturalStateMap.rows.some((item) => item.area === "Subdomain" && item.target === "staging.client.example"));
   assert.ok(plan.workstreams.some((item) => item.name === "Tracking and conversion"));
   assert.ok(plan.launchChecklist.some((item) => item.item === "DNS cutover" && item.phase === "Launch"));
   assert.ok(plan.kickoffResearch.marketSnapshot.some((item) => item.label === "Competitor and market SERP"));
@@ -144,6 +170,9 @@ test("renders a Markdown plan for Obsidian", () => {
   assert.match(markdown, /## Lead Capture Inventory/);
   assert.match(markdown, /## Tracking \/ Tool Footprint/);
   assert.match(markdown, /## Evidence Labels/);
+  assert.match(markdown, /## Architectural State Map/);
+  assert.match(markdown, /Apex\/www variants resolve to more than one final host/);
+  assert.match(markdown, /staging\.client\.example/);
   assert.match(markdown, /## Focus First/);
   assert.match(markdown, /## Recommended Structure/);
   assert.match(markdown, /## Competitor-Informed Structure/);

@@ -18,7 +18,7 @@ FITFO has multiple report modes:
 
 - `snapshot`: a light first-call walkthrough for site positioning, what is working, what is holding the site back, and how an agency can help.
 - `brief`: a deeper first-call prep packet with research queues, evidence, client confirmations, and opportunity areas.
-- `plan`: a build-planning report with structure, workstreams, launch checks, and keyword/page mapping.
+- `plan`: a build-planning report with structure, workstreams, launch checks, keyword/page mapping, and an architectural state map for redesign decisions.
 - `onboard`: the full intake path with saved planning notes and table exports.
 
 ## Quick Start
@@ -192,7 +192,13 @@ Light first-call site walkthrough:
 fitfo snapshot example.com --deep --search --location "Richmond, VA"
 ```
 
-`fitfo snapshot` is built for a sales or discovery conversation. It keeps the output focused on what the site is doing right, what may be holding it back, opportunity angles, how an agency can help, a simple walkthrough flow, talk track, and questions to ask. It is intentionally less deep than `brief` or `plan`.
+`fitfo snapshot` is built for a sales or discovery conversation. It keeps the output focused on access signals, first-call readiness, what the site is doing right, what may be holding it back, opportunity angles, how an agency can help, a simple walkthrough flow, talk track, and questions to ask. It is intentionally less deep than `brief` or `plan`.
+
+Use `--client-safe` when you want a cleaner client-facing version that hides account, tool, and subdomain evidence:
+
+```bash
+fitfo snapshot example.com --client-safe
+```
 
 First-call prep brief:
 
@@ -219,6 +225,14 @@ fitfo plan example-plumbing.test --deep --search --location "Richmond, VA" --ver
 ```
 
 `--vertical plumbing` keeps the core scan intact, then adds plumber-aware research queries and plan sections for homeowner emergency UX, plumbing proof assets, service priorities, and role-specific kickoff questions. FITFO may also detect a plumbing lens from public site/search signals, but explicit `--vertical plumbing` is the safest way to force that context.
+
+Architectural redesign planning:
+
+```bash
+fitfo plan example.com --deep --search --wayback --location "Richmond, VA"
+```
+
+`fitfo plan` now treats a redesign as a current-state to future-state architecture problem. It starts from the current domain structure, redirect matrix, canonical host, subdomains, crawled URLs, keyword/page map, and launch checklist. The plan labels items as keep, rework, create, redirect, or confirm so the build can preserve what matters, flag what needs redesign work, and define what must happen before launch, at launch, and after launch.
 
 FITFO uses `FIRECRAWL_API_KEY` when it is set. If no key is present, it falls back to the authenticated Firecrawl CLI, so `firecrawl login` and `firecrawl --status` are enough for local use.
 
@@ -247,6 +261,7 @@ It also generates:
 - prioritized action items with owner labels for client/us follow-up
 - proof-asset requests for reviews, photos, credentials, case studies, offers, and lead-routing evidence
 - URL/redirect inventory for canonical host, robots.txt, XML sitemap, canonical tags, noindex pages, and crawled URLs
+- architectural state map for current URLs, redirect/canonical behavior, subdomains, future-state decisions, and launch/post-launch handling
 - Wayback recent-version evidence for spotting homepage copy, lead-capture, phone, and tracking changes across recent archived versions
 - lead capture inventory for forms, form actions, visible fields, submit labels, phone numbers, email addresses, and CTA labels
 - tracking/tool footprint for visible marketing, CRM, script hosts, and third-party widgets detected across crawled pages
