@@ -20,6 +20,7 @@ export function renderHelp(options = {}) {
       kv(theme, "", theme.dim("--deep  --search  --wayback  --location city")),
       kv(theme, "", theme.dim("--crawl-limit n  --wayback-versions n")),
       kv(theme, "", theme.dim("--search-limit n  --no-color")),
+      kv(theme, "", theme.dim("--client-safe")),
       kv(theme, "", theme.dim("--vertical plumbing")),
       kv(theme, "", theme.dim("--save  --no-save  --quiet  --vault dir  --out file")),
       kv(theme, "", theme.dim("--export-tables dir")),
@@ -29,6 +30,7 @@ export function renderHelp(options = {}) {
     panel(theme, "Commands", [
       kv(theme, "scan", `${theme.value("fitfo lght.co")} ${theme.dim("- styled Domain Brief")}`),
       kv(theme, "snapshot", `${theme.value("fitfo snapshot lght.co --deep --search")} ${theme.dim("- light first-call walkthrough")}`),
+      kv(theme, "client-safe", `${theme.value("fitfo snapshot lght.co --client-safe")} ${theme.dim("- client-facing snapshot")}`),
       kv(theme, "brief", `${theme.value("fitfo brief lght.co")} ${theme.dim("- first-call prep")}`),
       kv(theme, "plan", `${theme.value("fitfo plan lght.co --deep")} ${theme.dim("- build plan")}`),
       kv(theme, "onboard", `${theme.value("fitfo onboard lght.co")} ${theme.dim("- full intake note + tables")}`),

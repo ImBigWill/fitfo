@@ -47,6 +47,7 @@ export function buildSnapshot(scan) {
     ],
     readinessVerdict: buildReadinessVerdict(scan, { analysis, siteSummary, subdomains, marketingTags, operationsTools }),
     dnsChangeChecklist: buildDnsChangeChecklist(scan, { analysis, subdomains }),
+    clientConversation: buildClientConversation({ siteSummary, marketingTags, operationsTools, subdomains }),
     serviceSignals: buildServiceSignals({ connectedServices, marketingTags, operationsTools }),
     subdomainsToVerify: buildSubdomainsToVerify(subdomains),
     whatIsWorking: limitItems([
@@ -108,6 +109,21 @@ export function buildSnapshot(scan) {
 export function renderSnapshotText(scan, options = {}) {
   const theme = createTheme(options.color !== false);
   const snapshot = buildSnapshot(scan);
+  const detailPanels = options.clientSafe ? [
+    panel(theme, "Client Conversation", formatItems(theme, snapshot.clientConversation)),
+    "",
+  ] : [
+    panel(theme, "Access Signals", snapshot.accessSignals.map(([label, value]) => snapshotSignalRow(theme, label, value))),
+    "",
+    panel(theme, "First-Call Readiness", formatReadiness(theme, snapshot.readinessVerdict)),
+    "",
+    panel(theme, "Before Touching DNS", formatItems(theme, snapshot.dnsChangeChecklist)),
+    "",
+    panel(theme, "Service Tools To Confirm", formatItems(theme, snapshot.serviceSignals)),
+    "",
+    panel(theme, "Subdomains To Verify", formatItems(theme, snapshot.subdomainsToVerify)),
+    "",
+  ];
 
   const lines = [
     renderAppHeader(theme, {
@@ -119,24 +135,15 @@ export function renderSnapshotText(scan, options = {}) {
     panel(theme, "FitFo Snapshot", [
       kv(theme, "Target", snapshot.subject),
       kv(theme, "Generated", snapshot.generatedAt),
-      ...snapshot.overview.map(([label, value]) => kv(theme, label, value)),
+      ...snapshotOverview(snapshot, options.clientSafe).map(([label, value]) => kv(theme, label, value)),
     ]),
     "",
-    panel(theme, "Access Signals", snapshot.accessSignals.map(([label, value]) => snapshotSignalRow(theme, label, value))),
-    "",
-    panel(theme, "First-Call Readiness", formatReadiness(theme, snapshot.readinessVerdict)),
-    "",
-    panel(theme, "Before Touching DNS", formatItems(theme, snapshot.dnsChangeChecklist)),
-    "",
-    panel(theme, "Service Tools To Confirm", formatItems(theme, snapshot.serviceSignals)),
-    "",
-    panel(theme, "Subdomains To Verify", formatItems(theme, snapshot.subdomainsToVerify)),
-    "",
+    ...detailPanels,
     panel(theme, "Positioning Read", snapshot.positioningRead.map((item) => `${theme.bullet("›")} ${theme.label(item.label)} ${theme.dim(item.detail)}`)),
     "",
-    panel(theme, "What The Site Is Doing Right", formatItems(theme, snapshot.whatIsWorking)),
+    panel(theme, "What The Site Is Doing Right", formatItems(theme, snapshotItems(snapshot, "whatIsWorking", options.clientSafe))),
     "",
-    panel(theme, "What May Be Holding It Back", formatItems(theme, snapshot.frictionPoints)),
+    panel(theme, "What May Be Holding It Back", formatItems(theme, snapshotItems(snapshot, "frictionPoints", options.clientSafe))),
     "",
     panel(theme, "Opportunity Angles", formatItems(theme, snapshot.opportunities)),
     "",
@@ -146,7 +153,7 @@ export function renderSnapshotText(scan, options = {}) {
     "",
     panel(theme, "Talk Track", snapshot.talkTrack.flatMap((item, index) => numbered(theme, index + 1, item.label, item.detail))),
     "",
-    panel(theme, "Questions To Ask", formatItems(theme, snapshot.clientQuestions)),
+    panel(theme, "Questions To Ask", formatItems(theme, snapshotItems(snapshot, "clientQuestions", options.clientSafe))),
   ];
 
   return renderSurface(theme, lines.join("\n"));
@@ -155,27 +162,12 @@ export function renderSnapshotText(scan, options = {}) {
 export function renderSnapshotMarkdown(scan, options = {}) {
   const snapshot = buildSnapshot(scan);
   const reportType = options.obsidian ? "obsidian-snapshot" : "snapshot";
-
-  return `${[
-    "---",
-    `title: "FitFo Snapshot - ${yamlString(snapshot.subject)}"`,
-    `domain: "${yamlString(snapshot.subject)}"`,
-    `generated_at: "${yamlString(snapshot.generatedAt)}"`,
-    `report_type: "${reportType}"`,
-    "tags:",
-    "  - fitfo",
-    "  - snapshot",
-    "  - first-call",
-    "---",
+  const detailSections = options.clientSafe ? [
+    "## Client Conversation",
     "",
-    `# FitFo Snapshot - ${snapshot.subject}`,
+    ...markdownItems(snapshot.clientConversation),
     "",
-    "**A light first-call walkthrough for a website, positioning, and next-step marketing conversation.**",
-    "",
-    "## Snapshot",
-    "",
-    markdownTable(snapshot.overview),
-    "",
+  ] : [
     "## Access Signals",
     "",
     markdownTable(snapshot.accessSignals),
@@ -198,17 +190,40 @@ export function renderSnapshotMarkdown(scan, options = {}) {
     "",
     ...markdownItems(snapshot.subdomainsToVerify),
     "",
+  ];
+
+  return `${[
+    "---",
+    `title: "FitFo Snapshot - ${yamlString(snapshot.subject)}"`,
+    `domain: "${yamlString(snapshot.subject)}"`,
+    `generated_at: "${yamlString(snapshot.generatedAt)}"`,
+    `report_type: "${reportType}"`,
+    "tags:",
+    "  - fitfo",
+    "  - snapshot",
+    "  - first-call",
+    "---",
+    "",
+    `# FitFo Snapshot - ${snapshot.subject}`,
+    "",
+    "**A light first-call walkthrough for a website, positioning, and next-step marketing conversation.**",
+    "",
+    "## Snapshot",
+    "",
+    markdownTable(snapshotOverview(snapshot, options.clientSafe)),
+    "",
+    ...detailSections,
     "## Positioning Read",
     "",
     ...markdownItems(snapshot.positioningRead),
     "",
     "## What The Site Is Doing Right",
     "",
-    ...markdownItems(snapshot.whatIsWorking),
+    ...markdownItems(snapshotItems(snapshot, "whatIsWorking", options.clientSafe)),
     "",
     "## What May Be Holding It Back",
     "",
-    ...markdownItems(snapshot.frictionPoints),
+    ...markdownItems(snapshotItems(snapshot, "frictionPoints", options.clientSafe)),
     "",
     "## Opportunity Angles",
     "",
@@ -228,7 +243,7 @@ export function renderSnapshotMarkdown(scan, options = {}) {
     "",
     "## Questions To Ask",
     "",
-    ...markdownItems(snapshot.clientQuestions),
+    ...markdownItems(snapshotItems(snapshot, "clientQuestions", options.clientSafe)),
     "",
   ].join("\n")}\n`;
 }
@@ -267,6 +282,35 @@ function formatReadiness(theme, verdict) {
     "",
     ...formatItems(theme, verdict.reasons),
   ];
+}
+
+function snapshotOverview(snapshot, clientSafe = false) {
+  if (!clientSafe) return snapshot.overview;
+  return snapshot.overview.filter(([label]) => !["Tracking", "Schema"].includes(label));
+}
+
+function snapshotItems(snapshot, key, clientSafe = false) {
+  const rows = snapshot[key] || [];
+  if (!clientSafe) return rows;
+
+  if (key === "whatIsWorking") {
+    return rows.filter((item) => !/marketing tools/i.test(item.label));
+  }
+
+  if (key === "frictionPoints") {
+    return rows.filter((item) => !/measurement|subdomains?|track down|cloudflare|hosting|dns|email/i.test(`${item.label} ${item.detail}`));
+  }
+
+  if (key === "clientQuestions") {
+    return [
+      makeItem("What should a visitor do first?", "Confirm the primary conversion action: call, form, booking, demo, quote, or consultation."),
+      makeItem("Which work is most valuable?", "Ask which services, products, or offers matter most commercially."),
+      makeItem("What makes the business different?", "Listen for proof, specialization, guarantees, process, speed, service model, or customer fit."),
+      makeItem("What should we verify before changing anything?", "Confirm what parts of the current web presence are business-critical before recommending changes."),
+    ];
+  }
+
+  return rows;
 }
 
 function snapshotSignalRow(theme, label, value) {
@@ -368,6 +412,32 @@ function buildDnsChangeChecklist(scan, { analysis = {}, subdomains = [] }) {
   }
 
   return items.slice(0, 6);
+}
+
+function buildClientConversation({ siteSummary = {}, marketingTags = [], operationsTools = [], subdomains = [] }) {
+  return [
+    makeItem("Start with the visible experience", "Walk through what a prospect sees first, what feels clear, and where they may hesitate before taking action."),
+    makeItem("Validate the main conversion path", summarizeClientLeadPath(siteSummary)),
+    makeItem("Confirm what happens after the lead", operationsTools.length || marketingTags.length
+      ? "There are signs of tracking or lead tools. Ask who receives inquiries, who follows up, and what should be measured."
+      : "No obvious public lead tools were detected. Ask how calls, forms, bookings, and follow-up are handled today."),
+    subdomains.length
+      ? makeItem("Check for related web properties", "Ask whether there are separate portals, booking pages, shops, staging sites, or legacy pages that matter to the customer journey.")
+      : makeItem("Confirm there are no hidden web properties", "Ask whether there are separate portals, booking pages, shops, staging sites, or legacy pages not obvious from the public site."),
+  ];
+}
+
+function summarizeClientLeadPath(summary = {}) {
+  const parts = [];
+  if (summary.formsDetected) parts.push("forms");
+  if (summary.phonesDetected?.length) parts.push("phone calls");
+  if (summary.ctas?.length) parts.push("calls to action");
+
+  if (!parts.length) {
+    return "No obvious lead path was visible in the public scan. Ask what visitors are supposed to do first.";
+  }
+
+  return `The public scan found ${parts.join(", ")}. Confirm which path matters most and who handles the response.`;
 }
 
 function emailDnsChecklistDetail(analysis = {}) {

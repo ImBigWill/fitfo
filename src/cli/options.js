@@ -4,6 +4,7 @@ const FORMATS = new Set(["text", "markdown", "obsidian", "json"]);
 export function parseArgs(argv) {
   const options = {
     command: "scan",
+    clientSafe: false,
     crawlLimit: 8,
     deep: false,
     domain: null,
@@ -140,6 +141,9 @@ export function parseArgs(argv) {
       options.provided.add("format");
     } else if (arg === "--no-color") {
       options.noColor = true;
+    } else if (arg === "--client-safe") {
+      options.clientSafe = true;
+      options.provided.add("clientSafe");
     } else if (arg === "--no-save") {
       options.noSave = true;
       options.save = false;

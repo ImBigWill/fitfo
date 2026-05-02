@@ -145,6 +145,7 @@ function terminalRenderOptions(options, color) {
       format: options.format,
       obsidian: options.obsidian,
       report: options.command,
+      clientSafe: options.clientSafe,
     };
   }
 
@@ -154,6 +155,7 @@ function terminalRenderOptions(options, color) {
       format: options.format,
       obsidian: options.obsidian,
       report: options.command,
+      clientSafe: options.clientSafe,
     };
   }
 
@@ -162,6 +164,7 @@ function terminalRenderOptions(options, color) {
     format: "text",
     obsidian: false,
     report: "plan",
+    clientSafe: options.clientSafe,
   };
 }
 
@@ -175,6 +178,7 @@ async function saveReport(scan, outputPath, options) {
     format: fileOptions.format,
     obsidian: fileOptions.obsidian,
     report: fileOptions.command,
+    clientSafe: fileOptions.clientSafe,
   });
   return writeReport(outputPath, fileOutput);
 }

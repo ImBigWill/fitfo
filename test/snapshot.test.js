@@ -162,3 +162,15 @@ test("renders a generic Markdown snapshot", () => {
   assert.doesNotMatch(markdown, /Lovable Gazelle/);
   assert.doesNotMatch(markdown, /PMF/);
 });
+
+test("renders a client-safe snapshot without account evidence", () => {
+  const markdown = renderSnapshotMarkdown(scan, { clientSafe: true });
+
+  assert.match(markdown, /## Client Conversation/);
+  assert.match(markdown, /Validate the main conversion path/);
+  assert.doesNotMatch(markdown, /## Access Signals/);
+  assert.doesNotMatch(markdown, /## Before Touching DNS/);
+  assert.doesNotMatch(markdown, /ServiceTitan/);
+  assert.doesNotMatch(markdown, /Google Tag Manager/);
+  assert.doesNotMatch(markdown, /staging\.client\.example/);
+});

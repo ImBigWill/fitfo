@@ -5,6 +5,7 @@ import { normalizeFormat, parseArgs } from "../src/cli/options.js";
 test("parses default scan command with a domain", () => {
   assert.deepEqual(parseArgs(["example.com"]), {
     command: "scan",
+    clientSafe: false,
     country: "US",
     crawlLimit: 8,
     deep: false,
@@ -44,12 +45,13 @@ test("parses brief command with Obsidian output path", () => {
 });
 
 test("parses snapshot command", () => {
-  const options = parseArgs(["snapshot", "example.com", "--deep", "--search"]);
+  const options = parseArgs(["snapshot", "example.com", "--deep", "--search", "--client-safe"]);
 
   assert.equal(options.command, "snapshot");
   assert.equal(options.domain, "example.com");
   assert.equal(options.deep, true);
   assert.equal(options.search, true);
+  assert.equal(options.clientSafe, true);
 });
 
 test("parses plan command", () => {

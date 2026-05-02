@@ -24,7 +24,7 @@ export function renderOutput(scan, options) {
       return renderBriefMarkdown(scan, { obsidian: options.obsidian });
     }
     if (report === "snapshot") {
-      return renderSnapshotMarkdown(scan, { obsidian: options.obsidian });
+      return renderSnapshotMarkdown(scan, { obsidian: options.obsidian, clientSafe: options.clientSafe });
     }
     if (report === "plan") {
       return renderPlanMarkdown(scan, { obsidian: options.obsidian });
@@ -36,7 +36,7 @@ export function renderOutput(scan, options) {
     return `${renderBriefText(scan, { color: options.color })}\n`;
   }
   if (report === "snapshot") {
-    return `${renderSnapshotText(scan, { color: options.color })}\n`;
+    return `${renderSnapshotText(scan, { color: options.color, clientSafe: options.clientSafe })}\n`;
   }
   if (report === "plan") {
     return `${renderPlanText(scan, { color: options.color })}\n`;
