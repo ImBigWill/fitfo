@@ -45,6 +45,8 @@ export function buildSnapshot(scan) {
       ["Connected services", summarizeServiceSignals({ connectedServices, marketingTags, operationsTools })],
       ["Subdomains", summarizeSubdomains(subdomains)],
     ],
+    readinessVerdict: buildReadinessVerdict(scan, { analysis, siteSummary, subdomains, marketingTags, operationsTools }),
+    dnsChangeChecklist: buildDnsChangeChecklist(scan, { analysis, subdomains }),
     serviceSignals: buildServiceSignals({ connectedServices, marketingTags, operationsTools }),
     subdomainsToVerify: buildSubdomainsToVerify(subdomains),
     whatIsWorking: limitItems([
@@ -122,6 +124,10 @@ export function renderSnapshotText(scan, options = {}) {
     "",
     panel(theme, "Access Signals", snapshot.accessSignals.map(([label, value]) => snapshotSignalRow(theme, label, value))),
     "",
+    panel(theme, "First-Call Readiness", formatReadiness(theme, snapshot.readinessVerdict)),
+    "",
+    panel(theme, "Before Touching DNS", formatItems(theme, snapshot.dnsChangeChecklist)),
+    "",
     panel(theme, "Service Tools To Confirm", formatItems(theme, snapshot.serviceSignals)),
     "",
     panel(theme, "Subdomains To Verify", formatItems(theme, snapshot.subdomainsToVerify)),
@@ -173,6 +179,16 @@ export function renderSnapshotMarkdown(scan, options = {}) {
     "## Access Signals",
     "",
     markdownTable(snapshot.accessSignals),
+    "",
+    "## First-Call Readiness",
+    "",
+    `**${escapeMarkdown(snapshot.readinessVerdict.label)}:** ${escapeMarkdown(snapshot.readinessVerdict.summary)}`,
+    "",
+    ...markdownItems(snapshot.readinessVerdict.reasons),
+    "",
+    "## Before Touching DNS",
+    "",
+    ...markdownItems(snapshot.dnsChangeChecklist),
     "",
     "## Service Tools To Confirm",
     "",
@@ -243,6 +259,16 @@ function formatItems(theme, rows = []) {
   return rows.map((item) => `${theme.bullet("›")} ${theme.label(item.label)} ${theme.dim(item.detail)}`);
 }
 
+function formatReadiness(theme, verdict) {
+  const chip = verdict.level === "ready" ? theme.blueChip("READY") : verdict.level === "caution" ? theme.chip("CAUTION") : theme.hotChip("BLOCKED");
+  return [
+    `${chip} ${theme.label(verdict.label)}`,
+    `${theme.dim(verdict.summary)}`,
+    "",
+    ...formatItems(theme, verdict.reasons),
+  ];
+}
+
 function snapshotSignalRow(theme, label, value) {
   const status = signalStatus(value);
   const chip = status === "found" ? theme.blueChip("FOUND") : status === "verify" ? theme.chip("VERIFY") : theme.hotChip("ASK");
@@ -264,6 +290,106 @@ function makeItem(label, detail) {
 function limitItems(items, limit, fallback = []) {
   const filtered = items.filter(Boolean);
   return (filtered.length ? filtered : fallback).slice(0, limit);
+}
+
+function buildReadinessVerdict(scan, { analysis = {}, siteSummary = {}, subdomains = [], marketingTags = [], operationsTools = [] }) {
+  const blockers = [];
+  const cautions = [];
+  const positives = [];
+
+  if (!scan.http?.reachable) {
+    blockers.push(makeItem("Website unreachable", "The site did not respond during the scan, so start by confirming the live URL and hosting state."));
+  } else {
+    positives.push(makeItem("Site is reachable", "The walkthrough can start from the live experience instead of a recovery conversation."));
+  }
+
+  if (analysis.hosting?.provider === "Unknown" || analysis.hosting?.provider === "Hidden behind Cloudflare") {
+    cautions.push(makeItem("Hosting needs confirmation", "Ask who owns the origin host, backups, deployment path, and previous developer handoff."));
+  } else if (analysis.hosting?.provider) {
+    positives.push(makeItem("Hosting has a likely lead", `Public signals point to ${analysis.hosting.provider}. Confirm access and billing owner.`));
+  }
+
+  if (analysis.email?.provider === "Google Workspace") {
+    positives.push(makeItem("Google Workspace detected", "Preserve MX, SPF, DKIM, and DMARC before any DNS or nameserver changes."));
+  } else if (analysis.email?.provider === "Unknown") {
+    cautions.push(makeItem("Email owner unclear", "Confirm mail provider and sender platforms before touching DNS."));
+  }
+
+  if (analysis.cloudflare?.status === "Yes" || analysis.cloudflare?.status === "Likely") {
+    cautions.push(makeItem("Cloudflare/CDN needs owner", "Confirm whether this is client-owned Cloudflare, host-managed edge, or another CDN/security layer."));
+  }
+
+  if (subdomains.length) {
+    cautions.push(makeItem("Subdomains need verification", `${subdomains.length} common subdomain(s) resolved. Confirm staging, portals, shops, booking, CRM, mail, and legacy uses.`));
+  }
+
+  if (!siteSummary.formsDetected && !siteSummary.phonesDetected?.length && !siteSummary.ctas?.length) {
+    cautions.push(makeItem("Lead path is unclear", "Confirm how visitors become leads: calls, forms, booking, chat, CRM, or offline handoff."));
+  } else {
+    positives.push(makeItem("Lead path signals exist", "Use the walkthrough to validate whether calls, forms, CTAs, and routing are still correct."));
+  }
+
+  if (!marketingTags.length && !operationsTools.length) {
+    cautions.push(makeItem("Measurement/tooling may be incomplete", "Ask who owns GA4, Search Console, Tag Manager, ads, call tracking, CRM, and booking tools."));
+  }
+
+  const level = blockers.length ? "blocked" : cautions.length >= 2 ? "caution" : "ready";
+  const label = level === "blocked" ? "Needs recovery before a clean walkthrough" : level === "caution" ? "Good for a first call, but access-risky" : "Ready for a useful first-call walkthrough";
+  const summary = level === "blocked"
+    ? "Start with URL, hosting, and ownership basics before presenting recommendations."
+    : level === "caution"
+      ? "The snapshot has enough public signal for the call, but the account/access questions should lead the handoff."
+      : "The snapshot has enough public signal to discuss positioning, lead flow, and next steps without heavy caveats.";
+
+  return {
+    level,
+    label,
+    summary,
+    reasons: limitItems([...blockers, ...cautions, ...positives], 5),
+  };
+}
+
+function buildDnsChangeChecklist(scan, { analysis = {}, subdomains = [] }) {
+  const items = [
+    makeItem("Confirm DNS owner", `${analysis.dnsProvider && analysis.dnsProvider !== "Unknown" ? `Public signals point to ${analysis.dnsProvider}. ` : ""}Get admin access or a delegated invite before changing records.`),
+    makeItem("Protect email first", emailDnsChecklistDetail(analysis)),
+    makeItem("Confirm website host and rollback path", hostingDnsChecklistDetail(analysis)),
+    analysis.cloudflare?.status === "Yes" || analysis.cloudflare?.status === "Likely"
+      ? makeItem("Review Cloudflare/CDN settings", "Confirm proxy status, SSL/TLS mode, page rules, redirects, firewall/security rules, and origin records.")
+      : makeItem("Confirm whether a CDN exists", "No obvious Cloudflare was detected, but the client or host may still manage caching, security, or redirects."),
+    subdomains.length
+      ? makeItem("Inventory active subdomains", `${subdomains.length} common subdomain(s) resolved. Verify purpose, owner, and redirect requirements before cutover.`)
+      : makeItem("Ask for full DNS export", "Common checks found no subdomains, but only DNS access can confirm all records, wildcards, and provider-managed hostnames."),
+    makeItem("Preserve verification and service records", "Keep Google/Microsoft verification, SPF includes, DKIM selectors, CRM, booking, email marketing, and payment platform records intact."),
+  ];
+
+  if (!scan.http?.reachable) {
+    items.unshift(makeItem("Confirm the real live URL", "The website was not reachable during scan, so verify the intended host before any DNS plan."));
+  }
+
+  return items.slice(0, 6);
+}
+
+function emailDnsChecklistDetail(analysis = {}) {
+  const provider = analysis.email?.provider || "Unknown";
+  if (provider === "No mail configured") {
+    return "Mail appears intentionally disabled. Confirm that before changing nameservers or removing Null MX records.";
+  }
+  if (provider === "Unknown") {
+    return "Email provider is unclear. Export MX, SPF, DMARC, and known DKIM selectors, then ask what sends mail for this domain.";
+  }
+  return `${provider} appears active. Export MX, SPF, DMARC, and DKIM selector details before DNS changes.`;
+}
+
+function hostingDnsChecklistDetail(analysis = {}) {
+  const provider = analysis.hosting?.provider || "Unknown";
+  if (provider === "Hidden behind Cloudflare") {
+    return "Origin host is hidden behind Cloudflare. Confirm origin server, backups, deployment path, and emergency rollback.";
+  }
+  if (provider === "Unknown") {
+    return "Origin host is unclear. Ask client or previous developer where website files, backups, and server settings live.";
+  }
+  return `${provider} appears to host the site. Confirm account access, backups, DNS targets, and rollback owner.`;
 }
 
 function confidenceValue(value, confidence) {

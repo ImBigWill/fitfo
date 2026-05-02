@@ -124,6 +124,9 @@ test("builds a light first-call snapshot", () => {
   assert.equal(snapshot.subject, "client.example");
   assert.ok(snapshot.accessSignals.some(([label, value]) => label === "Website host" && value.includes("Unknown")));
   assert.ok(snapshot.accessSignals.some(([label, value]) => label === "Google Workspace" && value.includes("Detected")));
+  assert.equal(snapshot.readinessVerdict.level, "caution");
+  assert.ok(snapshot.readinessVerdict.reasons.some((item) => item.label === "Hosting needs confirmation"));
+  assert.ok(snapshot.dnsChangeChecklist.some((item) => item.label === "Protect email first" && item.detail.includes("Google Workspace")));
   assert.ok(snapshot.serviceSignals.some((item) => item.label === "CRM / booking / field service" && item.detail.includes("ServiceTitan")));
   assert.ok(snapshot.subdomainsToVerify.some((item) => item.label === "staging.client.example" && item.detail.includes("wpengine")));
   assert.ok(snapshot.positioningRead.some((item) => item.label === "What visitors likely see first" && item.detail === "Local Service Help"));
@@ -145,6 +148,10 @@ test("renders a generic Markdown snapshot", () => {
   assert.match(markdown, /A light first-call walkthrough/);
   assert.match(markdown, /## Access Signals/);
   assert.match(markdown, /\| Google Workspace \| Detected via MX \|/);
+  assert.match(markdown, /## First-Call Readiness/);
+  assert.match(markdown, /Good for a first call, but access-risky/);
+  assert.match(markdown, /## Before Touching DNS/);
+  assert.match(markdown, /Protect email first/);
   assert.match(markdown, /## Service Tools To Confirm/);
   assert.match(markdown, /ServiceTitan/);
   assert.match(markdown, /## Subdomains To Verify/);
