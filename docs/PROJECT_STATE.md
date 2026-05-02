@@ -18,6 +18,7 @@ It can:
 - generate a Citation / NAP baseline in brief/plan/onboard reports, including canonical NAP candidates, directory/profile rows, mismatch risk, and cleanup actions
 - use either `FIRECRAWL_API_KEY` or an authenticated local Firecrawl CLI for market research
 - generate a `fitfo plan` client build plan from scan, crawl, and research signals
+- treat redesign planning as a current-state to future-state architecture problem, starting with redirect/canonical checks and growing toward URL/subdomain/page handling decisions
 - add a plumber/home-services planning lens with `--vertical plumbing`, including plumber-aware service research queries, homeowner emergency UX checks, plumbing proof assets, and role-specific kickoff questions
 - run `fitfo onboard` as a one-command full-intake preset that deep-scans, searches, saves an Obsidian action-plan note, and exports CSV/JSON planning tables
 - prompt for missing `fitfo onboard` location and vault/folder details when running interactively
@@ -82,6 +83,7 @@ Core should focus on fast onboarding discovery:
 - hosting/CMS/email clues with public hosting evidence
 - email safety and DNS cutover risk
 - apex vs `www` launch URL guidance
+- architectural state mapping for current URLs, redirects, subdomains, canonical host, keep/rework/deprecate/redirect decisions, and launch/post-launch handling
 - unresolved-domain checks for typos, unregistered domains, or dead DNS
 - common passive subdomain checks
 - analytics/tag clues
@@ -117,6 +119,7 @@ These may become separate commands or modules:
 
 ## Next Sensible Commit Candidates
 
+- Build the first explicit architectural state map section in `fitfo plan` from redirect matrix, URL inventory, content inventory, subdomains, and launch checklist signals.
 - Run more real client-domain passes and add fixtures for any missed registrar, DNS, hosting, CRM, or email patterns.
 - Run more real plumber-domain passes and fold generic misses into `--vertical plumbing` services, proof prompts, tool detection, and fake fixtures.
 - Validate the call-one workflow table against real client reports and tune owner/audience labels where they feel awkward.

@@ -51,6 +51,7 @@ domain input
     -> client questions
   -> plan report
     -> evidence labels
+    -> architectural state map
     -> citation / NAP baseline
     -> focus priorities
     -> recommended structure
@@ -127,6 +128,21 @@ This table should be treated as the bridge between reconnaissance and project ma
 
 This keeps the default scan focused on access and infrastructure while giving deeper research its own lane.
 
+## Architectural State Map
+
+The architectural state map is the redesign/rebuild bridge between discovery and implementation.
+
+It should answer:
+
+- **Current state:** what URLs, redirects, subdomains, canonical hosts, page types, forms, tracking tools, and technical dependencies exist now?
+- **Architectural decision:** what should stay, be reworked, be deprecated, be redirected, or be confirmed before a build decision?
+- **Redesign phase:** what content, navigation, internal links, forms, proof assets, service/location pages, and tracking requirements should be handled while building?
+- **Launch / post-launch:** what redirects, host canonicalization, sitemap/Search Console work, analytics verification, form QA, and post-launch cleanup need to happen?
+
+The current redirect matrix and URL inventory are the first inputs. Deep crawl content inventory, keyword-to-page map, service/location recommendations, subdomain findings, lead capture inventory, and tracking/tool footprint should feed the same model over time.
+
+The report should avoid implying that FITFO knows the final future state from public data alone. It should label architectural recommendations as observed, inferred, or ask-client and keep redirect decisions tied to explicit current-state evidence.
+
 ## Future Report Modules
 
 Likely next modules:
@@ -137,6 +153,7 @@ Likely next modules:
 - `brief/local`
 - `brief/competitors`
 - `plan/site-structure`
+- `plan/architecture-state-map`
 - `plan/launch-checklist`
 - `exports/obsidian`
 

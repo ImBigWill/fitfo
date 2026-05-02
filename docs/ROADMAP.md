@@ -16,6 +16,11 @@ FITFO has two intended jobs:
    - What should be improved?
    - What questions should we ask on the first call?
 
+3. **Architectural state mapping**
+   - What exists today across pages, redirects, subdomains, and domain variants?
+   - What should stay in place, be reworked, be deprecated, or be redirected?
+   - What needs to happen during redesign, at launch, and after launch?
+
 The default command should stay fast and operational:
 
 ```bash
@@ -42,7 +47,7 @@ fitfo onboard clientdomain.com
 
 ## Near-Term
 
-- Improve redirect checks for `www` and apex canonical behavior.
+- Turn redirect/canonical checks into an architectural state map for redesign and rebuild planning.
 - Improve hosting fingerprints while keeping core free; see [Integrations](INTEGRATIONS.md) for optional enrichment boundaries.
 - Improve DNS provider fingerprints.
 - Improve analytics and marketing tag detection.
@@ -116,12 +121,42 @@ Current sections:
 
 Next improvements:
 
+- current-state architecture map from public domain structure, crawl inventory, redirects, subdomains, and canonical signals
+- future-state handling plan that labels pages/URLs/subdomains as keep, rework, deprecate, redirect, or confirm
+- launch redirect strategy split into pre-launch, launch-day, and post-launch tasks
 - local SEO/service-area recommendations
 - sharper prioritization between must-build pages, nice-to-have pages, and client-confirmation pages
 - launch checklist grouped even more explicitly by access, content, tracking, and technical QA
 - pre-launch dev checklist refinements after real project handoff use
 
 Important: brief mode should label findings as public signals, inferred hypotheses, and questions. It should not pretend to know the business from one scan.
+
+## Architectural State Map
+
+For redesigns and rebuilds, FITFO should treat the current domain as a system to preserve and intentionally reshape, not just a set of pages to audit.
+
+The intended workflow:
+
+1. **Current state assessment**
+   - capture apex, `www`, HTTP, HTTPS, redirect behavior, preferred canonical host, TLS state, and common subdomains
+   - crawl sitemap/robots/pages when `--deep` is enabled
+   - inventory current URLs, page types, metadata, canonical tags, forms, CTAs, phone numbers, schema, and tool signals
+
+2. **Architectural decisions**
+   - classify current URLs and subdomains as keep, rework, deprecate, redirect, or confirm with client/previous developer
+   - identify content that must survive because it supports service intent, location intent, proof, citations, lead flow, or technical dependencies
+   - flag risky areas such as split apex/`www` behavior, HTTP variants, staging/portal subdomains, missing canonical tags, and unclear lead-routing tools
+
+3. **Redesign phase**
+   - use the current map to decide sitemap, navigation, service/location pages, proof assets, forms, tracking, and internal links
+   - mark pages that need rewrite, consolidation, replacement, redirect targets, or client content
+
+4. **Launch and post-launch redirect strategy**
+   - define what must be handled before launch, on launch day, and after launch
+   - preserve link equity and traffic by mapping important old URLs to future URLs
+   - verify apex/`www`, HTTP/HTTPS, sitemap, Search Console, analytics, forms, and tracking after launch
+
+FITFO should eventually render this as an explicit plan section and table export so a redesign starts from evidence-backed current state, not a blank sitemap.
 
 ## Plugin / Module Direction
 
