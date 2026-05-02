@@ -32,6 +32,10 @@ The page should make a visitor understand:
 
 The first viewport should show the product name, the CLI nature of the tool, and a real-looking terminal/report signal.
 
+Use the current logo/brand concept sheet as the first visual reference:
+
+![FITFO logo concept sheet](assets/fitfo-logo-concept-sheet-2026-05-01.png)
+
 Recommended hero content:
 
 - headline: `FITFO`
@@ -151,8 +155,23 @@ Content:
 
 Use only fake domains and fake report output.
 
+Current imported brand asset:
+
+- [FITFO logo concept sheet](assets/fitfo-logo-concept-sheet-2026-05-01.png)
+
+Use this as the starting brand direction for:
+
+- logo / wordmark lockup
+- terminal prompt icon
+- black, hot pink, electric blue, white palette
+- mono-terminal typography direction
+- GitHub social preview concept
+- first-viewport product signal
+
 Recommended README/site assets:
 
+- cropped logo/wordmark export from the concept sheet
+- cropped GitHub social preview export from the concept sheet
 - terminal screenshot: `fitfo --help`
 - terminal screenshot: `fitfo snapshot example.com --client-safe`
 - terminal screenshot or SVG mock: architectural state map table
@@ -173,4 +192,3 @@ For a one-page WordPress build, this can be a normal page using block patterns:
 - Footer
 
 The page should be easy to edit in the block editor, with reusable patterns if we build a lightweight theme.
-

@@ -52,6 +52,10 @@ Keep PHP minimal. Most content should be editable block markup or registered pat
 
 FITFO should feel like a practical operator console.
 
+Imported brand starting point:
+
+![FITFO logo concept sheet](assets/fitfo-logo-concept-sheet-2026-05-01.png)
+
 Design rules:
 
 - black surface
@@ -69,6 +73,14 @@ Typography:
 - use a readable body font
 - avoid huge type beyond practical hero use
 - keep layout dense enough to feel like a working tool
+
+Brand implementation notes:
+
+- use the concept sheet as the visual north star, not as the final production logo source
+- create separate cropped exports for the wordmark, prompt icon, and social preview
+- keep the first viewport close to the "GitHub social preview" direction: wordmark, CLI prompt mark, radar/map intelligence cue, and one command line
+- preserve the terminal/operator tone without making the page look like a generic cybersecurity landing page
+- keep all example domains and CLI output fake
 
 ## Section Plan
 
@@ -97,7 +109,9 @@ Blocks:
 - paragraph explaining client website handoff discovery
 - command example
 - GitHub/status buttons
+- logo/wordmark treatment based on the imported concept sheet
 - terminal/report preview image or block-styled mock
+- optional radar/map visual cue from the concept sheet style
 
 ### 3. What It Maps
 
@@ -245,6 +259,7 @@ Use GitHub for:
 ### Phase 3: Assets
 
 - capture or design terminal previews
+- crop production-ready logo, prompt icon, and GitHub/social preview images from the concept sheet direction
 - import only public-safe assets
 - add alt text
 - optimize file sizes
@@ -264,4 +279,3 @@ Use GitHub for:
 - whether to build a custom block theme or use an existing theme with custom patterns
 - which fake/demo screenshots should become canonical README/site assets
 - whether the GitHub repo should include a `/website` package later
-

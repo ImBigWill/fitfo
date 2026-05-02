@@ -197,6 +197,7 @@ When the project is closer to public release, consider a small docs site or land
 - what FITFO can and cannot detect
 - install and configuration steps
 - example Obsidian/report output using fake data
+- logo, wordmark, palette, and social-preview direction from the imported concept sheet
 - provider fixture contribution flow
 - public release and npm package status
 
