@@ -10,7 +10,13 @@ const scan = {
   },
   dns: {
     nameservers: ["ns1.example.com"],
-    subdomains: [],
+    subdomains: [
+      {
+        name: "staging.client.example",
+        cnames: ["client-staging.wpengine.com"],
+        addresses: [],
+      },
+    ],
   },
   http: {
     reachable: true,
@@ -104,10 +110,10 @@ const scan = {
     },
     connectedServices: [],
     marketing: {
-      found: [],
+      found: ["Google Tag Manager"],
     },
     operations: {
-      found: [],
+      found: ["ServiceTitan"],
     },
   },
 };
@@ -116,9 +122,14 @@ test("builds a light first-call snapshot", () => {
   const snapshot = buildSnapshot(scan);
 
   assert.equal(snapshot.subject, "client.example");
+  assert.ok(snapshot.accessSignals.some(([label, value]) => label === "Website host" && value.includes("Unknown")));
+  assert.ok(snapshot.accessSignals.some(([label, value]) => label === "Google Workspace" && value.includes("Detected")));
+  assert.ok(snapshot.serviceSignals.some((item) => item.label === "CRM / booking / field service" && item.detail.includes("ServiceTitan")));
+  assert.ok(snapshot.subdomainsToVerify.some((item) => item.label === "staging.client.example" && item.detail.includes("wpengine")));
   assert.ok(snapshot.positioningRead.some((item) => item.label === "What visitors likely see first" && item.detail === "Local Service Help"));
   assert.ok(snapshot.whatIsWorking.some((item) => item.label === "The site is live and accessible"));
   assert.ok(snapshot.frictionPoints.some((item) => item.label === "Lead capture may be too thin"));
+  assert.ok(snapshot.frictionPoints.some((item) => item.label === "Subdomains need ownership review"));
   assert.ok(snapshot.opportunities.some((item) => item.label === "Use competitor patterns without copying them"));
   assert.ok(snapshot.howWeCanHelp.some((item) => item.label === "Clarify positioning"));
   assert.ok(snapshot.walkthroughFlow.some((item) => item.label === "Close with a concrete next step"));
@@ -132,6 +143,12 @@ test("renders a generic Markdown snapshot", () => {
   assert.match(markdown, /report_type: "obsidian-snapshot"/);
   assert.match(markdown, /# FitFo Snapshot - client\.example/);
   assert.match(markdown, /A light first-call walkthrough/);
+  assert.match(markdown, /## Access Signals/);
+  assert.match(markdown, /\| Google Workspace \| Detected via MX \|/);
+  assert.match(markdown, /## Service Tools To Confirm/);
+  assert.match(markdown, /ServiceTitan/);
+  assert.match(markdown, /## Subdomains To Verify/);
+  assert.match(markdown, /staging\.client\.example/);
   assert.match(markdown, /## What The Site Is Doing Right/);
   assert.match(markdown, /## What May Be Holding It Back/);
   assert.match(markdown, /## How An Agency Can Help/);

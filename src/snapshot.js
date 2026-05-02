@@ -14,7 +14,11 @@ export function buildSnapshot(scan) {
   const contentInventory = actionReport.contentInventory || [];
   const competitorResearch = actionReport.competitorResearch || {};
   const competitors = competitorResearch.topLocalCompetitors || competitorResearch.competitors || [];
+  const analysis = scan.analysis || {};
   const marketingTags = scan.analysis?.marketing?.found || [];
+  const operationsTools = scan.analysis?.operations?.found || [];
+  const connectedServices = scan.analysis?.connectedServices || [];
+  const subdomains = scan.dns?.subdomains || [];
   const ctas = siteSummary.ctas || [];
   const phones = siteSummary.phonesDetected || [];
   const schemaTypes = siteSummary.schemaTypes || [];
@@ -32,6 +36,17 @@ export function buildSnapshot(scan) {
       ["Tracking", marketingTags.length ? marketingTags.join(", ") : "No obvious marketing tags detected"],
       ["Schema", schemaTypes.length ? schemaTypes.join(", ") : "Not detected"],
     ],
+    accessSignals: [
+      ["Domain registrar", confidenceValue(analysis.registrar || "Unknown", analysis.registrarDetails?.confidence)],
+      ["DNS host", analysis.dnsProvider || "Unknown"],
+      ["Website host", confidenceValue(analysis.hosting?.provider || "Unknown", analysis.hosting?.confidence)],
+      ["Cloudflare", cloudflareSummary(analysis.cloudflare)],
+      ["Google Workspace", googleWorkspaceSummary(analysis)],
+      ["Connected services", summarizeServiceSignals({ connectedServices, marketingTags, operationsTools })],
+      ["Subdomains", summarizeSubdomains(subdomains)],
+    ],
+    serviceSignals: buildServiceSignals({ connectedServices, marketingTags, operationsTools }),
+    subdomainsToVerify: buildSubdomainsToVerify(subdomains),
     whatIsWorking: limitItems([
       scan.http?.reachable ? makeItem("The site is live and accessible", "That gives the call a practical starting point instead of a rescue conversation.") : null,
       scan.analysis?.cms?.platform && scan.analysis.cms.platform !== "Unknown" ? makeItem(`${scan.analysis.cms.platform} is detectable`, "There is likely an existing publishing system the client can build from.") : null,
@@ -50,6 +65,7 @@ export function buildSnapshot(scan) {
       site.enabled && !siteSummary.formsDetected ? makeItem("Lead capture may be too thin", "No forms were detected in the crawl, so the walkthrough should confirm how visitors become leads.") : null,
       !marketingTags.length ? makeItem("Measurement may be incomplete", "No obvious marketing tags were detected, so performance visibility may be limited.") : null,
       !schemaTypes.length ? makeItem("Search context may be thin", "No structured data types were detected in the crawl summary.") : null,
+      subdomains.length ? makeItem("Subdomains need ownership review", `${subdomains.length} common subdomain(s) resolved. Confirm whether each is live, legacy, staging, portal, booking, or safe to ignore.`) : null,
       priorityActions[0] ? makeItem(priorityActions[0].label, priorityActions[0].detail) : null,
     ], 5, [
       makeItem("The biggest unknown is what happens after a visitor gets interested", "Confirm calls, forms, booking, CRM, and follow-up during the walkthrough."),
@@ -80,6 +96,8 @@ export function buildSnapshot(scan) {
       makeItem("What should a visitor do first?", "Confirm the primary conversion action: call, form, booking, demo, quote, or consultation."),
       makeItem("Which work is most valuable?", "Ask which services, products, or offers matter most commercially."),
       makeItem("What makes the business different?", "Listen for proof, specialization, guarantees, process, speed, service model, or customer fit."),
+      makeItem("Who owns the domain, DNS, hosting, and email accounts?", "Use the access signals as a checklist before changing records, launching a redesign, or promising a migration."),
+      subdomains.length ? makeItem("Which subdomains are still active?", "Confirm staging sites, portals, booking flows, CRM links, shops, mail hosts, and legacy tools before DNS or redirect work.") : null,
       ...brief.clientCallIntelligence.map((item) => makeItem(item.prompt, item.nextStep)),
     ], 6),
   };
@@ -101,6 +119,12 @@ export function renderSnapshotText(scan, options = {}) {
       kv(theme, "Generated", snapshot.generatedAt),
       ...snapshot.overview.map(([label, value]) => kv(theme, label, value)),
     ]),
+    "",
+    panel(theme, "Access Signals", snapshot.accessSignals.map(([label, value]) => snapshotSignalRow(theme, label, value))),
+    "",
+    panel(theme, "Service Tools To Confirm", formatItems(theme, snapshot.serviceSignals)),
+    "",
+    panel(theme, "Subdomains To Verify", formatItems(theme, snapshot.subdomainsToVerify)),
     "",
     panel(theme, "Positioning Read", snapshot.positioningRead.map((item) => `${theme.bullet("›")} ${theme.label(item.label)} ${theme.dim(item.detail)}`)),
     "",
@@ -145,6 +169,18 @@ export function renderSnapshotMarkdown(scan, options = {}) {
     "## Snapshot",
     "",
     markdownTable(snapshot.overview),
+    "",
+    "## Access Signals",
+    "",
+    markdownTable(snapshot.accessSignals),
+    "",
+    "## Service Tools To Confirm",
+    "",
+    ...markdownItems(snapshot.serviceSignals),
+    "",
+    "## Subdomains To Verify",
+    "",
+    ...markdownItems(snapshot.subdomainsToVerify),
     "",
     "## Positioning Read",
     "",
@@ -207,6 +243,12 @@ function formatItems(theme, rows = []) {
   return rows.map((item) => `${theme.bullet("›")} ${theme.label(item.label)} ${theme.dim(item.detail)}`);
 }
 
+function snapshotSignalRow(theme, label, value) {
+  const status = signalStatus(value);
+  const chip = status === "found" ? theme.blueChip("FOUND") : status === "verify" ? theme.chip("VERIFY") : theme.hotChip("ASK");
+  return `${theme.dim(label.padEnd(17))} ${chip} ${theme.value(value)}`;
+}
+
 function markdownItems(rows = []) {
   return rows.map((item) => `- **${escapeMarkdown(item.label)}:** ${escapeMarkdown(item.detail)}`);
 }
@@ -224,6 +266,82 @@ function limitItems(items, limit, fallback = []) {
   return (filtered.length ? filtered : fallback).slice(0, limit);
 }
 
+function confidenceValue(value, confidence) {
+  const cleaned = String(value || "Unknown");
+  return confidence ? `${cleaned} (${confidence})` : cleaned;
+}
+
+function cloudflareSummary(cloudflare = {}) {
+  const status = cloudflare.status || "Unknown";
+  const confidence = cloudflare.confidence ? ` (${cloudflare.confidence})` : "";
+  if (status === "Yes") return `Yes${confidence}`;
+  if (status === "Likely") return `Likely${confidence}`;
+  if (status === "No obvious Cloudflare") return `No obvious Cloudflare${confidence}`;
+  return `${status}${confidence}`;
+}
+
+function googleWorkspaceSummary(analysis = {}) {
+  const emailProvider = analysis.email?.provider || "Unknown";
+  const senders = analysis.emailSafety?.senderServices || [];
+  const services = analysis.connectedServices || [];
+  const googleSignals = [
+    emailProvider === "Google Workspace" ? "MX" : null,
+    senders.includes("Google Workspace") ? "SPF/sender" : null,
+    services.includes("Google verification") ? "site verification" : null,
+  ].filter(Boolean);
+
+  if (!googleSignals.length) {
+    return "Not detected from MX/TXT records";
+  }
+
+  return `Detected via ${googleSignals.join(", ")}`;
+}
+
+function summarizeServiceSignals({ connectedServices = [], marketingTags = [], operationsTools = [] }) {
+  const services = uniqueValues([...operationsTools, ...marketingTags, ...connectedServices]);
+  return services.length ? formatShortList(services, 6) : "No obvious connected service tools detected";
+}
+
+function buildServiceSignals({ connectedServices = [], marketingTags = [], operationsTools = [] }) {
+  const rows = [
+    operationsTools.length ? makeItem("CRM / booking / field service", `${operationsTools.join(", ")}. Confirm account owner, lead routing, notifications, and whether it should stay active.`) : null,
+    marketingTags.length ? makeItem("Analytics / marketing", `${marketingTags.join(", ")}. Confirm GA4, Tag Manager, Search Console, ads, pixels, and reporting ownership.`) : null,
+    connectedServices.length ? makeItem("DNS-connected services", `${connectedServices.join(", ")}. Preserve verification, sender, and platform records during DNS work.`) : null,
+  ].filter(Boolean);
+
+  return rows.length ? rows : [
+    makeItem("No obvious service tools detected", "Ask what receives leads today: forms, phone calls, booking widgets, CRM, chat, email, ads, or offline handoff."),
+  ];
+}
+
+function summarizeSubdomains(subdomains = []) {
+  if (!subdomains.length) return "None found in common checks";
+  return `${subdomains.length} found: ${formatShortList(subdomains.map((item) => item.name), 4)}`;
+}
+
+function buildSubdomainsToVerify(subdomains = []) {
+  if (!subdomains.length) {
+    return [
+      makeItem("No common subdomains resolved", "Still confirm DNS access because wildcard records, provider dashboards, or less common hostnames may not be publicly enumerable."),
+    ];
+  }
+
+  return subdomains.slice(0, 6).map((subdomain) => {
+    const records = [
+      subdomain.cnames?.length ? `CNAME ${subdomain.cnames.join(", ")}` : null,
+      subdomain.addresses?.length ? `A ${subdomain.addresses.join(", ")}` : null,
+    ].filter(Boolean);
+    return makeItem(subdomain.name, records.length ? `${records.join("; ")}. Confirm purpose and owner.` : "Resolved in common checks. Confirm purpose and owner.");
+  });
+}
+
+function signalStatus(value) {
+  const text = String(value || "");
+  if (/unknown|not detected|none found|no obvious|no clear/i.test(text)) return "ask";
+  if (/likely|manual|verify/i.test(text)) return "verify";
+  return "found";
+}
+
 function summarizeLeadPaths(summary = {}) {
   const parts = [];
   if (summary.formsDetected) parts.push(`${summary.formsDetected} form(s)`);
@@ -233,10 +351,14 @@ function summarizeLeadPaths(summary = {}) {
 }
 
 function formatShortList(values = [], limit = 3) {
-  const unique = [...new Set(values.filter(Boolean).map(String))];
+  const unique = uniqueValues(values);
   const shown = unique.slice(0, limit);
   const suffix = unique.length > limit ? `, +${unique.length - limit} more` : "";
   return `${shown.join(", ")}${suffix}`;
+}
+
+function uniqueValues(values = []) {
+  return [...new Set(values.filter(Boolean).map(String))];
 }
 
 function markdownTable(rows) {
