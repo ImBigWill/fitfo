@@ -19,8 +19,21 @@ const scan = {
   http: { reachable: true, title: "Client Plumbing" },
   site: {
     enabled: true,
+    robots: {
+      checked: true,
+      sitemapUrls: ["https://client.example/sitemap.xml"],
+      aiCrawlerRules: [
+        { agent: "gptbot", directive: "disallow", path: "/" },
+      ],
+    },
+    sitemap: {
+      urls: ["https://client.example/", "https://client.example/services/drain-cleaning/"],
+    },
     summary: { pagesScanned: 2, phonesDetected: ["555-123-4567"], addressesDetected: ["123 Main St Richmond VA 23220"] },
-    pages: [{ path: "/" }, { path: "/services/drain-cleaning/" }],
+    pages: [
+      { path: "/", wordCount: 350, metaRobots: "index,follow" },
+      { path: "/services/drain-cleaning/", wordCount: 250, metaRobots: "index,follow" },
+    ],
   },
   research: {
     enabled: true,
@@ -140,10 +153,18 @@ test("builds a client plan from scan, crawl, and research signals", () => {
   assert.ok(plan.actionReport.pageMap.some((item) => item.keyword.includes("drain cleaning")));
   assert.ok(plan.clientCallIntelligence.some((item) => item.prompt === "Confirm top services/markets"));
   assert.ok(plan.confirmationScript.some((item) => item.topic === "Structure approval"));
+  assert.equal(plan.agentReadiness, null);
+});
+
+test("adds agent readiness when requested", () => {
+  const plan = buildClientPlan(scan, { agentReady: true });
+
+  assert.ok(plan.agentReadiness.rows.some((item) => item.signal === "robots.txt" && item.status === "Found"));
+  assert.ok(plan.agentReadiness.rows.some((item) => item.signal === "AI crawler policy" && item.status === "Found"));
 });
 
 test("renders a Markdown plan for Obsidian", () => {
-  const markdown = renderPlanMarkdown(scan, { obsidian: true });
+  const markdown = renderPlanMarkdown(scan, { obsidian: true, agentReady: true });
 
   assert.match(markdown, /report_type: "obsidian-plan"/);
   assert.match(markdown, /## Infrastructure Snapshot/);
@@ -173,6 +194,9 @@ test("renders a Markdown plan for Obsidian", () => {
   assert.match(markdown, /## Architectural State Map/);
   assert.match(markdown, /Apex\/www variants resolve to more than one final host/);
   assert.match(markdown, /staging\.client\.example/);
+  assert.match(markdown, /## Agent Readiness Snapshot/);
+  assert.match(markdown, /\| Discoverability \| robots\.txt \| Found \|/);
+  assert.match(markdown, /gptbot disallow/);
   assert.match(markdown, /## Focus First/);
   assert.match(markdown, /## Recommended Structure/);
   assert.match(markdown, /## Competitor-Informed Structure/);

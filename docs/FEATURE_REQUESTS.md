@@ -53,8 +53,8 @@ Items here are not commitments. They need shaping before implementation.
 
 ## Agent Readiness
 
-- Add optional `fitfo plan --agent-ready` report layer.
-- Check `robots.txt`, sitemap, canonical host, crawlable page content, and intentional AI crawler policy.
+- Expand optional `fitfo plan --agent-ready` report layer after real-domain passes.
+- Current first pass checks `robots.txt`, sitemap, canonical host, crawlable page content, accidental `noindex`, and explicit AI crawler policy.
 - Add `.well-known` and protocol discovery checks for API/application sites when the use case is real.
 - Keep emerging commerce checks parked until FITFO has a practical commerce workflow.
 - Treat missing agent protocols as "not applicable" for normal local-business sites unless the client goal says otherwise.

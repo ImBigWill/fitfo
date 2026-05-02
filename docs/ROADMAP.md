@@ -117,6 +117,7 @@ Current sections:
 - kickoff confirmation script
 - prioritized action report
 - keyword page map
+- optional agent-readiness snapshot via `--agent-ready`
 - confirmation questions
 
 Next improvements:
@@ -124,7 +125,7 @@ Next improvements:
 - current-state architecture map from public domain structure, crawl inventory, redirects, subdomains, and canonical signals
 - future-state handling plan that labels pages/URLs/subdomains as keep, rework, deprecate, redirect, or confirm
 - launch redirect strategy split into pre-launch, launch-day, and post-launch tasks
-- optional agent-readiness add-on planning for robots/sitemap clarity, AI bot policy, machine-readable content, and emerging discovery protocols
+- deeper agent-readiness checks for `.well-known`, app/API protocol discovery, and markdown negotiation when there is a real use case
 - local SEO/service-area recommendations
 - sharper prioritization between must-build pages, nice-to-have pages, and client-confirmation pages
 - launch checklist grouped even more explicitly by access, content, tracking, and technical QA

@@ -1,9 +1,10 @@
+import { buildAgentReadiness } from "./agent-readiness.js";
 import { buildBrief } from "./brief.js";
 import { buildCallOneWorkflow, buildClientAccessRequests, buildConfidenceExplanations, buildDoNotTouchWarnings, buildPreviousDeveloperRequestItems, buildUnknownBlockers } from "./handoff.js";
 import { createTheme } from "./theme.js";
 import { kv, panel, renderAppHeader, renderSurface } from "./ui.js";
 
-export function buildClientPlan(scan) {
+export function buildClientPlan(scan, options = {}) {
   const brief = buildBrief(scan);
   return {
     subject: scan.domain.apex,
@@ -27,6 +28,7 @@ export function buildClientPlan(scan) {
     waybackEvidence: brief.waybackEvidence,
     keywordEvidence: brief.actionReport.keywordEvidence,
     architecturalStateMap: buildArchitecturalStateMap(scan, brief),
+    agentReadiness: options.agentReady ? buildAgentReadiness(scan) : null,
     workstreams: buildWorkstreams(scan),
     launchChecklist: buildPlanLaunchChecklist(scan),
     kickoffResearch: brief.kickoffResearch,
@@ -40,7 +42,7 @@ export function buildClientPlan(scan) {
 
 export function renderPlanText(scan, options = {}) {
   const theme = createTheme(options.color !== false);
-  const plan = buildClientPlan(scan);
+  const plan = buildClientPlan(scan, { agentReady: options.agentReady });
 
   return renderSurface(theme, [
     renderAppHeader(theme, {
@@ -91,6 +93,10 @@ export function renderPlanText(scan, options = {}) {
     "",
     panel(theme, "Architectural State Map", formatArchitecturalStateMap(theme, plan.architecturalStateMap)),
     "",
+    ...(plan.agentReadiness ? [
+      panel(theme, "Agent Readiness Snapshot", formatAgentReadiness(theme, plan.agentReadiness)),
+      "",
+    ] : []),
     panel(theme, "Focus First", plan.priorities.map((item) => `${theme.bullet("›")} ${theme.label(item.label)} ${theme.dim(item.reason)}`)),
     "",
     panel(theme, "Recommended Structure", plan.structure.map((item) => `${theme.bullet("›")} ${theme.label(item.path)} ${theme.dim(item.reason)}`)),
@@ -126,7 +132,7 @@ export function renderPlanText(scan, options = {}) {
 }
 
 export function renderPlanMarkdown(scan, options = {}) {
-  const plan = buildClientPlan(scan);
+  const plan = buildClientPlan(scan, { agentReady: options.agentReady });
   const reportType = options.obsidian ? "obsidian-plan" : "plan";
 
   return `${[
@@ -208,6 +214,12 @@ export function renderPlanMarkdown(scan, options = {}) {
     "",
     markdownArchitecturalStateMap(plan.architecturalStateMap),
     "",
+    ...(plan.agentReadiness ? [
+      "## Agent Readiness Snapshot",
+      "",
+      markdownAgentReadiness(plan.agentReadiness),
+      "",
+    ] : []),
     "## Focus First",
     "",
     ...plan.priorities.map((item) => `- **${item.label}:** ${item.reason}`),
@@ -554,6 +566,35 @@ function formatArchitecturalStateMap(theme, map = {}) {
     `${theme.bullet("›")} ${theme.label("Current state")} ${theme.dim(map.summary || "Current domain structure reviewed from public signals.")}`,
     ...rows.slice(0, 10).map((item) => `${theme.bullet("›")} ${theme.label(item.target)} ${theme.chip(`[${item.decision}]`)} ${theme.chip(`[${item.phase}]`)} ${theme.dim(`${item.currentState} Redesign: ${item.redesignAction} Launch: ${item.launchHandling}`)}`),
   ];
+}
+
+function formatAgentReadiness(theme, readiness = {}) {
+  const rows = readiness.rows || [];
+  if (!rows.length) {
+    return [`${theme.bullet("›")} ${theme.label("Agent readiness")} ${theme.dim("Run `fitfo plan domain.com --deep --agent-ready` to generate this add-on.")}`];
+  }
+
+  return [
+    `${theme.bullet("›")} ${theme.label("Summary")} ${theme.dim(readiness.summary || "Agent readiness signals generated.")}`,
+    ...rows.map((item) => `${theme.bullet("›")} ${theme.label(item.signal)} ${theme.chip(`[${item.status}]`)} ${theme.dim(`${item.evidence} Next: ${item.action}`)}`),
+  ];
+}
+
+function markdownAgentReadiness(readiness = {}) {
+  const rows = readiness.rows || [];
+  if (!rows.length) return "- Run `fitfo plan domain.com --deep --agent-ready` to generate this add-on.";
+
+  return [
+    `- **Summary:** ${readiness.summary || "Agent readiness signals generated."}`,
+    "",
+    markdownTableWithHeaders(["Area", "Signal", "Status", "Evidence", "Recommended Action"], rows.map((item) => [
+      item.area,
+      item.signal,
+      item.status,
+      item.evidence,
+      item.action,
+    ])),
+  ].join("\n");
 }
 
 function markdownArchitecturalStateMap(map = {}) {

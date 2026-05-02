@@ -21,6 +21,10 @@ FITFO has multiple report modes:
 - `plan`: a build-planning report with structure, workstreams, launch checks, keyword/page mapping, and an architectural state map for redesign decisions.
 - `onboard`: the full intake path with saved planning notes and table exports.
 
+Optional add-ons:
+
+- `fitfo plan example.com --deep --agent-ready`: adds a launch-readiness layer for robots/sitemap clarity, canonical host, readable public content, noindex checks, AI crawler policy, and parked emerging protocol/commerce signals.
+
 ## Quick Start
 
 From this folder:
@@ -219,6 +223,12 @@ Firecrawl-backed market research:
 
 ```bash
 fitfo brief example.com --deep --search --location "Richmond, VA"
+```
+
+Add the optional agent-readiness layer to a build plan:
+
+```bash
+fitfo plan example.com --deep --agent-ready
 ```
 
 Plumber/home-services planning lens:

@@ -141,3 +141,23 @@ fitfo-exports/
 ```
 
 Use these for Sheets, kickoff docs, or internal planning views.
+
+## Agent Readiness Add-On
+
+Use this when launch planning needs a first-pass read on whether the site is easy for crawlers and AI agents to discover and interpret.
+
+```bash
+fitfo plan example-plumbing.test --deep --agent-ready
+```
+
+The add-on checks:
+
+- `robots.txt`
+- sitemap discovery
+- canonical host clarity
+- readable public pages
+- accidental `noindex` directives
+- explicit AI crawler rules in `robots.txt`
+- app/API and commerce protocol applicability
+
+Missing emerging protocols are not treated as failures for normal local-business sites. FITFO reports them as not applicable unless the site has a real app, API, authentication, or commerce workflow.

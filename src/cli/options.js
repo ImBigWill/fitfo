@@ -4,6 +4,7 @@ const FORMATS = new Set(["text", "markdown", "obsidian", "json"]);
 export function parseArgs(argv) {
   const options = {
     command: "scan",
+    agentReady: false,
     clientSafe: false,
     crawlLimit: 8,
     deep: false,
@@ -41,6 +42,9 @@ export function parseArgs(argv) {
 
     if (arg === "--help" || arg === "-h") {
       options.help = true;
+    } else if (arg === "--agent-ready") {
+      options.agentReady = true;
+      options.provided.add("agentReady");
     } else if (arg === "--deep") {
       options.deep = true;
       options.provided.add("deep");

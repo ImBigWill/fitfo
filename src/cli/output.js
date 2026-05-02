@@ -14,7 +14,7 @@ export function renderOutput(scan, options) {
       return `${JSON.stringify({ scan, snapshot: buildSnapshot(scan) }, null, 2)}\n`;
     }
     if (report === "plan") {
-      return `${JSON.stringify({ scan, plan: buildClientPlan(scan) }, null, 2)}\n`;
+      return `${JSON.stringify({ scan, plan: buildClientPlan(scan, { agentReady: options.agentReady }) }, null, 2)}\n`;
     }
     return `${JSON.stringify(scan, null, 2)}\n`;
   }
@@ -27,7 +27,7 @@ export function renderOutput(scan, options) {
       return renderSnapshotMarkdown(scan, { obsidian: options.obsidian, clientSafe: options.clientSafe });
     }
     if (report === "plan") {
-      return renderPlanMarkdown(scan, { obsidian: options.obsidian });
+      return renderPlanMarkdown(scan, { obsidian: options.obsidian, agentReady: options.agentReady });
     }
     return renderMarkdownReport(scan, { obsidian: options.obsidian });
   }
@@ -39,7 +39,7 @@ export function renderOutput(scan, options) {
     return `${renderSnapshotText(scan, { color: options.color, clientSafe: options.clientSafe })}\n`;
   }
   if (report === "plan") {
-    return `${renderPlanText(scan, { color: options.color })}\n`;
+    return `${renderPlanText(scan, { color: options.color, agentReady: options.agentReady })}\n`;
   }
 
   return `${renderTextReport(scan, { color: options.color })}\n`;

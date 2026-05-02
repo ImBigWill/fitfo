@@ -4,6 +4,7 @@ import { normalizeFormat, parseArgs } from "../src/cli/options.js";
 
 test("parses default scan command with a domain", () => {
   assert.deepEqual(parseArgs(["example.com"]), {
+    agentReady: false,
     command: "scan",
     clientSafe: false,
     country: "US",
@@ -55,11 +56,12 @@ test("parses snapshot command", () => {
 });
 
 test("parses plan command", () => {
-  const options = parseArgs(["plan", "example.com", "--deep"]);
+  const options = parseArgs(["plan", "example.com", "--deep", "--agent-ready"]);
 
   assert.equal(options.command, "plan");
   assert.equal(options.domain, "example.com");
   assert.equal(options.deep, true);
+  assert.equal(options.agentReady, true);
 });
 
 test("parses onboard command", () => {

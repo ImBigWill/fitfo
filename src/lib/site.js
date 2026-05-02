@@ -1,5 +1,18 @@
 const DEFAULT_LIMIT = 8;
 const FETCH_TIMEOUT = 8_000;
+const AI_CRAWLER_AGENTS = new Set([
+  "anthropic-ai",
+  "bytespider",
+  "ccbot",
+  "chatgpt-user",
+  "claude-web",
+  "claudebot",
+  "cohere-ai",
+  "gptbot",
+  "google-extended",
+  "oai-searchbot",
+  "perplexitybot",
+]);
 const SERVICE_PATH_HINTS = [
   "service",
   "services",
@@ -77,8 +90,9 @@ export async function getSiteProfile(domain, http, options = {}) {
     provider: "local",
     baseUrl,
     robots: {
-      checked: Boolean(robots),
+      checked: robots !== null,
       sitemapUrls: robotSitemapUrls,
+      aiCrawlerRules: extractAiCrawlerRules(robots),
     },
     sitemap,
     discoveredUrls,
@@ -163,6 +177,46 @@ function extractRobotsSitemaps(robots) {
   return [...String(robots || "").matchAll(/^sitemap:\s*(.+)$/gim)]
     .map((match) => match[1].trim())
     .filter(Boolean);
+}
+
+function extractAiCrawlerRules(robots) {
+  const rules = [];
+  let agents = [];
+  let hasDirective = false;
+
+  for (const rawLine of String(robots || "").split(/\r?\n/)) {
+    const line = rawLine.replace(/#.*/, "").trim();
+    if (!line) continue;
+
+    const [rawKey, ...rawValue] = line.split(":");
+    const key = String(rawKey || "").trim().toLowerCase();
+    const value = rawValue.join(":").trim();
+
+    if (key === "user-agent") {
+      if (hasDirective) {
+        agents = [];
+        hasDirective = false;
+      }
+      agents.push(value.toLowerCase());
+      continue;
+    }
+
+    if ((key === "allow" || key === "disallow") && agents.some((agent) => AI_CRAWLER_AGENTS.has(agent))) {
+      hasDirective = true;
+      for (const agent of agents) {
+        if (!AI_CRAWLER_AGENTS.has(agent)) continue;
+        rules.push({
+          agent,
+          directive: key,
+          path: value || "/",
+        });
+      }
+    } else if (key === "allow" || key === "disallow") {
+      hasDirective = true;
+    }
+  }
+
+  return rules;
 }
 
 function prioritizeUrls(urls, origin) {

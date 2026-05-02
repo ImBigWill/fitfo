@@ -1,6 +1,6 @@
 # FITFO Agent-Ready Add-On Plan
 
-Working idea: make agent readiness a future add-on or optional report layer, not part of the default onboarding command yet.
+Working idea: keep agent readiness as an optional report layer, not part of the default onboarding command.
 
 Reference point: Cloudflare's `isitagentready.com` scanner checks whether a site exposes signals that help AI agents discover, read, authenticate with, or transact with the site. Its categories include discoverability, content accessibility, bot access rules, protocol discovery, and commerce-related agent standards.
 
@@ -26,10 +26,16 @@ This fits best as a forward-looking launch/readiness module after the core onboa
 
 ## Proposed Commands
 
-Short-term shape:
+Current first-pass shape:
 
 ```bash
 fitfo plan example.com --agent-ready
+```
+
+Recommended scan shape:
+
+```bash
+fitfo plan example.com --deep --agent-ready
 ```
 
 Later shape if it earns its own workflow:
@@ -126,15 +132,25 @@ Agent readiness belongs in the future-state and launch phases of the architectur
 
 ### Phase 1: Planning And Report Shape
 
-- Add roadmap docs and feature-request entry.
-- Define the report table schema.
-- Keep the feature off by default.
+- Add roadmap docs and feature-request entry. Done.
+- Define the report table schema. Done.
+- Keep the feature off by default. Done.
 
 ### Phase 2: Low-Risk Checks
 
 - Reuse existing HTTP, robots, sitemap, canonical, redirect, and crawl signals.
 - Add deterministic findings to `plan` when `--agent-ready` is passed.
 - Add fixtures for normal WordPress/local-business sites.
+
+First pass implemented:
+
+- `robots.txt`
+- sitemap discovery
+- canonical host clarity
+- readable public pages
+- accidental `noindex` directives
+- explicit AI crawler rules from `robots.txt`
+- app/API and commerce protocol applicability notes
 
 ### Phase 3: Emerging Standards
 
