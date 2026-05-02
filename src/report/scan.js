@@ -557,7 +557,16 @@ function formatUrlStructure(theme, urlStructure) {
       }
     }
     return lines;
-  })].join("\n");
+  }), ...formatUrlStructureIssues(theme, urlStructure.issues || [])].join("\n");
+}
+
+function formatUrlStructureIssues(theme, issues) {
+  if (!issues.length) return [`  ${theme.bullet("›")} ${theme.ok("Apex/www variants look consistent in first-pass checks.")}`];
+
+  return [
+    `  ${theme.bullet("›")} ${theme.label("Redirect QA")}`,
+    ...issues.map((issue) => `    ${issue.severity === "High" ? theme.warn("[High]") : theme.chip(`[${issue.severity}]`)} ${theme.dim(`${issue.summary} ${issue.detail}`)}`),
+  ];
 }
 
 function formatSubdomains(theme, subdomains) {
@@ -866,6 +875,15 @@ function markdownUrlStructure(urlStructure) {
         lines.push(`  - ${variant.startUrl}: ${variant.finalUrl || "unknown"} (${variant.status || "unknown"})`);
       }
     }
+  }
+
+  if (urlStructure.issues?.length) {
+    lines.push("- **Redirect QA:**");
+    for (const issue of urlStructure.issues) {
+      lines.push(`  - **${issue.severity}:** ${issue.summary} ${issue.detail}`);
+    }
+  } else {
+    lines.push("- **Redirect QA:** Apex/www variants look consistent in first-pass checks.");
   }
 
   return lines.join("\n");

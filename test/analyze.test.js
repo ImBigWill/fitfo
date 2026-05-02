@@ -347,11 +347,27 @@ test("flags TLS and HTTP redirect risks from mocked website checks", () => {
           hops: [],
         },
       ],
+      urlStructure: {
+        preferredHost: "client.example",
+        preferredProtocol: "http:",
+        www: false,
+        recommendation: "Likely primary launch host is apex/non-www, but HTTPS behavior needs cleanup.",
+        issues: [
+          {
+            code: "http_not_forced",
+            severity: "High",
+            summary: "1 HTTP variant(s) did not upgrade to HTTPS.",
+            detail: "Confirm HTTP-to-HTTPS redirects before launch, analytics, Search Console, and client handoff.",
+          },
+        ],
+      },
     },
   });
 
   assert.ok(analysis.risks.some((risk) => risk.includes("TLS certificate expires in 12 day")));
   assert.ok(analysis.risks.some((risk) => risk.includes("HTTP does not appear to redirect to HTTPS")));
+  assert.ok(analysis.risks.some((risk) => risk.includes("1 HTTP variant")));
+  assert.ok(analysis.launchChecklist.some((item) => item.item === "Redirects" && item.detail.includes("force HTTPS")));
 });
 
 test("flags unresolved or misspelled domains clearly", () => {

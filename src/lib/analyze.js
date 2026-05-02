@@ -673,6 +673,7 @@ function analyzeUrlStructure({ domain, http }) {
     preferredProtocol: preferredProtocol ? preferredProtocol.replace(":", "").toUpperCase() : "Unknown",
     canonicalStyle: isWww === null ? "Unknown" : isWww ? "www" : "apex/non-www",
     recommendation,
+    issues: profile.issues || [],
   };
 }
 
@@ -946,6 +947,12 @@ function buildRisks({ rdap, dns, http, cloudflare, hosting, email, emailSafety, 
     risks.push("Canonical URL style could not be identified. Confirm whether launch should use www or apex/non-www.");
   }
 
+  for (const issue of urlStructure?.issues || []) {
+    if (issue.severity === "High" || issue.severity === "Medium") {
+      risks.push(`${issue.summary} ${issue.detail}`);
+    }
+  }
+
   if ((cloudflare.status === "Yes" || cloudflare.status === "Likely") && hosting.provider === "Hidden behind Cloudflare") {
     risks.push("Origin hosting is hidden behind Cloudflare and must be confirmed with account access.");
   }
@@ -961,7 +968,7 @@ function buildLaunchChecklist({ urlStructure, hosting, cms, email, emailSafety, 
     },
     {
       item: "Redirects",
-      detail: "Map old URLs, preserve important paths, force HTTPS, and redirect the non-primary host to the primary host.",
+      detail: buildRedirectChecklistDetail(urlStructure),
     },
     {
       item: "DNS cutover",
@@ -992,6 +999,23 @@ function buildLaunchChecklist({ urlStructure, hosting, cms, email, emailSafety, 
       detail: "Check homepage, key service pages, forms, phone links, thank-you pages, sitemap, robots.txt, indexability, speed, and 404s.",
     },
   ];
+}
+
+function buildRedirectChecklistDetail(urlStructure = {}) {
+  const issues = urlStructure.issues || [];
+  if (!issues.length) {
+    return "Map old URLs, preserve important paths, force HTTPS, and redirect the non-primary host to the primary host.";
+  }
+
+  const summaries = issues
+    .filter((issue) => issue.severity === "High" || issue.severity === "Medium")
+    .map((issue) => issue.summary);
+
+  if (!summaries.length) {
+    return "Map old URLs, preserve important paths, force HTTPS, and redirect the non-primary host to the primary host.";
+  }
+
+  return `${summaries.slice(0, 3).join(" ")} Map old URLs, force HTTPS, and make apex/www variants converge on the confirmed canonical host.`;
 }
 
 function knownOrFallback(value, fallback) {

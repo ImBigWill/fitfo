@@ -68,6 +68,43 @@ test("renders an Obsidian-ready Markdown report with frontmatter, checklists, an
           ],
         },
       ],
+      urlStructure: {
+        checkedHosts: [
+          {
+            host: "client.example",
+            variants: [
+              {
+                startUrl: "https://client.example",
+                reachable: true,
+                finalUrl: "https://client.example/",
+                status: 200,
+                hops: [],
+              },
+            ],
+          },
+          {
+            host: "www.client.example",
+            variants: [
+              {
+                startUrl: "https://www.client.example",
+                reachable: true,
+                finalUrl: "https://www.client.example/",
+                status: 200,
+                hops: [],
+              },
+            ],
+          },
+        ],
+        recommendation: "Launch planning should preserve www as the likely primary URL, but redirect behavior is split. Confirm canonical redirects before launch.",
+        issues: [
+          {
+            code: "split_hosts",
+            severity: "Medium",
+            summary: "Apex/www variants resolve to more than one final host.",
+            detail: "Choose one canonical launch host and redirect the other variants to it before launch.",
+          },
+        ],
+      },
     },
     analysis: {
       registrar: "GoDaddy",
@@ -189,6 +226,8 @@ test("renders an Obsidian-ready Markdown report with frontmatter, checklists, an
   assert.match(markdown, /Registrar: GoDaddy/);
   assert.match(markdown, /### Redirects/);
   assert.match(markdown, /### URL Structure/);
+  assert.match(markdown, /\*\*Redirect QA:\*\*/);
+  assert.match(markdown, /Apex\/www variants resolve to more than one final host/);
   assert.match(markdown, /## CRM \/ Operations Access/);
   assert.match(markdown, /## Dev Pre-Launch Checklist/);
   assert.match(markdown, /issuer Example CA/);
