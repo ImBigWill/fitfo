@@ -124,6 +124,7 @@ Next improvements:
 - current-state architecture map from public domain structure, crawl inventory, redirects, subdomains, and canonical signals
 - future-state handling plan that labels pages/URLs/subdomains as keep, rework, deprecate, redirect, or confirm
 - launch redirect strategy split into pre-launch, launch-day, and post-launch tasks
+- optional agent-readiness add-on planning for robots/sitemap clarity, AI bot policy, machine-readable content, and emerging discovery protocols
 - local SEO/service-area recommendations
 - sharper prioritization between must-build pages, nice-to-have pages, and client-confirmation pages
 - launch checklist grouped even more explicitly by access, content, tracking, and technical QA
@@ -198,3 +199,9 @@ When the project is closer to public release, consider a small docs site or land
 - example Obsidian/report output using fake data
 - provider fixture contribution flow
 - public release and npm package status
+
+Future website planning docs:
+
+- [FITFO one-page website brief](website/FITFO_ONE_PAGE_WEBSITE_BRIEF.md)
+- [WordPress one-page build plan](website/FITFO_WORDPRESS_BUILD_PLAN.md)
+- [Agent-ready add-on plan](website/FITFO_AGENT_READINESS_ADDON_PLAN.md)

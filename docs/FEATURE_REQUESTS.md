@@ -51,6 +51,14 @@ Items here are not commitments. They need shaping before implementation.
 - Add JSON schema for `--json`.
 - Improve terminal styling without sacrificing copy/paste quality.
 
+## Agent Readiness
+
+- Add optional `fitfo plan --agent-ready` report layer.
+- Check `robots.txt`, sitemap, canonical host, crawlable page content, and intentional AI crawler policy.
+- Add `.well-known` and protocol discovery checks for API/application sites when the use case is real.
+- Keep emerging commerce checks parked until FITFO has a practical commerce workflow.
+- Treat missing agent protocols as "not applicable" for normal local-business sites unless the client goal says otherwise.
+
 ## Packaging
 
 - Publish pre-release package when ready.
