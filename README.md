@@ -231,6 +231,12 @@ Add the optional agent-readiness layer to a build plan:
 fitfo plan example.com --deep --agent-ready
 ```
 
+Export the same add-on as a planning table:
+
+```bash
+fitfo plan example.com --deep --agent-ready --export-tables fitfo-exports
+```
+
 Plumber/home-services planning lens:
 
 ```bash

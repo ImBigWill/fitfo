@@ -121,6 +121,7 @@ try {
     const exportResult = await writeTableExports(scan, {
       dir: options.exportTables,
       report: options.command,
+      agentReady: options.agentReady,
     });
     tableExportPath = exportResult.directory;
     console.log(options.quiet ? `Saved FITFO table exports to ${exportResult.directory}` : renderSavedMessage(exportResult.directory, { color: !noColor }));

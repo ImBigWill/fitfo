@@ -12,10 +12,20 @@ const scan = {
   http: { reachable: true, title: "Client Plumbing" },
   site: {
     enabled: true,
+    robots: {
+      checked: true,
+      sitemapUrls: ["https://client.example/sitemap.xml"],
+      aiCrawlerRules: [
+        { agent: "gptbot", directive: "disallow", path: "/" },
+      ],
+    },
+    sitemap: {
+      urls: ["https://client.example/", "https://client.example/services/drain-cleaning/"],
+    },
     summary: { pagesScanned: 2, formsDetected: 1, phonesDetected: ["555-123-4567"], addressesDetected: ["123 Main St Richmond VA 23220"], ctas: ["Book Now"] },
     pages: [
-      { path: "/", title: "Client Plumbing", metaDescription: "Local plumber.", headings: { h1: ["Client Plumbing"] }, forms: [], phones: ["555-123-4567"], ctas: ["Book Now"] },
-      { path: "/services/drain-cleaning/", title: "Drain Cleaning", headings: { h1: ["Drain Cleaning"] }, forms: [], phones: [], ctas: [] },
+      { path: "/", title: "Client Plumbing", metaDescription: "Local plumber.", metaRobots: "index,follow", wordCount: 420, headings: { h1: ["Client Plumbing"] }, forms: [], phones: ["555-123-4567"], ctas: ["Book Now"] },
+      { path: "/services/drain-cleaning/", title: "Drain Cleaning", metaRobots: "index,follow", wordCount: 260, headings: { h1: ["Drain Cleaning"] }, forms: [], phones: [], ctas: [] },
     ],
   },
   research: {
@@ -127,6 +137,14 @@ test("builds plan launch checklist export rows", () => {
   const bundle = buildTableExportBundle(scan, { report: "plan" });
 
   assert.ok(bundle.launchChecklist.some((item) => item.item === "DNS cutover" && item.phase === "Launch"));
+  assert.deepEqual(bundle.agentReadiness, []);
+});
+
+test("builds agent-readiness export rows for plan add-on", () => {
+  const bundle = buildTableExportBundle(scan, { report: "plan", agentReady: true });
+
+  assert.ok(bundle.agentReadiness.some((item) => item.signal === "robots.txt" && item.status === "Found"));
+  assert.ok(bundle.agentReadiness.some((item) => item.signal === "AI crawler policy" && item.evidence.includes("gptbot")));
 });
 
 test("treats onboard table exports as plan exports", () => {
@@ -185,6 +203,21 @@ test("writes CSV and JSON table exports", async () => {
   assert.ok(json.topLocalCompetitors.some((item) => item.name === "Competitor Plumbing"));
   assert.ok(json.competitors.some((item) => item.title === "Competitor Plumbing"));
   assert.ok(json.confirmationScript.some((item) => item.topic === "Structure approval"));
+  assert.equal(result.files.agentReadiness, undefined);
+  assert.deepEqual(json.agentReadiness, []);
+});
+
+test("writes agent-readiness CSV when the add-on is requested", async () => {
+  const directory = await mkdtemp(path.join(tmpdir(), "fitfo-agent-exports-"));
+  const result = await writeTableExports(scan, { dir: directory, report: "plan", agentReady: true });
+
+  const agentReadiness = await readFile(result.files.agentReadiness, "utf8");
+  const json = JSON.parse(await readFile(result.files.json, "utf8"));
+
+  assert.match(agentReadiness, /Area,Signal,Status,Evidence,Recommended Action/);
+  assert.match(agentReadiness, /Discoverability,robots\.txt,Found/);
+  assert.match(agentReadiness, /Bot Access,AI crawler policy,Found/);
+  assert.ok(json.agentReadiness.some((item) => item.signal === "sitemap.xml"));
 });
 
 test("escapes CSV cells", () => {

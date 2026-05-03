@@ -161,3 +161,18 @@ The add-on checks:
 - app/API and commerce protocol applicability
 
 Missing emerging protocols are not treated as failures for normal local-business sites. FITFO reports them as not applicable unless the site has a real app, API, authentication, or commerce workflow.
+
+Export it for Sheets or a launch QA checklist:
+
+```bash
+fitfo plan example-plumbing.test --deep --agent-ready --export-tables fitfo-exports
+```
+
+This adds:
+
+```text
+fitfo-exports/
+  example-plumbing.test-agent-readiness.csv
+```
+
+The combined JSON bundle also includes an `agentReadiness` array.

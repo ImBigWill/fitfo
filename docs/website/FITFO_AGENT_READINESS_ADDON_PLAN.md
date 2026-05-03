@@ -151,6 +151,7 @@ First pass implemented:
 - accidental `noindex` directives
 - explicit AI crawler rules from `robots.txt`
 - app/API and commerce protocol applicability notes
+- optional CSV/JSON table export when `--export-tables` is used with `--agent-ready`
 
 ### Phase 3: Emerging Standards
 

@@ -14,7 +14,7 @@ const KEYWORD_CLUSTER_LABELS = {
 
 export function buildTableExportBundle(scan, options = {}) {
   const reportType = options.report === "plan" || options.report === "onboard" ? "plan" : "brief";
-  const report = reportType === "plan" ? buildClientPlan(scan) : buildBrief(scan);
+  const report = reportType === "plan" ? buildClientPlan(scan, { agentReady: options.agentReady }) : buildBrief(scan);
   const actionReport = report.actionReport || {};
   const competitorResearch = actionReport.competitorResearch || {};
 
@@ -49,6 +49,7 @@ export function buildTableExportBundle(scan, options = {}) {
     competitors: normalizeCompetitors(competitorResearch),
     keywordPageMap: normalizePageMap(actionReport.pageMap || []),
     researchResults: normalizeResearchResults(scan.research?.results || []),
+    agentReadiness: normalizeAgentReadiness(report.agentReadiness || {}),
   };
 }
 
@@ -83,7 +84,11 @@ export async function writeTableExports(scan, options = {}) {
     json: path.join(directory, `${domain}-research-tables.json`),
   };
 
-  await Promise.all([
+  if (bundle.agentReadiness.length) {
+    files.agentReadiness = path.join(directory, `${domain}-agent-readiness.csv`);
+  }
+
+  const writeOperations = [
     writeFile(files.actionItems, toCsv(bundle.actionItems, [
       ["priority", "Priority"],
       ["source", "Source"],
@@ -228,7 +233,19 @@ export async function writeTableExports(scan, options = {}) {
       ["description", "Description"],
     ]), "utf8"),
     writeFile(files.json, `${JSON.stringify(bundle, null, 2)}\n`, "utf8"),
-  ]);
+  ];
+
+  if (files.agentReadiness) {
+    writeOperations.push(writeFile(files.agentReadiness, toCsv(bundle.agentReadiness, [
+      ["area", "Area"],
+      ["signal", "Signal"],
+      ["status", "Status"],
+      ["evidence", "Evidence"],
+      ["action", "Recommended Action"],
+    ]), "utf8"));
+  }
+
+  await Promise.all(writeOperations);
 
   return {
     directory,
@@ -471,6 +488,16 @@ function normalizeResearchResults(results) {
     title: result.title || "",
     url: result.url || "",
     description: result.description || "",
+  }));
+}
+
+function normalizeAgentReadiness(readiness) {
+  return (readiness.rows || []).map((item) => ({
+    area: item.area || "",
+    signal: item.signal || "",
+    status: item.status || "",
+    evidence: item.evidence || "",
+    action: item.action || "",
   }));
 }
 
