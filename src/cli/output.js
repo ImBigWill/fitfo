@@ -4,7 +4,8 @@ import { renderMarkdownReport, renderTextReport } from "../report.js";
 import { buildSnapshot, renderSnapshotMarkdown, renderSnapshotText } from "../snapshot.js";
 
 export function renderOutput(scan, options) {
-  const report = options.report === "onboard" ? "plan" : options.report;
+  const sourceReport = options.report;
+  const report = sourceReport === "onboard" ? "plan" : sourceReport;
 
   if (options.format === "json") {
     if (report === "brief") {
@@ -27,7 +28,11 @@ export function renderOutput(scan, options) {
       return renderSnapshotMarkdown(scan, { obsidian: options.obsidian, clientSafe: options.clientSafe });
     }
     if (report === "plan") {
-      return renderPlanMarkdown(scan, { obsidian: options.obsidian, agentReady: options.agentReady });
+      return renderPlanMarkdown(scan, {
+        obsidian: options.obsidian,
+        agentReady: options.agentReady,
+        onboard: sourceReport === "onboard" || options.onboard,
+      });
     }
     return renderMarkdownReport(scan, { obsidian: options.obsidian });
   }

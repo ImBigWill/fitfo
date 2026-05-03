@@ -137,24 +137,46 @@ export function renderPlanText(scan, options = {}) {
 
 export function renderPlanMarkdown(scan, options = {}) {
   const plan = buildClientPlan(scan, { agentReady: options.agentReady });
-  const reportType = options.obsidian ? "obsidian-plan" : "plan";
+  const mode = options.onboard ? "onboard" : "plan";
+  const title = mode === "onboard" ? "FITFO Onboard" : "FITFO Plan";
+  const reportType = options.obsidian ? `obsidian-${mode}` : mode;
+  const modeTags = mode === "onboard"
+    ? ["  - client-onboarding", "  - full-intake"]
+    : ["  - client-plan", "  - site-structure"];
+  const intro = mode === "onboard"
+    ? [
+      "## How To Use This Onboarding Note",
+      "",
+      "- Start with **Unknowns Blocking Work** and **Call One Workflow** to assign ownership before changing anything.",
+      "- Use **Infrastructure Snapshot**, **Login / Access Checklist**, and **Do Not Touch Until Confirmed** as the day-one access checklist.",
+      "- Use **Architectural State Map** and **Redirect Matrix** to guide redesign, rebuild, and launch decisions.",
+      "",
+    ]
+    : [
+      "## How To Use This Plan",
+      "",
+      "- Start with **Architectural State Map** to decide what stays, what gets reworked, and what needs confirmation.",
+      "- Use **Redirect Matrix** before launch planning so current URLs, canonical hosts, and subdomains have an owner and handling decision.",
+      "- Treat recommendations as planning inputs until the client confirms access, priorities, and business context.",
+      "",
+    ];
 
   return `${[
     "---",
-    `title: "FITFO Plan - ${yamlString(plan.subject)}"`,
+    `title: "${title} - ${yamlString(plan.subject)}"`,
     `domain: "${yamlString(plan.subject)}"`,
     `generated_at: "${yamlString(plan.generatedAt)}"`,
     `report_type: "${reportType}"`,
     "tags:",
     "  - fitfo",
-    "  - client-plan",
-    "  - site-structure",
+    ...modeTags,
     "---",
     "",
-    `# FITFO Plan - ${plan.subject}`,
+    `# ${title} - ${plan.subject}`,
     "",
     "**Kickstarting onboarding.**",
     "",
+    ...intro,
     "## Infrastructure Snapshot",
     "",
     markdownInfrastructureSnapshot(plan.infrastructureSnapshot),

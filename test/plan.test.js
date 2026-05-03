@@ -164,6 +164,8 @@ test("renders a Markdown plan for Obsidian", () => {
   const markdown = renderPlanMarkdown(scan, { obsidian: true, agentReady: true });
 
   assert.match(markdown, /report_type: "obsidian-plan"/);
+  assert.match(markdown, /# FITFO Plan - client\.example/);
+  assert.match(markdown, /## How To Use This Plan/);
   assert.match(markdown, /## Infrastructure Snapshot/);
   assert.match(markdown, /\| Registrar \/ Domain Provider \| GoDaddy \| High \|/);
   assert.match(markdown, /\| Cloudflare \| No - no obvious Cloudflare \| Low \|/);
@@ -223,4 +225,18 @@ test("renders a Markdown plan for Obsidian", () => {
   assert.match(markdown, /## Client Call Next Steps/);
   assert.match(markdown, /## Kickoff Confirmation Script/);
   assert.match(markdown, /Confirm analytics\/Search Console access/);
+});
+
+test("renders an onboarding Markdown wrapper from the plan engine", () => {
+  const markdown = renderPlanMarkdown(scan, { obsidian: true, onboard: true });
+
+  assert.match(markdown, /title: "FITFO Onboard - client\.example"/);
+  assert.match(markdown, /report_type: "obsidian-onboard"/);
+  assert.match(markdown, /  - client-onboarding/);
+  assert.match(markdown, /  - full-intake/);
+  assert.match(markdown, /# FITFO Onboard - client\.example/);
+  assert.match(markdown, /## How To Use This Onboarding Note/);
+  assert.match(markdown, /## Infrastructure Snapshot/);
+  assert.match(markdown, /## Architectural State Map/);
+  assert.match(markdown, /## Launch Checklist/);
 });

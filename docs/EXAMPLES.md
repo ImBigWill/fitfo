@@ -15,7 +15,7 @@ FITFO will:
 - crawl the site when reachable
 - run Firecrawl-backed search research when available
 - compare recent Wayback homepage captures
-- save a Markdown plan note
+- save a Markdown onboarding note
 - optionally export CSV/JSON planning tables to `fitfo-exports/`
 
 Preview first:
@@ -36,19 +36,25 @@ Saved onboard notes use this rough structure:
 
 ```markdown
 ---
-title: "FITFO Plan - example-plumbing.test"
+title: "FITFO Onboard - example-plumbing.test"
 domain: "example-plumbing.test"
 generated_at: "2026-04-29T12:00:00.000Z"
-report_type: "obsidian-plan"
+report_type: "obsidian-onboard"
 tags:
   - fitfo
-  - client-plan
-  - site-structure
+  - client-onboarding
+  - full-intake
 ---
 
-# FITFO Plan - example-plumbing.test
+# FITFO Onboard - example-plumbing.test
 
 **Kickstarting onboarding.**
+
+## How To Use This Onboarding Note
+
+- Start with **Unknowns Blocking Work** and **Call One Workflow** to assign ownership before changing anything.
+- Use **Infrastructure Snapshot**, **Login / Access Checklist**, and **Do Not Touch Until Confirmed** as the day-one access checklist.
+- Use **Architectural State Map** and **Redirect Matrix** to guide redesign, rebuild, and launch decisions.
 
 ## Evidence Labels
 

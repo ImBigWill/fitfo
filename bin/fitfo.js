@@ -177,7 +177,7 @@ function terminalRenderOptions(options, color) {
 async function saveReport(scan, outputPath, options) {
   const onboardFileFormat = options.command === "onboard" ? options.onboardFileFormat : null;
   const fileOptions = onboardFileFormat
-    ? { ...options, command: "plan", format: onboardFileFormat, obsidian: onboardFileFormat === "obsidian" }
+    ? { ...options, format: onboardFileFormat, obsidian: onboardFileFormat === "obsidian" }
     : options;
   const fileOutput = renderOutput(scan, {
     color: false,

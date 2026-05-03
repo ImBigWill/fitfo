@@ -188,6 +188,7 @@ test("renders a Markdown brief for Obsidian/client prep", () => {
 
   assert.match(markdown, /report_type: "obsidian-brief"/);
   assert.match(markdown, /# FITFO Brief - client.example/);
+  assert.match(markdown, /## How To Use This Brief/);
   assert.match(markdown, /## Infrastructure Snapshot/);
   assert.match(markdown, /\| Registrar \/ Domain Provider \| GoDaddy \| High \|/);
   assert.match(markdown, /\| Cloudflare \| No - no obvious Cloudflare \| Low \|/);
