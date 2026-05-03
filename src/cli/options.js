@@ -22,6 +22,7 @@ export function parseArgs(argv) {
     save: false,
     search: false,
     searchLimit: 5,
+    subdomains: false,
     researchProvider: "firecrawl",
     location: null,
     vertical: null,
@@ -51,6 +52,9 @@ export function parseArgs(argv) {
     } else if (arg === "--search") {
       options.search = true;
       options.provided.add("search");
+    } else if (arg === "--subdomains") {
+      options.subdomains = true;
+      options.provided.add("subdomains");
     } else if (arg === "--wayback") {
       options.wayback = true;
       options.provided.add("wayback");

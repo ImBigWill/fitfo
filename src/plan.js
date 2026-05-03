@@ -889,6 +889,7 @@ function redesignActionForPageType(pageType) {
 
 function formatSubdomainState(subdomain = {}) {
   const parts = [
+    subdomain.category ? `Category ${subdomain.category}` : null,
     subdomain.cnames?.length ? `CNAME ${subdomain.cnames.join(", ")}` : null,
     subdomain.addresses?.length ? `A ${subdomain.addresses.join(", ")}` : null,
   ].filter(Boolean);

@@ -82,6 +82,7 @@ try {
       deep: options.deep,
       crawlLimit: options.crawlLimit,
       search: options.search,
+      subdomains: options.subdomains,
       wayback: options.wayback,
     }));
     console.log("");
@@ -93,6 +94,7 @@ try {
     search: options.search,
     researchProvider: options.researchProvider,
     searchLimit: options.searchLimit,
+    subdomains: options.subdomains,
     location: options.location,
     country: options.country,
     wayback: options.wayback,

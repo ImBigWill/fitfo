@@ -131,6 +131,7 @@ fitfo-exports/
   example-plumbing.test-hosting-evidence.csv
   example-plumbing.test-infrastructure-snapshot.csv
   example-plumbing.test-login-checklist.csv
+  example-plumbing.test-subdomains.csv
   example-plumbing.test-wayback-changes.csv
   example-plumbing.test-wayback-versions.csv
   example-plumbing.test-keyword-page-map.csv
@@ -141,6 +142,34 @@ fitfo-exports/
 ```
 
 Use these for Sheets, kickoff docs, or internal planning views.
+
+## Expanded Subdomain Checks
+
+Use this before redesign, DNS cleanup, or launch planning when old staging, portal, shop, booking, CRM, mail, admin, or app hosts may exist.
+
+```bash
+fitfo plan example-plumbing.test --subdomains
+```
+
+The scan still uses passive DNS lookups only. It does not crawl or brute-force arbitrary hostnames.
+
+Subdomain findings are classified for launch handling:
+
+- staging / legacy
+- portal / app
+- operations / support
+- commerce / billing
+- email
+- technical admin / infrastructure
+- content / delivery
+- unknown
+
+Table exports include:
+
+```text
+fitfo-exports/
+  example-plumbing.test-subdomains.csv
+```
 
 ## Agent Readiness Add-On
 

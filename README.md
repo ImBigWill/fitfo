@@ -225,6 +225,14 @@ Firecrawl-backed market research:
 fitfo brief example.com --deep --search --location "Richmond, VA"
 ```
 
+Expanded passive subdomain checks:
+
+```bash
+fitfo plan example.com --subdomains
+```
+
+Use this before redesign or launch when staging, portal, app, shop, booking, CRM, mail, admin, or legacy hosts may exist.
+
 Add the optional agent-readiness layer to a build plan:
 
 ```bash
@@ -431,6 +439,7 @@ fitfo brief example.com --obsidian --out ~/Obsidian/Clients/example.com-brief.md
 - WordPress and common CMS/page-builder signals
 - analytics and marketing tags, including GA4/GTM/Meta/HubSpot/CallRail/Klaviyo/Mailchimp/Calendly/form clues
 - common subdomains like `www`, `staging`, `dev`, `app`, `portal`, `shop`, `blog`, `booking`, `mail`, `webmail`, `crm`, and `admin`
+- optional expanded passive subdomain checks with `--subdomains`, including staging/legacy, portal/app, commerce/billing, email, technical-admin, and content-delivery classifications
 
 ## What FITFO Produces
 

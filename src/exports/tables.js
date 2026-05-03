@@ -34,6 +34,7 @@ export function buildTableExportBundle(scan, options = {}) {
     callOneWorkflow: normalizeCallOneWorkflow(report.callOneWorkflow || []),
     citationBaseline: normalizeCitationBaseline(report.citationBaseline || {}),
     hostingEvidence: normalizeHostingEvidence(scan.analysis?.hosting || {}),
+    subdomains: normalizeSubdomains(scan.dns?.subdomains || [], scan.dns?.subdomainScan || {}),
     waybackVersions: normalizeWaybackVersions(report.waybackEvidence || {}),
     waybackChanges: normalizeWaybackChanges(report.waybackEvidence || {}),
     actionItems: normalizeActionItems(actionReport.priorityActions || []),
@@ -67,6 +68,7 @@ export async function writeTableExports(scan, options = {}) {
     callOneWorkflow: path.join(directory, `${domain}-call-one-workflow.csv`),
     citationBaseline: path.join(directory, `${domain}-citation-nap-baseline.csv`),
     hostingEvidence: path.join(directory, `${domain}-hosting-evidence.csv`),
+    subdomains: path.join(directory, `${domain}-subdomains.csv`),
     waybackVersions: path.join(directory, `${domain}-wayback-versions.csv`),
     waybackChanges: path.join(directory, `${domain}-wayback-changes.csv`),
     proofAssets: path.join(directory, `${domain}-proof-assets.csv`),
@@ -140,6 +142,16 @@ export async function writeTableExports(scan, options = {}) {
       ["edge", "Edge / Proxy Note"],
       ["evidence", "Evidence"],
       ["note", "Note"],
+    ]), "utf8"),
+    writeFile(files.subdomains, toCsv(bundle.subdomains, [
+      ["name", "Subdomain"],
+      ["category", "Category"],
+      ["priority", "Priority"],
+      ["records", "Records"],
+      ["risk", "Risk"],
+      ["action", "Recommended Action"],
+      ["scanMode", "Scan Mode"],
+      ["candidatesChecked", "Candidates Checked"],
     ]), "utf8"),
     writeFile(files.waybackVersions, toCsv(bundle.waybackVersions, [
       ["capturedAt", "Captured"],
@@ -331,6 +343,22 @@ function normalizeHostingEvidence(hosting) {
     edge: hosting.edge || "",
     evidence: item,
     note: hosting.note || "",
+  }));
+}
+
+function normalizeSubdomains(items, scan = {}) {
+  return items.map((item) => ({
+    name: item.name || "",
+    category: item.category || "Unknown",
+    priority: item.priority || "Medium",
+    records: [
+      item.cnames?.length ? `CNAME ${item.cnames.join(", ")}` : null,
+      item.addresses?.length ? `A ${item.addresses.join(", ")}` : null,
+    ].filter(Boolean).join("; "),
+    risk: item.risk || "",
+    action: item.action || "",
+    scanMode: scan.mode || "common",
+    candidatesChecked: scan.candidatesChecked || "",
   }));
 }
 

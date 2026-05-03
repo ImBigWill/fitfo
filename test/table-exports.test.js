@@ -8,7 +8,21 @@ import { buildTableExportBundle, toCsv, writeTableExports } from "../src/exports
 const scan = {
   finishedAt: "2026-04-27T00:01:00.000Z",
   domain: { apex: "client.example" },
-  dns: { nameservers: ["ns1.domaincontrol.com"], subdomains: [] },
+  dns: {
+    nameservers: ["ns1.domaincontrol.com"],
+    subdomainScan: { mode: "expanded", candidatesChecked: 58 },
+    subdomains: [
+      {
+        name: "staging.client.example",
+        category: "Staging / legacy",
+        priority: "High",
+        cnames: ["client-staging.wpengine.com"],
+        addresses: [],
+        risk: "May expose non-production, legacy, or redesign infrastructure.",
+        action: "Confirm owner, purpose, access, and whether it needs to stay, be blocked, or redirect before launch.",
+      },
+    ],
+  },
   http: { reachable: true, title: "Client Plumbing" },
   site: {
     enabled: true,
@@ -118,6 +132,7 @@ test("builds table export rows for research sidecars", () => {
   assert.ok(bundle.callOneWorkflow.some((item) => item.area === "Internal next step" && item.owner === "Us"));
   assert.ok(bundle.citationBaseline.some((item) => item.source === "yelp" && item.matchStatus === "Consistent candidate"));
   assert.ok(bundle.hostingEvidence.some((item) => item.provider === "WP Engine" && item.evidence.includes("CNAME")));
+  assert.ok(bundle.subdomains.some((item) => item.name === "staging.client.example" && item.category === "Staging / legacy"));
   assert.ok(bundle.waybackVersions.some((item) => item.title === "Client Plumbing"));
   assert.ok(bundle.waybackChanges.some((item) => item.signal === "Forms"));
   assert.ok(bundle.actionItems.some((item) => item.action === "Map keywords to pages" && item.source === "Inferred"));
@@ -165,6 +180,7 @@ test("writes CSV and JSON table exports", async () => {
   const callOneWorkflow = await readFile(result.files.callOneWorkflow, "utf8");
   const citationBaseline = await readFile(result.files.citationBaseline, "utf8");
   const hosting = await readFile(result.files.hostingEvidence, "utf8");
+  const subdomains = await readFile(result.files.subdomains, "utf8");
   const waybackVersions = await readFile(result.files.waybackVersions, "utf8");
   const waybackChanges = await readFile(result.files.waybackChanges, "utf8");
   const topLocal = await readFile(result.files.topLocalCompetitors, "utf8");
@@ -186,6 +202,8 @@ test("writes CSV and JSON table exports", async () => {
   assert.match(citationBaseline, /yelp/);
   assert.match(hosting, /Provider,Confidence,Edge \/ Proxy Note,Evidence,Note/);
   assert.match(hosting, /WP Engine,Medium/);
+  assert.match(subdomains, /Subdomain,Category,Priority,Records,Risk,Recommended Action,Scan Mode,Candidates Checked/);
+  assert.match(subdomains, /staging\.client\.example,Staging \/ legacy,High/);
   assert.match(waybackVersions, /Captured,URL,Title,H1,Words,Forms,Phones,Tools,Archive URL/);
   assert.match(waybackVersions, /2026-04-01 12:00 UTC/);
   assert.match(waybackChanges, /Signal,Previous Capture,Latest Capture,Note,Warning/);
@@ -195,6 +213,7 @@ test("writes CSV and JSON table exports", async () => {
   assert.match(serviceLocation, /Priority,Type,Page,Focus,Recommendation/);
   assert.equal(json.metadata.domain, "client.example");
   assert.ok(json.hostingEvidence.some((item) => item.evidence.includes("WP Engine")));
+  assert.ok(json.subdomains.some((item) => item.scanMode === "expanded"));
   assert.ok(json.unknownBlockers.some((item) => item.area === "Lead routing / CRM"));
   assert.ok(json.callOneWorkflow.some((item) => item.audience === "Internal"));
   assert.ok(json.citationBaseline.some((item) => item.source === "yelp"));

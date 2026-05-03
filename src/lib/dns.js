@@ -35,7 +35,49 @@ const COMMON_SUBDOMAINS = [
   "admin",
 ];
 
-export async function getDnsProfile(hostname, apexDomain = hostname, candidateZones = [apexDomain]) {
+const EXPANDED_SUBDOMAINS = [
+  ...COMMON_SUBDOMAINS,
+  "api",
+  "assets",
+  "autoconfig",
+  "autodiscover",
+  "billing",
+  "cdn",
+  "cloud",
+  "cpanel",
+  "dashboard",
+  "demo",
+  "docs",
+  "files",
+  "ftp",
+  "go",
+  "host",
+  "imap",
+  "intranet",
+  "learn",
+  "legacy",
+  "login",
+  "manage",
+  "m",
+  "mobile",
+  "my",
+  "ns1",
+  "ns2",
+  "old",
+  "pay",
+  "payments",
+  "pop",
+  "private",
+  "secure",
+  "server",
+  "smtp",
+  "status",
+  "uat",
+  "vpn",
+  "whm",
+];
+
+export async function getDnsProfile(hostname, apexDomain = hostname, candidateZones = [apexDomain], options = {}) {
   const answers = {};
   const errors = {};
   const zones = [...new Set([apexDomain, ...candidateZones])];
@@ -64,7 +106,9 @@ export async function getDnsProfile(hostname, apexDomain = hostname, candidateZo
   );
 
   const txtValues = answers.TXT.map((record) => record.data);
-  const subdomains = await discoverCommonSubdomains(selectedZone, hostname);
+  const subdomainMode = options.subdomains ? "expanded" : "common";
+  const subdomainCandidates = subdomainLabels(subdomainMode);
+  const subdomains = await discoverCommonSubdomains(selectedZone, hostname, subdomainCandidates);
   const ipInsights = await enrichIpInsights([
     ...answers.A.map((record) => record.data),
     ...answers.AAAA.map((record) => record.data),
@@ -89,6 +133,10 @@ export async function getDnsProfile(hostname, apexDomain = hostname, candidateZo
     caa: answers.CAA.map((record) => record.data),
     dnssec: answers.DS.length > 0,
     subdomains,
+    subdomainScan: {
+      mode: subdomainMode,
+      candidatesChecked: subdomainCandidates.length,
+    },
     ipInsights,
     raw: answers,
     errors,
@@ -150,16 +198,26 @@ async function queryDns(name, type) {
   throw new Error(`DNS ${type} lookup failed for ${name}: ${errors.join("; ")}`);
 }
 
-async function discoverCommonSubdomains(zone, scannedHostname) {
-  const candidates = COMMON_SUBDOMAINS.map((label) => `${label}.${zone}`).filter((candidate) => candidate !== scannedHostname);
+function subdomainLabels(mode) {
+  return [...new Set(mode === "expanded" ? EXPANDED_SUBDOMAINS : COMMON_SUBDOMAINS)];
+}
+
+async function discoverCommonSubdomains(zone, scannedHostname, labels = COMMON_SUBDOMAINS) {
+  const candidates = labels.map((label) => `${label}.${zone}`).filter((candidate) => candidate !== scannedHostname);
   const results = await Promise.all(
     candidates.map(async (name) => {
       try {
         const [addresses, cnames] = await Promise.all([queryDns(name, "A"), queryDns(name, "CNAME")]);
+        const classification = classifySubdomain(name, zone);
         return {
           name,
+          label: subdomainLabel(name, zone),
           addresses: addresses.map((record) => record.data),
           cnames: cnames.map((record) => cleanDnsText(record.data)),
+          category: classification.category,
+          priority: classification.priority,
+          risk: classification.risk,
+          action: classification.action,
         };
       } catch {
         return null;
@@ -170,6 +228,87 @@ async function discoverCommonSubdomains(zone, scannedHostname) {
   return results
     .filter((result) => result && (result.addresses.length > 0 || result.cnames.length > 0))
     .sort((a, b) => a.name.localeCompare(b.name));
+}
+
+export function classifySubdomain(name, zone = "") {
+  const label = subdomainLabel(name, zone);
+
+  if (/^(staging|stage|dev|test|demo|uat|old|legacy)$/.test(label)) {
+    return {
+      category: "Staging / legacy",
+      priority: "High",
+      risk: "May expose non-production, legacy, or redesign infrastructure.",
+      action: "Confirm owner, purpose, access, and whether it needs to stay, be blocked, or redirect before launch.",
+    };
+  }
+
+  if (/^(portal|client|clients|app|dashboard|login|my|secure|intranet|private)$/.test(label)) {
+    return {
+      category: "Portal / app",
+      priority: "High",
+      risk: "May support client portals, authenticated apps, dashboards, or private workflows.",
+      action: "Do not remove or redirect until the client confirms active users, owner, and replacement path.",
+    };
+  }
+
+  if (/^(booking|crm|support|help|go|learn|docs|status)$/.test(label)) {
+    return {
+      category: "Operations / support",
+      priority: "Medium",
+      risk: "May support booking, CRM, support, docs, or operational workflows.",
+      action: "Confirm tool owner, lead routing, and whether launch changes affect this host.",
+    };
+  }
+
+  if (/^(shop|store|pay|payments|billing)$/.test(label)) {
+    return {
+      category: "Commerce / billing",
+      priority: "High",
+      risk: "May support payments, billing, ecommerce, or customer account flows.",
+      action: "Confirm platform owner, SSL, checkout/payment dependencies, and redirect requirements.",
+    };
+  }
+
+  if (/^(mail|email|webmail|autodiscover|autoconfig|imap|pop|smtp)$/.test(label)) {
+    return {
+      category: "Email",
+      priority: "High",
+      risk: "May be tied to email hosting, mailbox discovery, or mail client configuration.",
+      action: "Do not alter until email provider, MX/SPF/DKIM/DMARC, and mailbox ownership are confirmed.",
+    };
+  }
+
+  if (/^(admin|cpanel|whm|ftp|server|host|cloud|vpn|manage|api)$/.test(label)) {
+    return {
+      category: "Technical admin / infrastructure",
+      priority: "High",
+      risk: "May expose admin, hosting, API, VPN, or infrastructure access paths.",
+      action: "Confirm owner and access path; review security posture before launch or DNS cleanup.",
+    };
+  }
+
+  if (/^(cdn|assets|files|blog|m|mobile|www|ns1|ns2)$/.test(label)) {
+    return {
+      category: "Content / delivery",
+      priority: "Medium",
+      risk: "May support content delivery, mobile variants, blog content, or DNS infrastructure.",
+      action: "Confirm whether this host should remain live, consolidate, or be redirected.",
+    };
+  }
+
+  return {
+    category: "Unknown",
+    priority: "Medium",
+    risk: "Purpose is not obvious from the hostname.",
+    action: "Confirm owner, purpose, access, and launch handling before DNS or redirect changes.",
+  };
+}
+
+function subdomainLabel(name, zone = "") {
+  const host = String(name || "").toLowerCase();
+  const suffix = zone ? `.${String(zone).toLowerCase()}` : "";
+  if (suffix && host.endsWith(suffix)) return host.slice(0, -suffix.length).split(".").pop();
+  return host.split(".")[0] || host;
 }
 
 async function enrichIpInsights(addresses) {

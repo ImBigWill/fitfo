@@ -14,8 +14,8 @@ Items here are not commitments. They need shaping before implementation.
 - Improve registrar detection for unusual TLDs.
 - Improve hosting detection for common WordPress hosts.
 - Detect managed CDN layers separately from DNS-owned Cloudflare.
-- Detect staging/dev/shop/client portals from common subdomains.
-- Add `--subdomains` option for expanded passive subdomain checks.
+- Expand real-world subdomain fixture coverage after `--subdomains` passes.
+- Add launch handling refinements for staging/dev/shop/client portal subdomain classes.
 
 ## Marketing / Analytics
 

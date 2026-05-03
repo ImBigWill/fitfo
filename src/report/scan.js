@@ -575,9 +575,11 @@ function formatSubdomains(theme, subdomains) {
   }
 
   return subdomains.flatMap((subdomain) => [
-    `${theme.bullet("›")} ${theme.label(subdomain.name)}`,
-    subdomain.cnames.length ? `  ${theme.dim(`CNAME: ${subdomain.cnames.join(", ")}`)}` : null,
-    subdomain.addresses.length ? `  ${theme.dim(`A: ${subdomain.addresses.join(", ")}`)}` : null,
+    `${theme.bullet("›")} ${theme.label(subdomain.name)} ${subdomain.category ? theme.chip(`[${subdomain.category}]`) : ""} ${subdomain.priority ? theme.chip(`[${subdomain.priority}]`) : ""}`.trim(),
+    subdomain.cnames?.length ? `  ${theme.dim(`CNAME: ${subdomain.cnames.join(", ")}`)}` : null,
+    subdomain.addresses?.length ? `  ${theme.dim(`A: ${subdomain.addresses.join(", ")}`)}` : null,
+    subdomain.risk ? `  ${theme.dim(`Risk: ${subdomain.risk}`)}` : null,
+    subdomain.action ? `  ${theme.dim(`Action: ${subdomain.action}`)}` : null,
   ]).filter(Boolean);
 }
 

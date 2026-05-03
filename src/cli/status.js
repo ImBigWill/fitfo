@@ -8,6 +8,7 @@ export function renderRunStart(domain, options = {}) {
   const output = options.format === "text" ? "Styled terminal" : options.format;
   const depth = options.deep ? `Deep crawl, max ${options.crawlLimit || 8} pages` : "Public records + homepage";
   const research = options.search ? "Firecrawl web research" : "Not enabled";
+  const subdomains = options.subdomains ? "Expanded passive checks" : "Common checks";
   const wayback = options.wayback ? "Recent homepage snapshots" : "Not enabled";
 
   return renderSurface(theme, [
@@ -17,6 +18,7 @@ export function renderRunStart(domain, options = {}) {
       kv(theme, "Output", output),
       kv(theme, "Depth", depth),
       kv(theme, "Research", research),
+      kv(theme, "Subdomains", subdomains),
       kv(theme, "Wayback", wayback),
       "",
       commandHint(theme, "RDAP", "registrar and domain status"),

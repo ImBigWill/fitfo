@@ -25,6 +25,7 @@ test("parses default scan command with a domain", () => {
     save: false,
     search: false,
     searchLimit: 5,
+    subdomains: false,
     location: null,
     vertical: null,
     vault: null,
@@ -104,6 +105,7 @@ test("parses markdown and json aliases", () => {
   assert.equal(parseArgs(["brief", "example.com", "--deep"]).deep, true);
   assert.equal(parseArgs(["brief", "example.com", "--crawl-limit", "12"]).crawlLimit, 12);
   assert.equal(parseArgs(["brief", "example.com", "--search"]).search, true);
+  assert.equal(parseArgs(["plan", "example.com", "--subdomains"]).subdomains, true);
   assert.equal(parseArgs(["brief", "example.com", "--search-limit", "7"]).searchLimit, 7);
   assert.equal(parseArgs(["brief", "example.com", "--wayback"]).wayback, true);
   assert.equal(parseArgs(["brief", "example.com", "--wayback-limit", "12"]).waybackLimit, 12);
