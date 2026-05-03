@@ -136,6 +136,7 @@ fitfo-exports/
   example-plumbing.test-wayback-versions.csv
   example-plumbing.test-keyword-page-map.csv
   example-plumbing.test-launch-checklist.csv
+  example-plumbing.test-redirect-matrix.csv
   example-plumbing.test-top-local-competitors.csv
   example-plumbing.test-research-tables.json
   example-plumbing.test-unknown-blockers.csv
@@ -170,6 +171,23 @@ Table exports include:
 fitfo-exports/
   example-plumbing.test-subdomains.csv
 ```
+
+## Redirect Matrix Export
+
+Use this when a redesign needs a current-to-future URL handling worksheet:
+
+```bash
+fitfo plan example-plumbing.test --deep --subdomains --export-tables fitfo-exports
+```
+
+This adds:
+
+```text
+fitfo-exports/
+  example-plumbing.test-redirect-matrix.csv
+```
+
+The matrix includes current target, current state, keep/rework/create/redirect/confirm decision, future target, launch phase, owner, status, and evidence. Use it to decide what stays, what gets rebuilt, what needs redirect rules, and what must be confirmed before DNS or launch work.
 
 ## Agent Readiness Add-On
 

@@ -145,6 +145,9 @@ test("builds a client plan from scan, crawl, and research signals", () => {
   assert.ok(plan.architecturalStateMap.rows.some((item) => item.area === "Domain architecture" && item.target === "www.client.example"));
   assert.ok(plan.architecturalStateMap.rows.some((item) => item.area === "Current URL" && item.target === "/services/drain-cleaning/" && item.decision === "Rework"));
   assert.ok(plan.architecturalStateMap.rows.some((item) => item.area === "Subdomain" && item.target === "staging.client.example"));
+  assert.ok(plan.redirectMatrix.rows.some((item) => item.currentTarget === "/services/drain-cleaning/" && item.futureTarget === "/services/drain-cleaning/"));
+  assert.ok(plan.redirectMatrix.rows.some((item) => item.currentTarget === "split_hosts" && item.futureTarget === "Final canonical host"));
+  assert.ok(plan.redirectMatrix.rows.some((item) => item.currentTarget === "staging.client.example" && item.status === "Needs confirmation"));
   assert.ok(plan.workstreams.some((item) => item.name === "Tracking and conversion"));
   assert.ok(plan.launchChecklist.some((item) => item.item === "DNS cutover" && item.phase === "Launch"));
   assert.ok(plan.kickoffResearch.marketSnapshot.some((item) => item.label === "Competitor and market SERP"));
@@ -194,6 +197,9 @@ test("renders a Markdown plan for Obsidian", () => {
   assert.match(markdown, /## Architectural State Map/);
   assert.match(markdown, /Apex\/www variants resolve to more than one final host/);
   assert.match(markdown, /staging\.client\.example/);
+  assert.match(markdown, /## Redirect Matrix/);
+  assert.match(markdown, /\| Area \| Current Target \| Current State \| Decision \| Future Target \| Phase \| Launch Handling \| Owner \| Status \| Evidence \|/);
+  assert.match(markdown, /Final canonical host/);
   assert.match(markdown, /## Agent Readiness Snapshot/);
   assert.match(markdown, /\| Discoverability \| robots\.txt \| Found \|/);
   assert.match(markdown, /gptbot disallow/);

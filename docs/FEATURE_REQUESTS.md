@@ -37,6 +37,12 @@ Items here are not commitments. They need shaping before implementation.
 - Add richer competitor-informed copy patterns.
 - Add client-ready agenda templates by vertical.
 
+## Redirect / Launch Matrix
+
+- Refine future URL suggestions after real redirect-matrix exports.
+- Add owner/status presets for WordPress rebuild workflows.
+- Add redirect-rule format helpers for common hosts once enough launch cases are observed.
+
 ## Verticals
 
 - Expand `--vertical plumbing` after private real-domain passes.

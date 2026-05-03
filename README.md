@@ -233,6 +233,14 @@ fitfo plan example.com --subdomains
 
 Use this before redesign or launch when staging, portal, app, shop, booking, CRM, mail, admin, or legacy hosts may exist.
 
+Export a redirect/current-to-future URL matrix:
+
+```bash
+fitfo plan example.com --deep --subdomains --export-tables fitfo-exports
+```
+
+This creates `example.com-redirect-matrix.csv` for launch planning.
+
 Add the optional agent-readiness layer to a build plan:
 
 ```bash
@@ -289,6 +297,7 @@ It also generates:
 - proof-asset requests for reviews, photos, credentials, case studies, offers, and lead-routing evidence
 - URL/redirect inventory for canonical host, robots.txt, XML sitemap, canonical tags, noindex pages, and crawled URLs
 - architectural state map for current URLs, redirect/canonical behavior, subdomains, future-state decisions, and launch/post-launch handling
+- redirect/current-to-future matrix for launch worksheets and redesign URL handling
 - Wayback recent-version evidence for spotting homepage copy, lead-capture, phone, and tracking changes across recent archived versions
 - lead capture inventory for forms, form actions, visible fields, submit labels, phone numbers, email addresses, and CTA labels
 - tracking/tool footprint for visible marketing, CRM, script hosts, and third-party widgets detected across crawled pages

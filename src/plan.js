@@ -6,6 +6,7 @@ import { kv, panel, renderAppHeader, renderSurface } from "./ui.js";
 
 export function buildClientPlan(scan, options = {}) {
   const brief = buildBrief(scan);
+  const architecturalStateMap = buildArchitecturalStateMap(scan, brief);
   return {
     subject: scan.domain.apex,
     generatedAt: scan.finishedAt,
@@ -27,7 +28,8 @@ export function buildClientPlan(scan, options = {}) {
     siteEvidence: brief.actionReport.siteEvidence,
     waybackEvidence: brief.waybackEvidence,
     keywordEvidence: brief.actionReport.keywordEvidence,
-    architecturalStateMap: buildArchitecturalStateMap(scan, brief),
+    architecturalStateMap,
+    redirectMatrix: buildRedirectMatrixFromStateMap(architecturalStateMap, scan),
     agentReadiness: options.agentReady ? buildAgentReadiness(scan) : null,
     workstreams: buildWorkstreams(scan),
     launchChecklist: buildPlanLaunchChecklist(scan),
@@ -92,6 +94,8 @@ export function renderPlanText(scan, options = {}) {
     ]),
     "",
     panel(theme, "Architectural State Map", formatArchitecturalStateMap(theme, plan.architecturalStateMap)),
+    "",
+    panel(theme, "Redirect Matrix", formatRedirectMatrix(theme, plan.redirectMatrix)),
     "",
     ...(plan.agentReadiness ? [
       panel(theme, "Agent Readiness Snapshot", formatAgentReadiness(theme, plan.agentReadiness)),
@@ -213,6 +217,10 @@ export function renderPlanMarkdown(scan, options = {}) {
     "## Architectural State Map",
     "",
     markdownArchitecturalStateMap(plan.architecturalStateMap),
+    "",
+    "## Redirect Matrix",
+    "",
+    markdownRedirectMatrix(plan.redirectMatrix),
     "",
     ...(plan.agentReadiness ? [
       "## Agent Readiness Snapshot",
@@ -616,6 +624,40 @@ function markdownArchitecturalStateMap(map = {}) {
   ].join("\n");
 }
 
+function formatRedirectMatrix(theme, matrix = {}) {
+  const rows = matrix.rows || [];
+  if (!rows.length) {
+    return [`${theme.bullet("›")} ${theme.label("Redirect matrix")} ${theme.dim("Run `fitfo plan domain.com --deep` to generate current-to-future URL handling rows.")}`];
+  }
+
+  return [
+    `${theme.bullet("›")} ${theme.label("Summary")} ${theme.dim(matrix.summary || "Current-to-future URL handling generated.")}`,
+    ...rows.slice(0, 10).map((item) => `${theme.bullet("›")} ${theme.label(item.currentTarget)} ${theme.chip(`[${item.decision}]`)} ${theme.chip(`[${item.phase}]`)} ${theme.dim(`Future: ${item.futureTarget}. Owner: ${item.owner}. Status: ${item.status}. ${item.launchHandling}`)}`),
+  ];
+}
+
+function markdownRedirectMatrix(matrix = {}) {
+  const rows = matrix.rows || [];
+  if (!rows.length) return "- Run `fitfo plan domain.com --deep` to generate current-to-future URL handling rows.";
+
+  return [
+    `- **Summary:** ${matrix.summary || "Current-to-future URL handling generated."}`,
+    "",
+    markdownTableWithHeaders(["Area", "Current Target", "Current State", "Decision", "Future Target", "Phase", "Launch Handling", "Owner", "Status", "Evidence"], rows.map((item) => [
+      item.area,
+      item.currentTarget,
+      item.currentState,
+      item.decision,
+      item.futureTarget,
+      item.phase,
+      item.launchHandling,
+      item.owner,
+      item.status,
+      item.evidence,
+    ])),
+  ].join("\n");
+}
+
 function markdownInfrastructureSnapshot(rows = []) {
   if (!rows.length) return "- Run a scan to identify registrar, DNS, Cloudflare, hosting, CMS, and email ownership.";
   return markdownTableWithHeaders(["Area", "Public Finding", "Confidence", "Client Needs"], rows.map((item) => [
@@ -866,6 +908,88 @@ function buildArchitecturalStateMap(scan, brief = {}) {
     summary: buildArchitecturalStateSummary(rows),
     rows,
   };
+}
+
+function buildRedirectMatrixFromStateMap(stateMap = {}, scan = {}) {
+  const rows = (stateMap.rows || []).map((row) => ({
+    area: row.area,
+    currentTarget: row.target,
+    currentState: row.currentState,
+    decision: row.decision,
+    futureTarget: futureTargetForStateRow(row, scan),
+    phase: row.phase,
+    launchHandling: row.launchHandling,
+    owner: ownerForStateRow(row),
+    status: statusForStateRow(row),
+    evidence: row.evidence,
+  }));
+
+  return {
+    summary: buildRedirectMatrixSummary(rows),
+    rows,
+  };
+}
+
+function futureTargetForStateRow(row, scan = {}) {
+  if (row.area === "Domain architecture") {
+    const urlStructure = scan.analysis?.urlStructure || {};
+    const preferredProtocol = normalizeProtocol(urlStructure.preferredProtocol || "https");
+    const preferredHost = urlStructure.preferredHost && urlStructure.preferredHost !== "Unknown" ? urlStructure.preferredHost : scan.domain?.apex;
+    return preferredHost ? `${preferredProtocol}://${preferredHost}/` : "Confirm canonical launch host";
+  }
+
+  if (row.area === "Redirect strategy") {
+    return "Final canonical host";
+  }
+
+  if (row.area === "Current URL") {
+    if (row.target === "/") return "/";
+    if (row.decision === "Rework" || row.decision === "Keep") return row.target;
+    return "Map to closest future URL";
+  }
+
+  if (row.area === "Future URL") {
+    return row.target;
+  }
+
+  if (row.area === "Subdomain") {
+    return "Confirm keep, block, consolidate, or redirect";
+  }
+
+  return "Confirm future handling";
+}
+
+function ownerForStateRow(row) {
+  if (row.area === "Subdomain") return "Client / Previous Developer";
+  if (row.area === "Redirect strategy" || row.area === "Domain architecture") return "Developer / DNS owner";
+  if (row.area === "Future URL") return "Strategy / Content";
+  if (row.area === "Current URL") return "Strategy / Developer";
+  return "Us";
+}
+
+function statusForStateRow(row) {
+  if (row.decision === "Keep") return "Ready to verify";
+  if (row.decision === "Rework") return "Needs redesign decision";
+  if (row.decision === "Create") return "Needs build";
+  if (row.decision === "Redirect") return "Needs redirect rule";
+  return "Needs confirmation";
+}
+
+function buildRedirectMatrixSummary(rows = []) {
+  const counts = rows.reduce((totals, row) => {
+    totals[row.decision] = (totals[row.decision] || 0) + 1;
+    return totals;
+  }, {});
+
+  const parts = ["Keep", "Rework", "Create", "Redirect", "Confirm"]
+    .map((key) => counts[key] ? `${counts[key]} ${key.toLowerCase()}` : null)
+    .filter(Boolean);
+
+  return parts.length ? `Redirect matrix generated with ${parts.join(", ")} row(s).` : "Redirect matrix needs current URL, redirect, or subdomain evidence.";
+}
+
+function normalizeProtocol(value) {
+  return String(value || "https").replace(/:$/, "").toLowerCase() || "https";
 }
 
 function classifyPlanPage(path = "") {

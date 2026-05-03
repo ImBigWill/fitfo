@@ -44,6 +44,7 @@ export function buildTableExportBundle(scan, options = {}) {
     reputationSummary: normalizeReputationSummary(report.reputationSummary || []),
     serviceLocationRecommendations: normalizeServiceLocationRecommendations(report.serviceLocationRecommendations || []),
     launchChecklist: normalizeLaunchChecklist(report.launchChecklist || []),
+    redirectMatrix: normalizeRedirectMatrix(report.redirectMatrix || {}),
     confirmationScript: normalizeConfirmationScript(report.confirmationScript || []),
     keywordClusters: normalizeKeywordClusters(actionReport.keywordClusters || {}),
     topLocalCompetitors: normalizeTopLocalCompetitors(competitorResearch.topLocalCompetitors || []),
@@ -77,6 +78,7 @@ export async function writeTableExports(scan, options = {}) {
     reputationSummary: path.join(directory, `${domain}-reputation-summary.csv`),
     serviceLocationRecommendations: path.join(directory, `${domain}-service-location-recommendations.csv`),
     launchChecklist: path.join(directory, `${domain}-launch-checklist.csv`),
+    redirectMatrix: path.join(directory, `${domain}-redirect-matrix.csv`),
     confirmationScript: path.join(directory, `${domain}-confirmation-script.csv`),
     keywordClusters: path.join(directory, `${domain}-keyword-clusters.csv`),
     topLocalCompetitors: path.join(directory, `${domain}-top-local-competitors.csv`),
@@ -206,6 +208,18 @@ export async function writeTableExports(scan, options = {}) {
       ["phase", "Phase"],
       ["item", "Item"],
       ["detail", "Detail"],
+    ]), "utf8"),
+    writeFile(files.redirectMatrix, toCsv(bundle.redirectMatrix, [
+      ["area", "Area"],
+      ["currentTarget", "Current Target"],
+      ["currentState", "Current State"],
+      ["decision", "Decision"],
+      ["futureTarget", "Future Target"],
+      ["phase", "Phase"],
+      ["launchHandling", "Launch Handling"],
+      ["owner", "Owner"],
+      ["status", "Status"],
+      ["evidence", "Evidence"],
     ]), "utf8"),
     writeFile(files.confirmationScript, toCsv(bundle.confirmationScript, [
       ["topic", "Topic"],
@@ -448,6 +462,21 @@ function normalizeLaunchChecklist(items) {
     phase: item.phase || "",
     item: item.item || "",
     detail: item.detail || "",
+  }));
+}
+
+function normalizeRedirectMatrix(matrix) {
+  return (matrix.rows || []).map((item) => ({
+    area: item.area || "",
+    currentTarget: item.currentTarget || "",
+    currentState: item.currentState || "",
+    decision: item.decision || "",
+    futureTarget: item.futureTarget || "",
+    phase: item.phase || "",
+    launchHandling: item.launchHandling || "",
+    owner: item.owner || "",
+    status: item.status || "",
+    evidence: item.evidence || "",
   }));
 }
 

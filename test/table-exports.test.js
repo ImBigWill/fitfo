@@ -152,6 +152,8 @@ test("builds plan launch checklist export rows", () => {
   const bundle = buildTableExportBundle(scan, { report: "plan" });
 
   assert.ok(bundle.launchChecklist.some((item) => item.item === "DNS cutover" && item.phase === "Launch"));
+  assert.ok(bundle.redirectMatrix.some((item) => item.currentTarget === "/services/drain-cleaning/" && item.futureTarget === "/services/drain-cleaning/"));
+  assert.ok(bundle.redirectMatrix.some((item) => item.currentTarget === "staging.client.example" && item.status === "Needs confirmation"));
   assert.deepEqual(bundle.agentReadiness, []);
 });
 
@@ -186,6 +188,7 @@ test("writes CSV and JSON table exports", async () => {
   const topLocal = await readFile(result.files.topLocalCompetitors, "utf8");
   const script = await readFile(result.files.confirmationScript, "utf8");
   const serviceLocation = await readFile(result.files.serviceLocationRecommendations, "utf8");
+  const redirectMatrix = await readFile(result.files.redirectMatrix, "utf8");
   const json = JSON.parse(await readFile(result.files.json, "utf8"));
 
   assert.match(keywords, /Cluster,Keyword/);
@@ -211,6 +214,7 @@ test("writes CSV and JSON table exports", async () => {
   assert.match(topLocal, /Competitor,Why It Surfaced,Source Query,URL/);
   assert.match(script, /Topic,Ask,Why/);
   assert.match(serviceLocation, /Priority,Type,Page,Focus,Recommendation/);
+  assert.match(redirectMatrix, /Area,Current Target,Current State,Decision,Future Target,Phase,Launch Handling,Owner,Status,Evidence/);
   assert.equal(json.metadata.domain, "client.example");
   assert.ok(json.hostingEvidence.some((item) => item.evidence.includes("WP Engine")));
   assert.ok(json.subdomains.some((item) => item.scanMode === "expanded"));
@@ -222,8 +226,21 @@ test("writes CSV and JSON table exports", async () => {
   assert.ok(json.topLocalCompetitors.some((item) => item.name === "Competitor Plumbing"));
   assert.ok(json.competitors.some((item) => item.title === "Competitor Plumbing"));
   assert.ok(json.confirmationScript.some((item) => item.topic === "Structure approval"));
+  assert.deepEqual(json.redirectMatrix, []);
   assert.equal(result.files.agentReadiness, undefined);
   assert.deepEqual(json.agentReadiness, []);
+});
+
+test("writes redirect matrix rows for plan exports", async () => {
+  const directory = await mkdtemp(path.join(tmpdir(), "fitfo-redirect-exports-"));
+  const result = await writeTableExports(scan, { dir: directory, report: "plan" });
+
+  const redirectMatrix = await readFile(result.files.redirectMatrix, "utf8");
+  const json = JSON.parse(await readFile(result.files.json, "utf8"));
+
+  assert.match(redirectMatrix, /Area,Current Target,Current State,Decision,Future Target,Phase,Launch Handling,Owner,Status,Evidence/);
+  assert.match(redirectMatrix, /Current URL,\/services\/drain-cleaning\//);
+  assert.ok(json.redirectMatrix.some((item) => item.currentTarget === "staging.client.example"));
 });
 
 test("writes agent-readiness CSV when the add-on is requested", async () => {
