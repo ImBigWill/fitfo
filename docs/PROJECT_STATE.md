@@ -1,6 +1,6 @@
 # Project State
 
-Last updated: 2026-04-30, after the Wayback, handoff evidence, and call-one workflow pass.
+Last updated: 2026-05-03, after the v1 product-surface cleanup.
 
 ## Current State
 
@@ -19,17 +19,17 @@ It can:
 - use either `FIRECRAWL_API_KEY` or an authenticated local Firecrawl CLI for market research
 - generate a `fitfo plan` client build plan from scan, crawl, and research signals
 - treat redesign planning as a current-state to future-state architecture problem, starting with redirect/canonical checks and growing toward URL/subdomain/page handling decisions
-- add a plumber/home-services planning lens with `--vertical plumbing`, including plumber-aware service research queries, homeowner emergency UX checks, plumbing proof assets, and role-specific kickoff questions
-- run `fitfo onboard` as a one-command full-intake preset that deep-scans, searches, saves an Obsidian action-plan note, and exports CSV/JSON planning tables
+- keep vertical intelligence parked internally until the core onboarding/brief/plan workflow is more polished
+- run `fitfo onboard` as a one-command full-intake preset that deep-scans, searches, and saves a Markdown action-plan note
 - prompt for missing `fitfo onboard` location and vault/folder details when running interactively
 - render a styled onboarding report
 - render plain output for copying/saving
 - output JSON
 - output Markdown
-- export kickoff action/research tables, infrastructure snapshots, login checklists, unknown blockers, call-one workflow, hosting evidence, Wayback evidence, and top local competitors to CSV files plus a combined JSON bundle with `--export-tables`
-- save Obsidian-ready Markdown notes with frontmatter, tags, checklists, and client-call questions
-- save stable Obsidian vault notes with `--vault` or `FITFO_OBSIDIAN_DIR`
-- prompt to save findings after normal interactive terminal scans, defaulting to Desktop Markdown with Obsidian vault/folder and custom path choices
+- optionally export kickoff action/research tables, infrastructure snapshots, login checklists, unknown blockers, call-one workflow, hosting evidence, Wayback evidence, and top local competitors to CSV files plus a combined JSON bundle with `--export-tables`
+- save Markdown notes with frontmatter, tags, checklists, and client-call questions
+- save stable Markdown notes into an Obsidian vault/folder with `--vault` or `FITFO_OBSIDIAN_DIR`
+- prompt to save findings after normal interactive terminal scans, defaulting to Desktop Markdown with vault/folder and custom path choices
 - save safe CLI defaults with `fitfo config`
 - save reports when explicitly requested
 - run a guided wizard from plain `fitfo` for scan, handoff, kickoff brief, or build plan presets
@@ -97,10 +97,9 @@ Core should focus on fast onboarding discovery:
 - citation / NAP baseline checks for name, address/service-area, phone, directory/profile consistency, and cleanup queues
 - proof-asset and content-inventory output for kickoff planning
 - service/location page recommendations for kickoff and build planning
-- open-source-safe vertical profiles that add market-specific research and planning prompts without committing real client scan data
 - competitor-informed structure, review/reputation summary, and kickoff confirmation-script output
 - plan-mode launch checklist output
-- table sidecar exports for Sheets, Obsidian, and client planning workflows
+- optional table sidecar exports for worksheet and client planning workflows
 - access checklist
 - previous developer/client handoff questions
 
@@ -119,11 +118,10 @@ These may become separate commands or modules:
 
 ## Next Sensible Commit Candidates
 
-- Build the first explicit architectural state map section in `fitfo plan` from redirect matrix, URL inventory, content inventory, subdomains, and launch checklist signals.
+- Polish the `onboard`, `brief`, and `plan` Markdown report hierarchy now that those are the core v1 workflows.
 - Run more real client-domain passes and add fixtures for any missed registrar, DNS, hosting, CRM, or email patterns.
-- Run more real plumber-domain passes and fold generic misses into `--vertical plumbing` services, proof prompts, tool detection, and fake fixtures.
 - Validate the call-one workflow table against real client reports and tune owner/audience labels where they feel awkward.
-- Refine Obsidian templates after more real scans, especially saved onboard notes and table sidecars.
+- Refine Markdown templates after more real scans, especially saved onboard notes.
 - Improve service/location sitemap heuristics after testing more real client sites.
 - Refine keyword clustering and competitor classification with more Firecrawl result sets.
 - Add more provider fixtures for messy GoDaddy, SiteGround, WP Engine, Cloudflare, Hostinger, Namecheap, ServiceTitan, Housecall Pro, Jobber, CallRail, and Google Workspace combinations.

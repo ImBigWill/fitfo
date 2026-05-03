@@ -8,7 +8,7 @@ test("asks for onboard location only when search has no location", () => {
   assert.equal(shouldAskForOnboardLocation({ command: "scan", search: true, location: null }), false);
 });
 
-test("asks for onboard vault only when the default Obsidian note has nowhere to go", () => {
+test("asks for onboard vault only when the default Markdown note has nowhere to go", () => {
   assert.equal(shouldAskForOnboardVault({ command: "onboard", onboardFileFormat: "obsidian", vault: null, out: null }), true);
   assert.equal(shouldAskForOnboardVault({ command: "onboard", onboardFileFormat: "obsidian", vault: "/vault", out: null }), false);
   assert.equal(shouldAskForOnboardVault({ command: "onboard", onboardFileFormat: "obsidian", vault: null, out: "note.md" }), false);

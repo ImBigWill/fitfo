@@ -67,15 +67,15 @@ This runs the complete action-plan path:
 - deep website crawl
 - Firecrawl-backed market/search research
 - plan-mode recommendations and launch checklist
-- Obsidian-ready action-plan note
-- CSV/JSON sidecar table exports in `fitfo-exports/`
+- Markdown action-plan note
+- optional advanced CSV/JSON sidecar table exports in `fitfo-exports/`
 
 The saved action plan labels recommendations as `Observed`, `Research`, `Inferred`, or `Ask Client` so the kickoff call does not blur facts and assumptions.
 
 When run in a normal terminal, `onboard` asks for missing details before the scan starts:
 
 - `LOCAL`: market/location for local keyword and competitor research
-- `VAULT`: Obsidian vault or folder where the action-plan note should go
+- `VAULT`: vault or folder where the Markdown action-plan note should go
 
 If the location is unknown, press Enter to skip it. If you press Enter at the vault prompt, FITFO uses `fitfo-reports/`.
 
@@ -104,7 +104,7 @@ Preview the full run before scanning:
 fitfo onboard clientdomain.com --preview
 ```
 
-Run terminal-only without writing the Obsidian note or CSV/JSON table exports:
+Run terminal-only without writing the Markdown note or optional CSV/JSON table exports:
 
 ```bash
 fitfo onboard clientdomain.com --no-save
@@ -117,7 +117,7 @@ When a normal interactive text report finishes and no output file was already re
 Current save choices:
 
 - `desktop`: save a Markdown file to the Desktop
-- `obsidian`: save a Markdown/Obsidian note to a vault or folder
+- `obsidian`: save a Markdown note to a vault or folder
 - `custom`: provide the exact output path
 
 FITFO uses simple domain filenames for prompted saves:
@@ -128,9 +128,9 @@ clientdomain.com.md
 
 If the suggested path is correct, press Enter. If you type `yes` at the final path prompt, FITFO treats that as accepting the suggested path.
 
-## Obsidian Workflow
+## Markdown Vault Workflow
 
-One-off Obsidian save:
+One-off Markdown save into an Obsidian vault/folder:
 
 ```bash
 fitfo brief clientdomain.com --obsidian --vault ~/Obsidian/Clients

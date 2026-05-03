@@ -70,10 +70,6 @@ export function applyOnboardRuntimeDefaults(options = {}) {
     return next;
   }
 
-  if (!next.exportTables) {
-    next.exportTables = "fitfo-exports";
-  }
-
   return next;
 }
 
@@ -91,7 +87,7 @@ export function renderOnboardSummary(domain, options = {}, display = {}) {
       kv(theme, "Mode", theme.dim(mode)),
       kv(theme, "Location", options.location ? theme.value(options.location) : theme.dim("Not set")),
       kv(theme, "Report", theme.value(outputPath)),
-      kv(theme, "Tables", options.noSave ? theme.dim("Disabled by --no-save") : theme.value(tablePath)),
+      kv(theme, "Tables", options.exportTables ? theme.value(tablePath) : theme.dim("Disabled; pass --export-tables dir")),
       kv(theme, "Deep", options.deep ? theme.ok("Enabled") : theme.dim("Disabled")),
       kv(theme, "Search", options.search ? theme.ok("Enabled") : theme.dim("Disabled")),
       kv(theme, "Wayback", options.wayback ? theme.ok("Enabled") : theme.dim("Disabled")),

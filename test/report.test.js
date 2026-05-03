@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { renderMarkdownReport } from "../src/report.js";
 
-test("renders an Obsidian-ready Markdown report with frontmatter, checklists, and client questions", () => {
+test("renders a vault-ready Markdown report with frontmatter, checklists, and client questions", () => {
   const markdown = renderMarkdownReport({
     tool: "FITFO",
     scanVersion: "0.1.0",

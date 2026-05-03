@@ -165,13 +165,7 @@ FITFO should eventually render this as an explicit plan section and table export
 
 Do not build a plugin system yet.
 
-For now, keep scanner capabilities as internal modules. Vertical intelligence should follow the same rule: ship focused vertical profiles in core before designing public extension points. The first vertical profile is `plumbing`, which can be requested with:
-
-```bash
-fitfo plan clientdomain.com --deep --search --location "City, ST" --vertical plumbing
-```
-
-The plumbing profile adds plumber/home-services service terms, proof-asset prompts, homeowner emergency UX checks, field-service/tool awareness, and role-specific kickoff questions. It should remain generic enough for open-source use and should not include real client scan outputs or private agency playbooks.
+For now, keep scanner capabilities as internal modules. Vertical intelligence is parked for v1: the plumbing profile can remain in the codebase as an internal experiment, but it should not be documented as a public CLI feature until the core `snapshot`, `brief`, `plan`, and `onboard` workflows feel finished.
 
 If the tool grows, a future internal module layout could look like:
 
@@ -183,7 +177,7 @@ cms clues
 marketing tags
 brief research
 client plan
-vertical profiles
+parked vertical profiles
 report renderers
 ```
 

@@ -45,7 +45,7 @@ domain input
       -> service/location recommendations
       -> keyword-to-page map
       -> kickoff confirmation script
-      -> optional CSV/JSON table exports
+      -> optional advanced CSV/JSON table exports
     -> research queue
     -> opportunities to inspect
     -> client questions
@@ -73,7 +73,7 @@ domain input
 - `src/lib/site.js` handles local deep crawl/site intelligence extraction.
 - `src/lib/research.js` handles optional Firecrawl-backed market/search research.
 
-Markdown and Obsidian brief/plan exports lead with infrastructure snapshot, unknown blockers, call-one workflow, confidence explanations, login checklist, and do-not-touch warning tables so the client call starts with registrar, DNS, Cloudflare, hosting, CMS, email, access ownership, owner assignment, and safety risks. They also include raw evidence tables for URL/redirect inventory, lead capture inventory, tracking/tool footprint, keyword evidence, action report, proof assets, content inventory, keyword clusters, top local competitors, competitor research, reputation summary, competitor-informed structure, service/location recommendations, confirmation script, and keyword-to-page map so they can be scanned quickly or moved into a client workspace.
+Markdown brief/plan exports lead with infrastructure snapshot, unknown blockers, call-one workflow, confidence explanations, login checklist, and do-not-touch warning tables so the client call starts with registrar, DNS, Cloudflare, hosting, CMS, email, access ownership, owner assignment, and safety risks. They also include raw evidence tables for URL/redirect inventory, lead capture inventory, tracking/tool footprint, keyword evidence, action report, proof assets, content inventory, keyword clusters, top local competitors, competitor research, reputation summary, competitor-informed structure, service/location recommendations, confirmation script, and keyword-to-page map so they can be scanned quickly or moved into a client workspace. Obsidian support is a Markdown destination workflow.
 
 ## Evidence Labels
 
@@ -124,7 +124,7 @@ The call-one workflow is the practical operating table for the first client call
 
 This table should be treated as the bridge between reconnaissance and project management. It is intentionally more workflow-oriented than the raw DNS/HTTP evidence.
 
-`--export-tables <dir>` writes those same planning tables as CSV sidecars plus a combined JSON bundle. This is intentionally a sidecar export so the terminal report, Obsidian note, and spreadsheet workflow do not compete with each other.
+`--export-tables <dir>` writes those same planning tables as CSV sidecars plus a combined JSON bundle. This is intentionally an advanced sidecar export so the terminal report, Markdown note, and spreadsheet workflow do not compete with each other.
 
 This keeps the default scan focused on access and infrastructure while giving deeper research its own lane.
 

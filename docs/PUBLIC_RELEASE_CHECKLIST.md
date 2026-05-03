@@ -6,7 +6,7 @@ FITFO can stay private while this checklist hardens the project for a later publ
 
 - [ ] Run `fitfo onboard` against 10-20 real domains and convert misses into fixtures.
 - [ ] Review all docs for client names, private paths, screenshots, report output, or local-only details.
-- [ ] Confirm `.gitignore` excludes generated reports, table exports, `.env`, Firecrawl local state, and Obsidian/client notes.
+- [ ] Confirm `.gitignore` excludes generated reports, table exports, `.env`, Firecrawl local state, and client Markdown notes.
 - [ ] Add fake/demo examples only.
 - [ ] Confirm `npm test`, `npm run check`, `npm run pack:dry-run`, and GitHub Actions pass.
 - [ ] Decide whether the first public version is still `0.1.0` or a new `0.2.0`.

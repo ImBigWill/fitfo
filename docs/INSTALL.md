@@ -31,13 +31,13 @@ fitfo brief example.com --deep --search --location "City, ST"
 
 ## Reports And Exports
 
-Save an Obsidian note:
+Save a Markdown note into an Obsidian vault/folder:
 
 ```bash
 fitfo brief example.com --deep --search --location "City, ST" --obsidian --vault ~/Obsidian/Clients
 ```
 
-Export planning tables:
+Advanced export for planning tables:
 
 ```bash
 fitfo plan example.com --deep --search --location "City, ST" --export-tables fitfo-exports

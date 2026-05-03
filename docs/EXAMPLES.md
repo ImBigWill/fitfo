@@ -15,8 +15,8 @@ FITFO will:
 - crawl the site when reachable
 - run Firecrawl-backed search research when available
 - compare recent Wayback homepage captures
-- save an Obsidian-ready plan note
-- export CSV/JSON planning tables to `fitfo-exports/`
+- save a Markdown plan note
+- optionally export CSV/JSON planning tables to `fitfo-exports/`
 
 Preview first:
 
@@ -30,7 +30,7 @@ Terminal-only:
 fitfo onboard example-plumbing.test --location "Richmond, VA" --no-save
 ```
 
-## Obsidian Note Shape
+## Markdown Note Shape
 
 Saved onboard notes use this rough structure:
 
@@ -118,9 +118,13 @@ tags:
 | High | Inferred | Us | Map keywords to pages | Decide which existing pages should be improved and which new pages should be scoped. |
 ```
 
-## Table Exports
+## Advanced Table Exports
 
-`fitfo onboard` writes table sidecars by default unless `--no-save` is used:
+Pass `--export-tables` when you also want CSV/JSON sidecars:
+
+```bash
+fitfo onboard example-plumbing.test --location "Richmond, VA" --vault ~/Obsidian/Clients --export-tables fitfo-exports
+```
 
 ```text
 fitfo-exports/

@@ -25,7 +25,6 @@ export function parseArgs(argv) {
     subdomains: false,
     researchProvider: "firecrawl",
     location: null,
-    vertical: null,
     country: "US",
     vault: null,
     version: false,
@@ -73,14 +72,6 @@ export function parseArgs(argv) {
       }
       options.country = value.toUpperCase();
       options.provided.add("country");
-      index += 1;
-    } else if (arg === "--vertical") {
-      const value = argv[index + 1];
-      if (!value || value.startsWith("-")) {
-        throw new Error("--vertical requires a vertical value.");
-      }
-      options.vertical = value.toLowerCase();
-      options.provided.add("vertical");
       index += 1;
     } else if (arg === "--export-tables" || arg === "--tables") {
       const value = argv[index + 1];

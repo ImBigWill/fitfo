@@ -19,11 +19,12 @@ FITFO has multiple report modes:
 - `snapshot`: a light first-call walkthrough for site positioning, what is working, what is holding the site back, and how an agency can help.
 - `brief`: a deeper first-call prep packet with research queues, evidence, client confirmations, and opportunity areas.
 - `plan`: a build-planning report with structure, workstreams, launch checks, keyword/page mapping, and an architectural state map for redesign decisions.
-- `onboard`: the full intake path with saved planning notes and table exports.
+- `onboard`: the full intake path with a saved Markdown planning note.
 
-Optional add-ons:
+Optional add-ons stay intentionally secondary in v1:
 
 - `fitfo plan example.com --deep --agent-ready`: adds a launch-readiness layer for robots/sitemap clarity, canonical host, readable public content, noindex checks, AI crawler policy, and parked emerging protocol/commerce signals.
+- `--subdomains`, `--wayback`, `--search`, and `--export-tables` add evidence when the project needs it, but the core deliverable is still the Markdown report.
 
 ## Quick Start
 
@@ -34,7 +35,7 @@ npm link
 fitfo onboard clientdomain.com
 ```
 
-That is the main command. It runs the full client intake, creates the action plan, and saves planning exports unless you pass `--no-save`.
+That is the main command. It runs the full client intake, creates the action plan, and saves a Markdown planning note unless you pass `--no-save`.
 
 ## Status
 
@@ -115,8 +116,8 @@ fitfo onboard example.com
 - recent Wayback homepage snapshot comparison through the Internet Archive
 - raw evidence sections for URL/redirect inventory, lead capture, tracking/tool footprint, keyword evidence, competitors, service/location, reputation, launch, and action planning
 - Citation / NAP baseline for public name, address/service-area, phone, and directory/profile consistency checks
-- Obsidian-ready action-plan note
-- CSV/JSON table exports for planning workflows
+- Markdown action-plan note, optionally saved into an Obsidian vault/folder
+- optional advanced CSV/JSON table exports for planning workflows
 
 The exported report leads with an infrastructure snapshot and login checklist: registrar/domain provider, DNS/nameservers, very plain Cloudflare status, hosting, CMS, email, and exactly what the client needs to provide or confirm from day one.
 
@@ -132,7 +133,7 @@ It also adds a plain evidence layer near the top:
 When run in an interactive terminal, `fitfo onboard` asks for missing full-intake details before scanning:
 
 - market/location, if no location is configured or passed
-- Obsidian vault/folder, if no vault or output path is configured
+- Markdown note destination, if no vault or output path is configured
 
 If a vault is configured, the note is saved as:
 
@@ -146,7 +147,7 @@ Preview the run without scanning:
 fitfo onboard example.com --preview
 ```
 
-Run terminal-only without saving the Obsidian note or CSV/JSON table exports:
+Run terminal-only without saving the Markdown note or optional CSV/JSON table exports:
 
 ```bash
 fitfo onboard example.com --no-save
@@ -233,7 +234,7 @@ fitfo plan example.com --subdomains
 
 Use this before redesign or launch when staging, portal, app, shop, booking, CRM, mail, admin, or legacy hosts may exist.
 
-Export a redirect/current-to-future URL matrix:
+Advanced table export for a redirect/current-to-future URL matrix:
 
 ```bash
 fitfo plan example.com --deep --subdomains --export-tables fitfo-exports
@@ -247,19 +248,11 @@ Add the optional agent-readiness layer to a build plan:
 fitfo plan example.com --deep --agent-ready
 ```
 
-Export the same add-on as a planning table:
+Advanced table export for the same add-on:
 
 ```bash
 fitfo plan example.com --deep --agent-ready --export-tables fitfo-exports
 ```
-
-Plumber/home-services planning lens:
-
-```bash
-fitfo plan example-plumbing.test --deep --search --location "Richmond, VA" --vertical plumbing
-```
-
-`--vertical plumbing` keeps the core scan intact, then adds plumber-aware research queries and plan sections for homeowner emergency UX, plumbing proof assets, service priorities, and role-specific kickoff questions. FITFO may also detect a plumbing lens from public site/search signals, but explicit `--vertical plumbing` is the safest way to force that context.
 
 Architectural redesign planning:
 
@@ -308,13 +301,13 @@ It also generates:
 - a kickoff confirmation script for validating assumptions with the client
 - a plan-mode launch checklist for canonical host, redirects, DNS, hosting, CMS, email, tracking, CRM, and QA
 
-Export the kickoff tables as CSV files plus a JSON bundle:
+Advanced export: write the kickoff tables as CSV files plus a JSON bundle:
 
 ```bash
 fitfo brief example.com --deep --search --location "Richmond, VA" --export-tables fitfo-exports
 ```
 
-This writes sidecar files for infrastructure snapshot, login checklist, unknown blockers, call-one workflow, hosting evidence, Wayback versions/changes, action items, proof assets, content inventory, competitor structure, top local competitors, service/location recommendations, reputation summary, launch checklist, confirmation script, keyword clusters, competitors, keyword-to-page maps, raw research results, and a combined `example.com-research-tables.json` bundle.
+This writes sidecar files for infrastructure snapshot, login checklist, unknown blockers, call-one workflow, hosting evidence, Wayback versions/changes, action items, proof assets, content inventory, competitor structure, top local competitors, service/location recommendations, reputation summary, launch checklist, confirmation script, keyword clusters, competitors, keyword-to-page maps, raw research results, and a combined `example.com-research-tables.json` bundle. Treat these as optional worksheets; the v1 report promise is Markdown.
 
 Client build plan:
 
@@ -354,7 +347,7 @@ Markdown output:
 fitfo example.com --format markdown
 ```
 
-Obsidian-ready note:
+Markdown note for an Obsidian vault:
 
 ```bash
 fitfo example.com --obsidian
@@ -384,7 +377,7 @@ Save Markdown to a specific file:
 fitfo example.com --format markdown --out reports/example.md
 ```
 
-Save an Obsidian-ready note to a vault folder:
+Save Markdown to an Obsidian vault folder:
 
 ```bash
 fitfo example.com --obsidian --out ~/Obsidian/Clients/example.com.md
@@ -402,7 +395,7 @@ Save a FitFo Snapshot:
 fitfo snapshot example.com --obsidian --out ~/Obsidian/Clients/example.com-snapshot.md
 ```
 
-Save into an Obsidian vault folder with a stable filename:
+Save Markdown into an Obsidian vault folder with a stable filename:
 
 ```bash
 fitfo brief example.com --obsidian --vault ~/Obsidian/Clients
@@ -483,9 +476,9 @@ Key sections:
 - **Kickoff Research Game Plan**: when using plan mode, carries market, keyword, and positioning prompts into build planning.
 - **Detailed Action Report**: prioritized next steps, proof-asset requests, content inventory, keyword clusters, keyword evidence, competitor research, top local competitors, reputation summary, competitor-informed structure, service/location recommendations, confirmation script, and keyword-to-page mapping for kickoff and build planning.
 - **Launch Checklist**: in plan mode, grouped launch checks for canonical host, redirects, DNS, hosting, CMS, email, tracking/CRM, and QA.
-- **Table Exports**: with `--export-tables <dir>`, CSV/JSON sidecars for moving research into Sheets, Obsidian, or client planning docs.
+- **Advanced Table Exports**: with `--export-tables <dir>`, optional CSV/JSON sidecars for moving research into worksheets or client planning docs.
 
-Markdown and Obsidian exports also include YAML frontmatter, tags, client-call questions, checklist items, and table-formatted infrastructure, login, action, keyword, competitor, reputation, structure, content, and page-map sections.
+Markdown exports include YAML frontmatter, tags, client-call questions, checklist items, and table-formatted infrastructure, login, action, keyword, competitor, reputation, structure, content, and page-map sections. Obsidian support is a Markdown destination workflow, not a separate report promise.
 
 ## Important Limits
 
@@ -543,7 +536,7 @@ For deeper kickoff prep, run:
 fitfo brief clientdomain.com --deep --search --location "City, ST" --obsidian
 ```
 
-That produces a structured call packet: what FITFO observed, what search suggested, what it inferred, and what the client needs to confirm.
+That produces a structured Markdown call packet: what FITFO observed, what search suggested, what it inferred, and what the client needs to confirm.
 
 ## Development
 

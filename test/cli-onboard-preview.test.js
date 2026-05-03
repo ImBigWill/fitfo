@@ -23,7 +23,7 @@ test("applies onboard runtime defaults", () => {
   assert.equal(next.search, true);
   assert.equal(next.save, true);
   assert.equal(next.onboardFileFormat, "obsidian");
-  assert.equal(next.exportTables, "fitfo-exports");
+  assert.equal(next.exportTables, null);
 });
 
 test("no-save disables onboard file and table exports", () => {
@@ -64,4 +64,22 @@ test("renders onboard preview summary", () => {
   assert.match(output, /example\.com/);
   assert.match(output, /Richmond, VA/);
   assert.match(output, /example\.com-onboard\.md/);
+  assert.match(output, /fitfo-exports/);
+});
+
+test("renders disabled table exports when onboard has no export directory", () => {
+  const output = renderOnboardSummary("example.com", {
+    command: "onboard",
+    deep: true,
+    exportTables: null,
+    location: "Richmond, VA",
+    noSave: false,
+    onboardFileFormat: "obsidian",
+    preview: true,
+    save: true,
+    search: true,
+    vault: "/vault/Clients",
+  }, { color: false });
+
+  assert.match(output, /Disabled; pass --export-tables dir/);
 });

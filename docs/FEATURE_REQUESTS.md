@@ -35,7 +35,7 @@ Items here are not commitments. They need shaping before implementation.
 - Generate copy/UX improvement notes.
 - Improve service and location recommendations with more real-client passes.
 - Add richer competitor-informed copy patterns.
-- Add client-ready agenda templates by vertical.
+- Add client-ready agenda templates after the generic brief/onboard flow has enough real-client usage.
 
 ## Redirect / Launch Matrix
 
@@ -43,17 +43,17 @@ Items here are not commitments. They need shaping before implementation.
 - Add owner/status presets for WordPress rebuild workflows.
 - Add redirect-rule format helpers for common hosts once enough launch cases are observed.
 
-## Verticals
+## Parked Verticals
 
-- Expand `--vertical plumbing` after private real-domain passes.
-- Add vertical profiles for HVAC, electrical, roofing, legal, and local healthcare only after plumbing proves the profile contract.
+- Keep plumbing as an internal parked experiment until the core onboarding, brief, and plan reports are polished.
+- Do not add HVAC, electrical, roofing, legal, local healthcare, or other profiles for v1.
 - Add more fake fixtures for emergency CTA, call tracking, field-service widgets, service-area pages, and review-proof patterns.
-- Keep vertical profiles in core until repeated extension points are obvious; do not build a public plugin system yet.
+- Revisit vertical profiles only after repeated real-client reports show a durable profile contract; do not build a public plugin system yet.
 
 ## CLI / UX
 
 - Add compact report mode.
-- Improve Obsidian note templates after real client use.
+- Improve Markdown note templates after real client use.
 - Add JSON schema for `--json`.
 - Improve terminal styling without sacrificing copy/paste quality.
 

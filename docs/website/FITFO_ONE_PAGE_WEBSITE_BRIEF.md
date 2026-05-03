@@ -92,7 +92,7 @@ Rows:
 - `snapshot`: light first-call walkthrough
 - `brief`: deeper prep and research packet
 - `plan`: current-state to future-state build plan
-- `onboard`: full intake with notes and table exports
+- `onboard`: full intake with a Markdown planning note
 
 ### 4. Architectural State Map
 
