@@ -26,7 +26,8 @@
   "type": "module",
   "files": [
     "bin",
-    "docs",
+    "docs/assets",
+    "docs/*.md",
     "src",
     "README.md",
     "LICENSE",

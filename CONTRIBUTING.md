@@ -41,6 +41,19 @@ Package dry run:
 npm run pack:dry-run
 ```
 
+## Pull Requests
+
+Create a branch from `master`, keep the change focused, and open a pull request back into `master`.
+
+Before opening a PR, run:
+
+```bash
+npm run check
+npm test
+```
+
+Do not include generated reports, client files, credentials, API keys, or private scan output in PRs.
+
 ## Good Contributions
 
 - Provider detection fixtures for registrar, DNS, hosting, email, CMS, CRM, booking, analytics, and field-service patterns.

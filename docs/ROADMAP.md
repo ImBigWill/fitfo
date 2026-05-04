@@ -47,6 +47,7 @@ fitfo onboard clientdomain.com
 
 ## Near-Term
 
+- Prepare first npm package release after public GitHub review.
 - Turn redirect/canonical checks into an architectural state map for redesign and rebuild planning.
 - Improve hosting fingerprints while keeping core free; see [Integrations](INTEGRATIONS.md) for optional enrichment boundaries.
 - Improve DNS provider fingerprints.
@@ -54,7 +55,38 @@ fitfo onboard clientdomain.com
 - Improve Markdown report templates after real Obsidian use.
 - Expand fixture coverage as real-world misses show up.
 - Improve save-flow wording after more Desktop and Obsidian usage.
-- Keep GitHub repo metadata current while the project is private.
+- Keep GitHub repo metadata current during the public-preview release.
+
+## npm Package Path
+
+FITFO should ship as an npm-installed CLI because the project is already a Node command with a `bin` entry:
+
+```bash
+npm install -g fitfo
+fitfo onboard example.com
+```
+
+Current package posture:
+
+- package name: `fitfo`
+- command name: `fitfo`
+- version: `0.1.0`
+- license: `GPL-2.0-or-later`
+- runtime dependencies: none
+- Node support: `>=20`
+- publish is intentionally blocked by `"private": true`
+
+Before the first npm release:
+
+- confirm the GitHub repo looks right after becoming public
+- confirm the package name is available or choose a scoped fallback such as `@lovablegazelle/fitfo`
+- decide whether to keep `0.1.0` or bump to `0.1.1` for the first public package
+- remove `"private": true`
+- run `npm run check`, `npm test`, and `npm run pack:dry-run`
+- inspect the tarball contents so only the intended CLI, docs, README, license, and changelog are included
+- publish with public access
+
+The npm package should remain core-only at first. Add-ons and agency-specific workflows can stay documented as future modules until the public extension points are clearer.
 
 ## Onboarding Scanner Ideas
 
