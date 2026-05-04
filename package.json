@@ -34,7 +34,7 @@
     "CHANGELOG.md"
   ],
   "bin": {
-    "fitfo": "./bin/fitfo.js"
+    "fitfo": "bin/fitfo.js"
   },
   "scripts": {
     "scan": "node ./bin/fitfo.js",
