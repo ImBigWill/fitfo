@@ -18,9 +18,9 @@ Recommended URL structure:
 
 If this lives on a subdomain, use something simple:
 
-- `fitfo.lghq.com`
-- `tools.lghq.com/fitfo`
-- `fitfo.lovablegazelle.com`
+- `fitfo.example.com`
+- `tools.example.com/fitfo`
+- `example.com/fitfo`
 
 For now, WordPress is the better choice if visual editing and iterative copy are more important than static docs hosting. Cloudflare Pages can come later for generated docs or examples.
 
@@ -222,7 +222,7 @@ Do not commit:
 Keep a copy of the planning docs in:
 
 ```text
-LGHQ/FITFO
+FITFO planning folder
 ```
 
 Use Obsidian for:

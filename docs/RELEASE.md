@@ -13,6 +13,8 @@ FITFO is private today and intended to become public later.
 ## Before First Public GitHub Release
 
 - Confirm repo visibility can change from private to public.
+- Confirm [Core scope](CORE.md) matches what should be public this week.
+- Confirm [Setup](SETUP.md) lists required setup, optional keys, and local config.
 - Review README language for client-safe phrasing.
 - Review issue templates and security policy.
 - Confirm no client report files, `.env` files, or scan outputs exist in git history.

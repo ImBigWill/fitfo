@@ -5,6 +5,8 @@ FITFO can stay private while this checklist hardens the project for a later publ
 ## Before Opening The Repository
 
 - [ ] Run `fitfo onboard` against 10-20 real domains and convert misses into fixtures.
+- [ ] Confirm [Core scope](CORE.md) reflects the public feature boundary.
+- [ ] Confirm [Setup](SETUP.md) clearly states that core requires no API keys.
 - [ ] Review all docs for client names, private paths, screenshots, report output, or local-only details.
 - [ ] Confirm `.gitignore` excludes generated reports, table exports, `.env`, Firecrawl local state, and client Markdown notes.
 - [ ] Add fake/demo examples only.

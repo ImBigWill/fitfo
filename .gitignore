@@ -1,9 +1,11 @@
 node_modules/
+package-lock.json
 .env
 .env.*
 !.env.example
 dist/
 coverage/
+fitfo-v1/
 fitfo-reports/
 fitfo-exports/
 reports/

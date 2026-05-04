@@ -28,7 +28,7 @@ It can:
 - output Markdown
 - optionally export kickoff action/research tables, infrastructure snapshots, login checklists, unknown blockers, call-one workflow, hosting evidence, Wayback evidence, and top local competitors to CSV files plus a combined JSON bundle with `--export-tables`
 - save Markdown notes with frontmatter, tags, checklists, and client-call questions
-- save stable Markdown notes into an Obsidian vault/folder with `--vault` or `FITFO_OBSIDIAN_DIR`
+- save stable Markdown notes into an Obsidian vault/folder with `--vault` or `fitfo config set vault`
 - prompt to save findings after normal interactive terminal scans, defaulting to Desktop Markdown with vault/folder and custom path choices
 - save safe CLI defaults with `fitfo config`
 - save reports when explicitly requested

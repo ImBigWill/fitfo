@@ -1,5 +1,7 @@
 # FITFO
 
+![FITFO command-line scanner hero](docs/assets/fitfo-readme-hero.png)
+
 [![License: GPL-2.0-or-later](https://img.shields.io/badge/license-GPL--2.0--or--later-FF00AA.svg)](LICENSE)
 ![Node >=20](https://img.shields.io/badge/node-%3E%3D20-00DCFF.svg)
 ![Dependencies: none](https://img.shields.io/badge/dependencies-none-111111.svg)
@@ -58,6 +60,8 @@ Generated reports are ignored by default through `fitfo-reports/` and `reports/`
 ## Project Docs
 
 - [Project state](docs/PROJECT_STATE.md)
+- [Core scope](docs/CORE.md)
+- [Setup](docs/SETUP.md)
 - [Install](docs/INSTALL.md)
 - [Interactive onboarding](docs/INTERACTIVE.md)
 - [Integrations](docs/INTEGRATIONS.md)
@@ -134,6 +138,14 @@ When run in an interactive terminal, `fitfo onboard` asks for missing full-intak
 
 - market/location, if no location is configured or passed
 - Markdown note destination, if no vault or output path is configured
+
+If no vault/folder is provided, FITFO saves the Markdown note to the local fallback folder:
+
+```text
+fitfo-reports/example.com-onboard.md
+```
+
+`fitfo-reports/` is ignored by git so generated client notes do not get committed accidentally.
 
 If a vault is configured, the note is saved as:
 
@@ -410,7 +422,7 @@ fitfo snapshot example.com --obsidian --vault ~/Obsidian/Clients
 Or set a default vault folder:
 
 ```bash
-export FITFO_OBSIDIAN_DIR=~/Obsidian/Clients
+fitfo config set vault ~/Obsidian/Clients
 fitfo brief example.com --obsidian
 ```
 

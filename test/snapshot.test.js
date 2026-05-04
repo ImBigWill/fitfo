@@ -177,7 +177,7 @@ test("renders a generic Markdown snapshot", () => {
   assert.match(markdown, /## What The Site Is Doing Right/);
   assert.match(markdown, /## What May Be Holding It Back/);
   assert.match(markdown, /## How An Agency Can Help/);
-  assert.doesNotMatch(markdown, /Lovable Gazelle/);
+  assert.doesNotMatch(markdown, /Private Agency/);
   assert.doesNotMatch(markdown, /PMF/);
 });
 

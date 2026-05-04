@@ -39,7 +39,7 @@
     "scan": "node ./bin/fitfo.js",
     "check": "node ./scripts/check.mjs",
     "pack:dry-run": "npm pack --dry-run",
-    "test": "node --test"
+    "test": "node --test test/*.test.js"
   },
   "engines": {
     "node": ">=20"
