@@ -5,7 +5,7 @@
 [![License: GPL-2.0-or-later](https://img.shields.io/badge/license-GPL--2.0--or--later-FF00AA.svg)](LICENSE)
 ![Node >=20](https://img.shields.io/badge/node-%3E%3D20-00DCFF.svg)
 ![Dependencies: none](https://img.shields.io/badge/dependencies-none-111111.svg)
-![Status: private first](https://img.shields.io/badge/status-private%20first-FF00AA.svg)
+![Status: public preview](https://img.shields.io/badge/status-public%20preview-FF00AA.svg)
 ![Checks: npm test](https://img.shields.io/badge/checks-npm%20test-00DCFF.svg)
 
 **Figure It The Fuck Out for clients.**
@@ -41,7 +41,17 @@ That is the main command. It runs the full client intake, creates the action pla
 
 ## Status
 
-Private repo for now. The goal is to open source this later once the scanner and CLI experience settle.
+Public-preview ready. FITFO is still early, but the core scanner is usable for real onboarding work and the repo is being prepared for public review.
+
+## Built By
+
+FITFO is built by Will Schmierer, a builder, developer, strategist, and agentic engineer with 20+ years of WordPress experience, 25 years of construction leadership, and hands-on agency work across client onboarding, web systems, automation, and local service business growth.
+
+- [willschmierer.com](https://willschmierer.com)
+- [BuiltWTF.com](https://builtwtf.com)
+- [resume.willschmierer.com](https://resume.willschmierer.com)
+
+It exists because client onboarding should not start from a blank page. FITFO turns public domain, infrastructure, website, and marketing signals into a working Markdown brief before the first strategy call, redesign plan, or launch checklist.
 
 ## Licensing
 
