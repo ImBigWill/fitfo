@@ -137,7 +137,7 @@ fitfo plan example.com --deep --search --location "City, ST"
 fitfo onboard example.com
 ```
 
-Note that the repo is private for now and public release will use fake/demo examples only.
+Use fake/demo examples only for public release.
 
 ### 7. Status / Roadmap
 

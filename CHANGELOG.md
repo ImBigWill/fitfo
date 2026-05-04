@@ -8,9 +8,9 @@ This project uses semantic versioning while it is pre-1.0:
 - minor versions for new commands or meaningful new scanner capabilities
 - 1.0 once the default scan output and install path are stable enough for public use
 
-## 0.1.0 - Unreleased
+## 0.1.0 - Public preview
 
-Initial private version.
+Initial public-preview version.
 
 ### Added
 
@@ -59,7 +59,7 @@ Initial private version.
 - `--json`, `--no-color`, `--save`, and `--out` options.
 - `--format markdown`, `--markdown`, and `--obsidian` report exports.
 - `--quiet` mode for saving reports without printing the full output.
-- `--vault` and `FITFO_OBSIDIAN_DIR` support for stable Obsidian note paths.
+- `--vault` and `fitfo config set vault` support for stable Obsidian note paths.
 - `fitfo config` command for safe defaults like vault, location, country, format, deep/search, and crawl/search limits.
 - `--version`, `version`, and `doctor` commands.
 - `help` command alias and clean argument-error handling.

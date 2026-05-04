@@ -8,9 +8,24 @@ FITFO is pre-release. Security handling applies to the current `master` branch.
 
 ## Reporting Issues
 
-While the repository is private, report issues directly to the maintainer.
+Report security issues privately.
 
-When the project becomes public, this section should be updated with a preferred security contact.
+Preferred paths:
+
+- Use GitHub private vulnerability reporting for this repository, if available.
+- Otherwise email the maintainer at `officialwill@gmail.com`.
+
+Please do not open a public issue for suspected secrets, credential exposure, account access, or abuse vectors.
+
+Include:
+
+- affected version or commit
+- command used
+- operating system and Node version
+- concise reproduction steps
+- impact and suggested mitigation, if known
+
+Do not include real client reports, API keys, access tokens, passwords, or private account screenshots.
 
 ## Data Rules
 
@@ -41,3 +56,7 @@ FITFO should remain passive by default.
 - Aggressive crawling, brute-force subdomain enumeration, credential checks, exploit checks, or vulnerability scanning do not belong in the default scanner.
 
 If those capabilities are ever explored, they should be opt-in and clearly documented.
+
+## Public Reconnaissance Notice
+
+FITFO uses public records and public website signals. Findings are best-effort and should be confirmed with the client, registrar, host, DNS provider, email administrator, or previous developer before making changes.
