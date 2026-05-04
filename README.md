@@ -30,6 +30,13 @@ Optional add-ons stay intentionally secondary in v1:
 
 ## Quick Start
 
+Install globally:
+
+```bash
+npm install -g fitfo
+fitfo onboard clientdomain.com
+```
+
 From this folder:
 
 ```bash
