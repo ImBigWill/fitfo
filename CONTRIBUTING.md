@@ -43,7 +43,22 @@ npm run pack:dry-run
 
 ## Pull Requests
 
-Create a branch from `master`, keep the change focused, and open a pull request back into `master`.
+For meaningful changes, open an issue first so the idea, bug, provider miss, or workflow can be discussed before implementation.
+
+Contribution flow:
+
+1. Fork the repository.
+2. Create a feature or hotfix branch from `master`.
+3. Commit focused changes to your branch.
+4. Keep your branch current with `master` while you work.
+5. Run the local checks.
+6. Open a pull request back into `master` and reference the related issue when there is one.
+
+Use the **LSD** approach for PRs when relevant:
+
+- **Link**: link the issue, discussion, provider miss, or real workflow when there is useful context outside the PR.
+- **Screenshot**: include a screenshot or copied terminal/report excerpt when the change affects CLI output, Markdown reports, docs, examples, or user-facing wording.
+- **Description**: explain what changed, how you tested it, and anything reviewers should pay attention to. For tiny changes, keep this short.
 
 Before opening a PR, run:
 
@@ -51,6 +66,10 @@ Before opening a PR, run:
 npm run check
 npm test
 ```
+
+Do not bypass local quality gates with `--no-verify` flags. CI runs the same core checks and failing PRs will need to be fixed before merge.
+
+For website, docs-visual, screenshot, or future UI changes, also check the relevant browser view and obvious accessibility basics: readable contrast, keyboard access where applicable, useful alt text, and no broken layout at common viewport sizes.
 
 Do not include generated reports, client files, credentials, API keys, or private scan output in PRs.
 
