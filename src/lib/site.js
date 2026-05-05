@@ -1,3 +1,5 @@
+import { decodeHtml, extractTitle } from "./utils.js";
+
 const DEFAULT_LIMIT = 8;
 const FETCH_TIMEOUT = 8_000;
 const AI_CRAWLER_AGENTS = new Set([
@@ -288,11 +290,6 @@ export function extractPageProfile(url, html, origin) {
   };
 }
 
-function extractTitle(html) {
-  const match = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
-  return match ? decodeHtml(match[1].replace(/\s+/g, " ").trim()) : null;
-}
-
 function extractMeta(html, name) {
   const pattern = new RegExp(`<meta[^>]+name=["']${name}["'][^>]+content=["']([^"']+)["'][^>]*>`, "i");
   const match = html.match(pattern);
@@ -550,15 +547,6 @@ export function buildSiteRecommendations(pages) {
 
 function stripTags(value) {
   return decodeHtml(String(value || "").replace(/<script[\s\S]*?<\/script>/gi, " ").replace(/<style[\s\S]*?<\/style>/gi, " ").replace(/<[^>]+>/g, " "));
-}
-
-function decodeHtml(value) {
-  return String(value || "")
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, "\"")
-    .replace(/&#039;/g, "'");
 }
 
 function decodeXml(value) {

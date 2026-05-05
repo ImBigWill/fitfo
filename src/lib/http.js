@@ -1,4 +1,5 @@
 import tls from "node:tls";
+import { decodeHtml, extractTitle, safeHost, safeProtocol } from "./utils.js";
 
 export async function getHttpProfile(hostname, apex = hostname) {
   const targets = [`https://${hostname}`, `http://${hostname}`];
@@ -426,22 +427,6 @@ function pickHeaders(headers) {
   return picked;
 }
 
-function safeHost(url) {
-  try {
-    return new URL(url).hostname.toLowerCase();
-  } catch {
-    return null;
-  }
-}
-
-function safeProtocol(url) {
-  try {
-    return new URL(url).protocol.toLowerCase();
-  } catch {
-    return null;
-  }
-}
-
 function mostCommon(values) {
   const counts = new Map();
   for (const value of values) {
@@ -451,21 +436,7 @@ function mostCommon(values) {
   return [...counts.entries()].sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0]))[0]?.[0] || null;
 }
 
-function extractTitle(html) {
-  const match = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
-  return match ? decodeHtml(match[1].replace(/\s+/g, " ").trim()) : null;
-}
-
 function extractMetaGenerator(html) {
   const match = html.match(/<meta[^>]+name=["']generator["'][^>]+content=["']([^"']+)["'][^>]*>/i);
   return match ? decodeHtml(match[1].trim()) : null;
-}
-
-function decodeHtml(value) {
-  return value
-    .replace(/&amp;/g, "&")
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&quot;/g, "\"")
-    .replace(/&#039;/g, "'");
 }
