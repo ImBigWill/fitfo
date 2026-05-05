@@ -21,7 +21,7 @@ Initial public-preview version.
 - Interactive `fitfo onboard <domain>` prompts for missing location and Obsidian vault/folder before scanning.
 - `fitfo onboard <domain> --preview` dry run summary and `--no-save` terminal-only mode.
 - Evidence labels in plan/action output and action-item table exports.
-- Example output docs, provider fixture guidance, public-release checklist, and issue templates.
+- Example output docs, provider fixture guidance, and issue templates.
 - Provider fixtures for DreamHost, Flywheel, Liquid Web, Birdeye, NiceJob, and Service Fusion handoff patterns.
 - Client handoff summary table in scan exports.
 - Infrastructure snapshot and login/access checklist tables at the top of brief, plan, and onboard Markdown/Obsidian exports.
@@ -86,8 +86,8 @@ Initial public-preview version.
 - Node built-in tests for domain normalization, analysis inference, provider fixtures, and Markdown report rendering.
 - Provider fixtures for GoDaddy, Cloudflare, Hostinger, Shopify, Webflow, Wix, Squarespace, Vercel, Netlify, SiteGround, Bluehost, IONOS, and DigitalOcean patterns.
 - GitHub Actions workflow for syntax checks and tests on `master` and pull requests.
-- Package metadata and release checklist for eventual public npm/open-source release.
-- Public-ready project docs for roadmap, feature requests, contributing, security, and project state.
+- Package metadata for eventual public npm/open-source release.
+- Public-ready project docs for contributing, security, provider fixtures, install, and examples.
 
 ### Known Limitations
 

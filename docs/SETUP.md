@@ -121,7 +121,7 @@ fitfo onboard example.com
 
 ## Verification
 
-Before opening, packaging, or publishing:
+Before committing or packaging:
 
 ```bash
 npm run check
@@ -129,20 +129,3 @@ npm test
 npm run pack:dry-run
 git status
 ```
-
-## Public Release Setup Notes
-
-For a first public GitHub release:
-
-- keep `"private": true` in `package.json` unless npm publishing is intentionally part of the release
-- do not commit `.env`, generated reports, table exports, Firecrawl state, real client notes, screenshots, or API keys
-- use fake domains and fake report output in docs/examples
-- make sure `fitfo doctor`, `npm run check`, and `npm test` pass
-
-For npm publishing later:
-
-- remove `"private": true`
-- confirm the `files` allowlist contains the package contents
-- run `npm run pack:dry-run`
-- run `npm whoami`
-- publish intentionally with `npm publish --access public`

@@ -89,7 +89,6 @@ These features are part of the package, but should stay opt-in because they add 
 | Wayback comparison | `--wayback`; included in `onboard` | No key. Uses Internet Archive public CDX API. |
 | Table exports | `--export-tables <dir>` | No key. Writes local CSV/JSON sidecars. |
 | Obsidian-style save | `--vault <dir>` or config | No key. Writes local Markdown files. |
-| Agent-readiness add-on | `--agent-ready` on plan mode | No key. Secondary planning layer. |
 
 ## What Is Not Core
 
@@ -117,7 +116,7 @@ Reports should keep source boundaries clear:
 - **Archived:** found through Internet Archive/Wayback.
 - **Inferred:** reasonable hypothesis from public signals.
 - **Ask Client:** not knowable from public records.
-- **Enriched:** future optional paid/API provider evidence.
+- **Enriched:** optional paid/API provider evidence.
 
 ## Public Positioning
 

@@ -68,7 +68,6 @@ This runs the complete action-plan path:
 - Firecrawl-backed market/search research
 - plan-mode recommendations and launch checklist
 - Markdown action-plan note
-- optional advanced CSV/JSON sidecar table exports in `fitfo-exports/`
 
 The saved action plan labels recommendations as `Observed`, `Research`, `Inferred`, or `Ask Client` so the kickoff call does not blur facts and assumptions.
 
@@ -168,10 +167,3 @@ fitfo config set format obsidian
 fitfo config set deep true
 fitfo config set search true
 ```
-
-## What Still Needs Polish
-
-- Save prompt wording after more real use.
-- Obsidian folder presets for client intake vs internal project notes.
-- A compact interactive mode for quick repeated scans.
-- Clearer labels for when FITFO is using observed facts, Firecrawl research, or inferred hypotheses.

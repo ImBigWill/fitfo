@@ -16,7 +16,6 @@ FITFO will:
 - run Firecrawl-backed search research when available
 - compare recent Wayback homepage captures
 - save a Markdown onboarding note
-- optionally export CSV/JSON planning tables to `fitfo-exports/`
 
 Preview first:
 
@@ -124,36 +123,6 @@ tags:
 | High | Inferred | Us | Map keywords to pages | Decide which existing pages should be improved and which new pages should be scoped. |
 ```
 
-## Advanced Table Exports
-
-Pass `--export-tables` when you also want CSV/JSON sidecars:
-
-```bash
-fitfo onboard example-plumbing.test --location "Richmond, VA" --vault ~/Obsidian/Clients --export-tables fitfo-exports
-```
-
-```text
-fitfo-exports/
-  example-plumbing.test-action-items.csv
-  example-plumbing.test-call-one-workflow.csv
-  example-plumbing.test-competitors.csv
-  example-plumbing.test-content-inventory.csv
-  example-plumbing.test-hosting-evidence.csv
-  example-plumbing.test-infrastructure-snapshot.csv
-  example-plumbing.test-login-checklist.csv
-  example-plumbing.test-subdomains.csv
-  example-plumbing.test-wayback-changes.csv
-  example-plumbing.test-wayback-versions.csv
-  example-plumbing.test-keyword-page-map.csv
-  example-plumbing.test-launch-checklist.csv
-  example-plumbing.test-redirect-matrix.csv
-  example-plumbing.test-top-local-competitors.csv
-  example-plumbing.test-research-tables.json
-  example-plumbing.test-unknown-blockers.csv
-```
-
-Use these for Sheets, kickoff docs, or internal planning views.
-
 ## Expanded Subdomain Checks
 
 Use this before redesign, DNS cleanup, or launch planning when old staging, portal, shop, booking, CRM, mail, admin, or app hosts may exist.
@@ -174,62 +143,3 @@ Subdomain findings are classified for launch handling:
 - technical admin / infrastructure
 - content / delivery
 - unknown
-
-Table exports include:
-
-```text
-fitfo-exports/
-  example-plumbing.test-subdomains.csv
-```
-
-## Redirect Matrix Export
-
-Use this when a redesign needs a current-to-future URL handling worksheet:
-
-```bash
-fitfo plan example-plumbing.test --deep --subdomains --export-tables fitfo-exports
-```
-
-This adds:
-
-```text
-fitfo-exports/
-  example-plumbing.test-redirect-matrix.csv
-```
-
-The matrix includes current target, current state, keep/rework/create/redirect/confirm decision, future target, launch phase, owner, status, and evidence. Use it to decide what stays, what gets rebuilt, what needs redirect rules, and what must be confirmed before DNS or launch work.
-
-## Agent Readiness Add-On
-
-Use this when launch planning needs a first-pass read on whether the site is easy for crawlers and AI agents to discover and interpret.
-
-```bash
-fitfo plan example-plumbing.test --deep --agent-ready
-```
-
-The add-on checks:
-
-- `robots.txt`
-- sitemap discovery
-- canonical host clarity
-- readable public pages
-- accidental `noindex` directives
-- explicit AI crawler rules in `robots.txt`
-- app/API and commerce protocol applicability
-
-Missing emerging protocols are not treated as failures for normal local-business sites. FITFO reports them as not applicable unless the site has a real app, API, authentication, or commerce workflow.
-
-Export it for Sheets or a launch QA checklist:
-
-```bash
-fitfo plan example-plumbing.test --deep --agent-ready --export-tables fitfo-exports
-```
-
-This adds:
-
-```text
-fitfo-exports/
-  example-plumbing.test-agent-readiness.csv
-```
-
-The combined JSON bundle also includes an `agentReadiness` array.

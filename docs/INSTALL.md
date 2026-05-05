@@ -19,7 +19,7 @@ npm unlink -g fitfo
 npm link
 ```
 
-## Firecrawl Research
+## Optional Research
 
 `--search` uses `FIRECRAWL_API_KEY` when present. Without an environment key, FITFO falls back to the authenticated Firecrawl CLI.
 
@@ -29,7 +29,7 @@ firecrawl --status
 fitfo brief example.com --deep --search --location "City, ST"
 ```
 
-## Reports And Exports
+## Reports
 
 Save a Markdown note into an Obsidian vault/folder:
 
@@ -37,16 +37,9 @@ Save a Markdown note into an Obsidian vault/folder:
 fitfo brief example.com --deep --search --location "City, ST" --obsidian --vault ~/Obsidian/Clients
 ```
 
-Advanced export for planning tables:
-
-```bash
-fitfo plan example.com --deep --search --location "City, ST" --export-tables fitfo-exports
-```
-
 Generated folders are ignored by git:
 
 - `fitfo-reports/`
-- `fitfo-exports/`
 - `reports/`
 - `.firecrawl/`
 
