@@ -8,6 +8,14 @@ This project uses semantic versioning while it is pre-1.0:
 - minor versions for new commands or meaningful new scanner capabilities
 - 1.0 once the default scan output and install path are stable enough for public use
 
+## 0.1.1 - Maintenance
+
+### Changed
+
+- Removed the redundant root-level `fitfo` shim; the npm `bin` entry already points to `bin/fitfo.js`.
+- Extracted duplicated URL and HTML helper functions into `src/lib/utils.js`.
+- Added repository hygiene files for contributors, including `.editorconfig`, `.env.example`, CODEOWNERS, and expanded CI coverage.
+
 ## 0.1.0 - Public preview
 
 Initial public-preview version.
