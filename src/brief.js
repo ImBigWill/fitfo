@@ -1,6 +1,7 @@
 import { createTheme } from "./theme.js";
 import { buildCallOneWorkflow, buildClientAccessRequests, buildConfidenceExplanations, buildDoNotTouchWarnings, buildInfrastructureSnapshot, buildLoginChecklist, buildPreviousDeveloperRequestItems, buildUnknownBlockers, plainCloudflareStatus } from "./handoff.js";
 import { buildCitationBaseline } from "./lib/citations.js";
+import { safeHostname } from "./lib/utils.js";
 import { kv, numbered, panel, renderAppHeader, renderSurface } from "./ui.js";
 
 export function buildBrief(scan) {
@@ -2373,14 +2374,6 @@ function uniqueValues(values) {
 
 function escapeRegExp(value) {
   return String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
-function safeHostname(url) {
-  try {
-    return new URL(url).hostname.toLowerCase();
-  } catch {
-    return "";
-  }
 }
 
 function isSameDomain(url, apex) {

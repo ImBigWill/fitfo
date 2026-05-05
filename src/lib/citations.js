@@ -1,3 +1,5 @@
+import { safeHostname } from "./utils.js";
+
 const DIRECTORY_HOSTS = /\b(yelp|angi|angieslist|homeadvisor|bbb|thumbtack|houzz|nextdoor|yellowpages|mapquest|porch|facebook|google|bing|apple|chamberofcommerce)\b/i;
 const ADDRESS_PATTERN = /\b\d{2,6}\s+[A-Z0-9][A-Z0-9 .'-]{2,80}\s+(?:St|Street|Ave|Avenue|Rd|Road|Dr|Drive|Blvd|Boulevard|Ln|Lane|Ct|Court|Way|Pkwy|Parkway|Pl|Place|Hwy|Highway)\b(?:[ ,]+[A-Z][A-Za-z .'-]{2,40})?[ ,]+[A-Z]{2}[ ,]+\d{5}(?:-\d{4})?|\b\d{2,6}\s+[A-Z0-9][A-Z0-9 .'-]{2,80}\s+(?:St|Street|Ave|Avenue|Rd|Road|Dr|Drive|Blvd|Boulevard|Ln|Lane|Ct|Court|Way|Pkwy|Parkway|Pl|Place|Hwy|Highway)\b(?:[ ,]+[A-Z][A-Za-z .'-]{2,40})?(?:[ ,]+[A-Z]{2})?/gi;
 
@@ -203,14 +205,6 @@ function normalizePhone(value) {
 
 function normalizeText(value) {
   return String(value || "").toLowerCase().replace(/&/g, "and").replace(/[^a-z0-9]+/g, " ").trim();
-}
-
-function safeHostname(url) {
-  try {
-    return new URL(url).hostname.toLowerCase();
-  } catch {
-    return "";
-  }
 }
 
 function sameDomain(hostname, apex) {

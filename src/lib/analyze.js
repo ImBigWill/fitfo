@@ -1,3 +1,5 @@
+import { safeHost, safeProtocol } from "./utils.js";
+
 const HOSTING_HINTS = [
   ["wp engine", "WP Engine"],
   ["wpengine", "WP Engine"],
@@ -1025,22 +1027,6 @@ function knownOrFallback(value, fallback) {
 function handoffName(value, fallback) {
   if (!value || value === "Unknown") return fallback;
   return String(value).replace(/^Likely\s+/i, "");
-}
-
-function safeHost(url) {
-  try {
-    return new URL(url).hostname.toLowerCase();
-  } catch {
-    return null;
-  }
-}
-
-function safeProtocol(url) {
-  try {
-    return new URL(url).protocol.toLowerCase();
-  } catch {
-    return null;
-  }
 }
 
 function buildFallbackUrlRecommendation(apex, preferredHost, preferredProtocol) {
