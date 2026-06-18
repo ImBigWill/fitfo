@@ -28,6 +28,7 @@
     "bin",
     "docs/assets",
     "docs/*.md",
+    "integrations",
     "src",
     "README.md",
     "LICENSE",
