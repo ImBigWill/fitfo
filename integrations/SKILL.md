@@ -8,7 +8,23 @@ description: >-
   plan. Triggers on "onboard <domain>", "scan this domain", "who controls this
   domain", "client handoff", "first-call brief", "build plan for <site>", or any
   request to turn a public domain into a working Markdown brief.
+metadata:
+  short-description: "Kickstart client domain onboarding with the FITFO CLI"
 ---
+
+<codex_skill_adapter>
+## A. Skill Invocation
+- This skill is invoked by mentioning `$fitfo`.
+- Treat all user text after `$fitfo` as `{{FITFO_ARGS}}` — typically a domain,
+  optionally preceded by a mode (`snapshot` / `brief` / `plan` / `onboard`) and
+  followed by flags (e.g. `--deep`, `--vault ~/Notes`).
+- If no arguments are present, run `fitfo` with no args (the guided wizard), or
+  ask the user which domain to scan.
+- This skill only shells out to the `fitfo` CLI — it does not spawn agents or
+  use interactive question tools, so no `request_user_input` / `spawn_agent`
+  translation is needed. Map the user's intent to the right `fitfo` command
+  below and run it.
+</codex_skill_adapter>
 
 # FITFO — client domain onboarding scanner
 
