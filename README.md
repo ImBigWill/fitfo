@@ -45,7 +45,7 @@ The default deliverable is Markdown. Obsidian is treated as a destination for Ma
 
 ## Built By
 
-FITFO is built by Will Schmierer, a builder, developer, strategist, and agentic engineer with 20+ years of WordPress experience, 25 years of construction leadership, and hands-on agency work across client onboarding, web systems, automation, and local service business growth.
+FITFO is built by Will Schmierer, a builder, developer, strategist, and agentic engineer with 20+ years of WordPress experience, 25 years around the trades, from architecture school to the job site, and hands-on agency work across client onboarding, web systems, automation, and local service business growth.
 
 - [willschmierer.com](https://willschmierer.com)
 - [BuiltWTF.com](https://builtwtf.com)
